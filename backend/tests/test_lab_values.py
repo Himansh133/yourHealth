@@ -125,3 +125,8 @@ def test_flag_non_numeric():
 def test_flag_less_than_value_below_upper_limit_is_normal():
     # "<0.5" with range "< 1.0" -> normal
     assert compute_flag(Decimal("0.5"), None, Decimal("1.0"), qualifier="<") == "normal"
+
+
+def test_ocr_l_for_i_confusion_in_tsh_unit():
+    # RapidOCR reads "uIU/mL" as "ulU/mL"
+    assert normalize_unit("ulU/mL") == "µIU/mL"

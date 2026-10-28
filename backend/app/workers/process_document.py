@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import Document, DocumentPage
 from app.db.session import SessionLocal
+from app.services.extraction.ocr import rapid_ocr
 from app.services.extraction.text_layer import PageText, extract_text_layer, needs_ocr
 from app.services.storage import Storage, get_storage
 
@@ -30,7 +31,7 @@ class ProcessingError(Exception):
 def process_document(document_id: str) -> None:
     """Entry point called by the RQ worker."""
     with SessionLocal() as db:
-        run(db, get_storage(), uuid.UUID(document_id), ocr=None)
+        run(db, get_storage(), uuid.UUID(document_id), ocr=rapid_ocr)
 
 
 def run(db: Session, storage: Storage, document_id: uuid.UUID, ocr: OcrEngine | None = None) -> None:
@@ -76,7 +77,14 @@ def _extract_pages(data: bytes, mime: str, ocr: OcrEngine | None) -> list[PageTe
     if ocr is None:
         return pages
     with pymupdf.open(stream=data, filetype="pdf") as pdf:
-        return [
-            ocr(pdf[p.page_no - 1].get_pixmap(dpi=OCR_DPI).tobytes("png"), p.page_no) if needs_ocr(p) else p
-            for p in pages
-        ]
+        return [_ocr_pdf_page(pdf, p.page_no, ocr) if needs_ocr(p) else p for p in pages]
+
+
+def _ocr_pdf_page(pdf, page_no: int, ocr: OcrEngine) -> PageText:
+    page = ocr(pdf[page_no - 1].get_pixmap(dpi=OCR_DPI).tobytes("png"), page_no)
+    # OCR boxes are in rendered pixels; store PDF points so they match text-layer boxes.
+    scale = 72 / OCR_DPI
+    for w in page.words:
+        for k in ("x0", "y0", "x1", "y1"):
+            w[k] = round(w[k] * scale, 1)
+    return page

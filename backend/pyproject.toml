@@ -18,6 +18,8 @@ dependencies = [
   "python-multipart",
   "boto3",
   "rq",
+  "rapidocr",
+  "onnxruntime",
 ]
 
 [project.optional-dependencies]

@@ -132,3 +132,16 @@ def test_missing_document_is_ignored(db_session):
     import uuid
 
     run(db_session, MemoryStorage(), uuid.uuid4())  # deleted before the worker got to it: no crash
+
+
+def test_ocr_boxes_on_pdf_pages_are_scaled_to_pdf_points(db_session):
+    storage = MemoryStorage()
+    doc = add_document(db_session, storage, make_pdf([["Scanned page"]]))
+    box = {"text": "X", "x0": 200.0, "y0": 400.0, "x1": 600.0, "y1": 800.0, "conf": 0.9}
+
+    run(db_session, storage, doc.id, ocr=lambda img, n: PageText(n, "fake_ocr", "X", [box], 0.9))
+
+    [page] = pages_of(db_session, doc)
+    # rendered at 200 dpi, PDF points are 1/72 inch
+    assert page.words_json[0] == {"text": "X", "x0": 72.0, "y0": 144.0, "x1": 216.0, "y1": 288.0, "conf": 0.9}
+

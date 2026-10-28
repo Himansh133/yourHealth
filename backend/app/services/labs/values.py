@@ -13,6 +13,7 @@ _RANGE_LIMIT_RE = re.compile(rf"^\s*(?P<op>[<>])=?\s*(?P<num>{_NUM})\s*$")
 # Lowercased spelling -> canonical spelling. Unknown units pass through unchanged.
 _UNIT_SPELLINGS = {
     "uiu/ml": "µIU/mL",
+    "ulu/ml": "µIU/mL",  # OCR reads capital I as l
     "µiu/ml": "µIU/mL",
     "μiu/ml": "µIU/mL",
     "microiu/ml": "µIU/mL",
