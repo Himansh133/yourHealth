@@ -1,19 +1,19 @@
-loinc_code,canonical_name,display_name_hi,canonical_unit,category
-4548-4,HbA1c,पिछले 3 महीने की औसत शुगर,%,diabetes
-1558-6,Fasting glucose,खाली पेट शुगर,mg/dL,diabetes
-3016-3,TSH,थायरॉइड हार्मोन (TSH),µIU/mL,thyroid
-3024-7,Free T4,फ्री T4 (थायरॉइड),ng/dL,thyroid
-718-7,Haemoglobin,हीमोग्लोबिन (खून),g/dL,cbc
-2093-3,Total cholesterol,कुल कोलेस्ट्रॉल,mg/dL,lipid
-13457-7,LDL cholesterol (calculated),LDL (खराब) कोलेस्ट्रॉल,mg/dL,lipid
-2085-9,HDL cholesterol,HDL (अच्छा) कोलेस्ट्रॉल,mg/dL,lipid
-2571-8,Triglycerides,ट्राइग्लिसराइड (खून में चर्बी),mg/dL,lipid
-2160-0,Creatinine,क्रिएटिनिन (किडनी),mg/dL,kidney
-3084-1,Uric acid,यूरिक एसिड,mg/dL,kidney
-1742-6,ALT (SGPT),ALT / SGPT (लिवर),U/L,liver
-1920-8,AST (SGOT),AST / SGOT (लिवर),U/L,liver
-62292-8,"Vitamin D, 25-OH total",विटामिन D,ng/mL,vitamin
-2132-9,Vitamin B12,विटामिन B12,pg/mL,vitamin
-2951-2,Sodium,सोडियम,mmol/L,electrolyte
-2823-3,Potassium,पोटैशियम,mmol/L,electrolyte
-2157-6,Creatine kinase (CK),CK (मांसपेशी एंजाइम),U/L,muscle
+loinc_code,canonical_name,display_name_hi,canonical_unit,category,sanity_min,sanity_max
+4548-4,HbA1c,पिछले 3 महीने की औसत शुगर,%,diabetes,3,20
+1558-6,Fasting glucose,खाली पेट शुगर,mg/dL,diabetes,20,1000
+3016-3,TSH,थायरॉइड हार्मोन (TSH),µIU/mL,thyroid,0.001,200
+3024-7,Free T4,फ्री T4 (थायरॉइड),ng/dL,thyroid,0.1,10
+718-7,Haemoglobin,हीमोग्लोबिन (खून),g/dL,cbc,2,25
+2093-3,Total cholesterol,कुल कोलेस्ट्रॉल,mg/dL,lipid,50,600
+13457-7,LDL cholesterol (calculated),LDL (खराब) कोलेस्ट्रॉल,mg/dL,lipid,10,500
+2085-9,HDL cholesterol,HDL (अच्छा) कोलेस्ट्रॉल,mg/dL,lipid,5,200
+2571-8,Triglycerides,ट्राइग्लिसराइड (खून में चर्बी),mg/dL,lipid,20,5000
+2160-0,Creatinine,क्रिएटिनिन (किडनी),mg/dL,kidney,0.1,20
+3084-1,Uric acid,यूरिक एसिड,mg/dL,kidney,0.5,20
+1742-6,ALT (SGPT),ALT / SGPT (लिवर),U/L,liver,1,5000
+1920-8,AST (SGOT),AST / SGOT (लिवर),U/L,liver,1,5000
+62292-8,"Vitamin D, 25-OH total",विटामिन D,ng/mL,vitamin,1,200
+2132-9,Vitamin B12,विटामिन B12,pg/mL,vitamin,50,5000
+2951-2,Sodium,सोडियम,mmol/L,electrolyte,100,180
+2823-3,Potassium,पोटैशियम,mmol/L,electrolyte,1.5,9
+2157-6,Creatine kinase (CK),CK (मांसपेशी एंजाइम),U/L,muscle,5,100000

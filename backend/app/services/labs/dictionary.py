@@ -31,6 +31,8 @@ class LabTest:
     display_name_hi: str
     canonical_unit: str
     category: str
+    sanity_min: Decimal  # plausibility bounds in canonical unit; outside = likely misread
+    sanity_max: Decimal
 
 
 @dataclass(frozen=True)
@@ -61,7 +63,10 @@ class LabDictionary:
 
     @classmethod
     def from_csv(cls, seed_dir: Path) -> "LabDictionary":
-        tests = [LabTest(**row) for row in _read(seed_dir / "lab_tests.csv")]
+        tests = [
+            LabTest(**{**r, "sanity_min": Decimal(r["sanity_min"]), "sanity_max": Decimal(r["sanity_max"])})
+            for r in _read(seed_dir / "lab_tests.csv")
+        ]
         aliases = {normalize_name(r["alias"])[0]: r["loinc_code"] for r in _read(seed_dir / "aliases.csv")}
         conversions = {
             (r["loinc_code"], normalize_unit(r["from_unit"])): (Decimal(r["multiplier"]), Decimal(r["offset"]))
