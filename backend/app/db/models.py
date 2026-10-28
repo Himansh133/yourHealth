@@ -2,8 +2,8 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import CheckConstraint, Date, ForeignKey, Integer, Text, UniqueConstraint
-from sqlalchemy.dialects.postgresql import CITEXT, UUID
+from sqlalchemy import CheckConstraint, Date, Float, ForeignKey, Integer, Text, UniqueConstraint
+from sqlalchemy.dialects.postgresql import CITEXT, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
@@ -68,3 +68,19 @@ class Document(TimestampMixin, Base):
     # queued|extracting|parsing|indexing|needs_review|done|failed
     status: Mapped[str] = mapped_column(Text, nullable=False, default="queued")
     error_code: Mapped[str | None] = mapped_column(Text)
+
+
+class DocumentPage(TimestampMixin, Base):
+    __tablename__ = "document_pages"
+    __table_args__ = (UniqueConstraint("document_id", "page_no", name="document_pages_document_page_key"),)
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False
+    )
+    page_no: Mapped[int] = mapped_column(Integer, nullable=False)
+    method: Mapped[str] = mapped_column(Text, nullable=False)  # 'text_layer' | OCR engine name
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    ocr_confidence: Mapped[float | None] = mapped_column(Float)  # mean word confidence; null for text layer
+    words_json: Mapped[list | None] = mapped_column(JSONB)  # [{text, x0, y0, x1, y1[, conf]}]
+    processor_version: Mapped[str] = mapped_column(Text, nullable=False)
