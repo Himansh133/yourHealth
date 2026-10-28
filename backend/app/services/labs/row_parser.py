@@ -13,6 +13,7 @@ from app.services.labs.values import normalize_unit
 _NUM = r"\d+(?:\.\d+)?"
 _UNIT = r"(?:10\^\d+/\S+|[^\s\d<>\-–][^\s]*)"
 _RANGE = rf"(?:{_NUM}\s*[-–]\s*{_NUM}|[<>]=?\s*{_NUM}|up\s*to\s*{_NUM})"
+_WORD_RE = re.compile(r"[A-Za-z]{2,}")
 _TAIL_RE = re.compile(
     rf"""^(?P<value>(?:[<>]=?)?\s*{_NUM})
     (?:\s*(?P<flag>H|L|High|Low)(?=\s|$))?
@@ -49,8 +50,10 @@ def parse_line(line: str) -> RawRow | None:
     tokens = line.split()
     for i in range(1, len(tokens)):
         name = " ".join(tokens[:i])
-        if not name[0].isalpha():
-            return None  # plan 7.3: a test name starts with a letter
+        # The plan says a name starts with a letter, but "25 OH Vitamin D" is common on Indian
+        # reports. Require a real word somewhere in the name instead.
+        if not _WORD_RE.search(name):
+            continue
         m = _TAIL_RE.match(" ".join(tokens[i:]))
         if not m:
             continue

@@ -31,7 +31,7 @@ def row(name, value, unit=None, rng=None, flag=None):
     # qualifier on value
     ("CRP <0.5 mg/L 0 - 5", row("CRP", "<0.5", "mg/L", "0 - 5")),
     # numbers inside the name
-    ("25 OH Vitamin D 14.2 ng/mL 30 - 100", None),  # name must start with a letter (plan 7.3)
+    ("25 OH Vitamin D 14.2 ng/mL 30 - 100", row("25 OH Vitamin D", "14.2", "ng/mL", "30 - 100")),
     ("Vitamin D 25 OH 14.2 ng/mL 30 - 100", row("Vitamin D 25 OH", "14.2", "ng/mL", "30 - 100")),
     # no range but a known unit
     ("Creatinine 1.1 mg/dL", row("Creatinine", "1.1", "mg/dL")),
@@ -49,6 +49,7 @@ def test_parse_line(line, expected):
     "Page 1 of 2",
     "Dr Demo Diagnostics, NABL Accredited",
     "Lab No 123456",
+    "12/03/2026 7.2 % 4.0 - 5.6",  # name needs a real word, not just numbers
     "",
 ])
 def test_non_result_lines_are_ignored(line):
