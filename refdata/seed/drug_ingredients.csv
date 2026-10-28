@@ -1,0 +1,24 @@
+name,us_label_name,atc_code,drug_class
+metformin,METFORMIN HYDROCHLORIDE,A10BA02,biguanide
+glimepiride,GLIMEPIRIDE,A10BB12,sulfonylurea
+sitagliptin,SITAGLIPTIN,A10BH01,DPP-4 inhibitor
+vildagliptin,,A10BH02,DPP-4 inhibitor
+atorvastatin,ATORVASTATIN CALCIUM,C10AA05,statin
+rosuvastatin,ROSUVASTATIN CALCIUM,C10AA07,statin
+levothyroxine,LEVOTHYROXINE SODIUM,H03AA01,thyroid hormone
+prednisolone,PREDNISOLONE,H02AB06,corticosteroid
+hydrochlorothiazide,HYDROCHLOROTHIAZIDE,C03AA03,thiazide diuretic
+chlorthalidone,CHLORTHALIDONE,C03BA04,thiazide-like diuretic
+telmisartan,TELMISARTAN,C09CA07,angiotensin receptor blocker
+losartan,LOSARTAN POTASSIUM,C09CA01,angiotensin receptor blocker
+ramipril,RAMIPRIL,C09AA05,ACE inhibitor
+amlodipine,AMLODIPINE BESYLATE,C08CA01,calcium channel blocker
+spironolactone,SPIRONOLACTONE,C03DA01,potassium-sparing diuretic
+furosemide,FUROSEMIDE,C03CA01,loop diuretic
+pantoprazole,PANTOPRAZOLE SODIUM,A02BC02,proton pump inhibitor
+omeprazole,OMEPRAZOLE,A02BC01,proton pump inhibitor
+allopurinol,ALLOPURINOL,M04AA01,xanthine oxidase inhibitor
+febuxostat,FEBUXOSTAT,M04AA03,xanthine oxidase inhibitor
+aspirin,ASPIRIN,B01AC06,antiplatelet
+paracetamol,ACETAMINOPHEN,N02BE01,analgesic
+cholecalciferol,CHOLECALCIFEROL,A11CC05,vitamin D

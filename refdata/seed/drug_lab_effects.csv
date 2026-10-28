@@ -1,0 +1,33 @@
+ingredient,loinc_code,direction,effect_type,typical_onset,onset_days,source_section,evidence,note_en
+metformin,4548-4,decrease,therapeutic,about 3 months,90,indications_and_usage,glycemic control,"Metformin is used to lower blood sugar. HbA1c reflects about the last 3 months, so changes show slowly."
+metformin,1558-6,decrease,therapeutic,a few weeks,14,indications_and_usage,glycemic control,Metformin is used to lower blood sugar.
+metformin,2132-9,decrease,monitor,months to years,180,warnings_and_cautions,vitamin B12|vitamin B 12,Long-term metformin use can lower vitamin B12. The label says B12 may be checked from time to time.
+atorvastatin,13457-7,decrease,therapeutic,4-6 weeks,28,indications_and_usage,LDL-C,Atorvastatin is used to lower LDL cholesterol.
+atorvastatin,1742-6,increase,monitor,weeks to months,28,warnings_and_cautions,transaminase,Liver enzymes such as ALT are checked while taking statins.
+atorvastatin,1920-8,increase,monitor,weeks to months,28,warnings_and_cautions,transaminase,Liver enzymes such as AST are checked while taking statins.
+atorvastatin,2157-6,increase,monitor,any time,0,warnings_and_cautions,CK|creatine kinase,CK may be checked if muscle pain or weakness happens on a statin.
+rosuvastatin,13457-7,decrease,therapeutic,4-6 weeks,28,indications_and_usage,LDL-C,Rosuvastatin is used to lower LDL cholesterol.
+rosuvastatin,1742-6,increase,monitor,weeks to months,28,warnings_and_cautions,transaminase,Liver enzymes such as ALT are checked while taking statins.
+rosuvastatin,1920-8,increase,monitor,weeks to months,28,warnings_and_cautions,transaminase,Liver enzymes such as AST are checked while taking statins.
+rosuvastatin,2157-6,increase,monitor,any time,0,warnings_and_cautions,CK|creatine kinase,CK may be checked if muscle pain or weakness happens on a statin.
+levothyroxine,3016-3,decrease,therapeutic,6-8 weeks,42,dosage_and_administration,TSH,Levothyroxine replaces thyroid hormone. TSH is usually rechecked 6 to 8 weeks after a change.
+levothyroxine,3024-7,increase,therapeutic,6-8 weeks,42,dosage_and_administration,FT4|free-T4|free T4,Levothyroxine raises thyroid hormone (free T4) levels.
+prednisolone,1558-6,increase,monitor,days,3,adverse_reactions,glucose|hyperglycemia|diabetes,Steroids like prednisolone can raise blood sugar.
+hydrochlorothiazide,2951-2,decrease,monitor,weeks,14,precautions,hyponatremia,Thiazide diuretics can lower sodium.
+hydrochlorothiazide,2823-3,decrease,monitor,weeks,14,precautions,hypokalemia,Thiazide diuretics can lower potassium.
+hydrochlorothiazide,3084-1,increase,monitor,weeks,14,precautions,hyperuricemia,Thiazide diuretics can raise uric acid.
+chlorthalidone,2951-2,decrease,monitor,weeks,14,laboratory_tests,hyponatremia,Chlorthalidone can lower sodium.
+chlorthalidone,2823-3,decrease,monitor,weeks,14,laboratory_tests,hypokalemia,Chlorthalidone can lower potassium.
+chlorthalidone,3084-1,increase,monitor,weeks,14,adverse_reactions,hyperuricemia,Chlorthalidone can raise uric acid.
+telmisartan,2823-3,increase,monitor,weeks,14,warnings_and_cautions,hyperkalemia,Telmisartan can raise potassium; doctors check it.
+telmisartan,2160-0,increase,monitor,first weeks,7,warnings_and_cautions,creatinine,A small rise in creatinine can happen when starting; doctors monitor kidney function.
+losartan,2823-3,increase,monitor,weeks,14,warnings_and_cautions,hyperkalemia,Losartan can raise potassium; doctors check it.
+losartan,2160-0,increase,monitor,first weeks,7,warnings_and_cautions,renal function,A small rise in creatinine can happen when starting; doctors monitor kidney function.
+ramipril,2823-3,increase,monitor,weeks,14,warnings_and_cautions,hyperkalemia,Ramipril can raise potassium; doctors check it.
+ramipril,2160-0,increase,monitor,first weeks,7,warnings_and_cautions,creatinine,A small rise in creatinine can happen when starting; doctors monitor kidney function.
+spironolactone,2823-3,increase,monitor,weeks,14,warnings_and_cautions,hyperkalemia,Spironolactone can raise potassium; doctors check it.
+furosemide,2823-3,decrease,monitor,days to weeks,7,warnings_and_cautions,hypokalemia,Furosemide can lower potassium.
+pantoprazole,2132-9,decrease,monitor,years,365,warnings_and_cautions,cyanocobalamin|vitamin B12|vitamin B-12,Long-term use of acid-reducing medicines like pantoprazole can lower vitamin B12.
+omeprazole,2132-9,decrease,monitor,years,365,warnings_and_cautions,cyanocobalamin|vitamin B12|vitamin B-12,Long-term use of acid-reducing medicines like omeprazole can lower vitamin B12.
+allopurinol,3084-1,decrease,therapeutic,2-3 weeks,14,indications_and_usage,uric acid,Allopurinol is used to lower uric acid.
+febuxostat,3084-1,decrease,therapeutic,2 weeks,14,indications_and_usage,hyperuricemia|uric acid,Febuxostat is used to lower uric acid.
