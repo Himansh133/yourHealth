@@ -15,6 +15,11 @@ services:
       interval: 2s
       retries: 15
 
+  redis:
+    image: redis:7.4-alpine
+    ports:
+      - "6379:6379"
+
   s3:
     # S3-compatible object store (MinIO no longer publishes public images).
     image: chrislusf/seaweedfs:4.50

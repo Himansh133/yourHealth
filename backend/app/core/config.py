@@ -16,5 +16,7 @@ class Settings(BaseSettings):
     s3_secret_key: str = "yourhealth-dev-secret"
     s3_bucket: str = "yourhealth-docs"
 
+    redis_url: str = "redis://localhost:6379/0"
+
 
 settings = Settings()

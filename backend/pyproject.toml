@@ -17,6 +17,7 @@ dependencies = [
   "pymupdf",
   "python-multipart",
   "boto3",
+  "rq",
 ]
 
 [project.optional-dependencies]

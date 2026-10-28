@@ -12,6 +12,7 @@ from app.core.permissions import require_profile_access
 from app.db.models import Document, User
 from app.db.session import get_db
 from app.services.extraction.validate import MAX_BYTES, UploadRejected, validate_upload
+from app.services.queue import DocumentQueue, get_queue
 from app.services.storage import Storage, get_storage
 
 router = APIRouter()
@@ -52,6 +53,7 @@ def upload_document(
     user: User = Depends(current_user),
     db: Session = Depends(get_db),
     storage: Storage = Depends(get_storage),
+    queue: DocumentQueue = Depends(get_queue),
 ):
     require_profile_access(db, user.id, pid, "edit")
     data = file.file.read(MAX_BYTES + 1)  # one extra byte is enough to detect "too large"
@@ -82,6 +84,7 @@ def upload_document(
     )
     db.add(doc)
     db.commit()
+    queue.enqueue_document(doc.id)  # after commit, so the worker can see the row
     return doc
 
 

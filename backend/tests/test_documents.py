@@ -2,6 +2,7 @@ import pymupdf
 import pytest
 
 from app.main import app
+from app.services.queue import get_queue
 from app.services.storage import MemoryStorage, get_storage
 
 PAPA = {"display_name": "Papa", "birth_year": 1968, "sex": "male"}
@@ -13,8 +14,23 @@ def make_pdf(text="HbA1c 7.2 % 4.0 - 5.6") -> bytes:
     return doc.tobytes()
 
 
+class FakeQueue:
+    def __init__(self):
+        self.jobs = []
+
+    def enqueue_document(self, document_id):
+        self.jobs.append(str(document_id))
+
+
 @pytest.fixture
-def storage():
+def queue():
+    q = FakeQueue()
+    app.dependency_overrides[get_queue] = lambda: q
+    return q
+
+
+@pytest.fixture
+def storage(queue):
     s = MemoryStorage()
     app.dependency_overrides[get_storage] = lambda: s
     yield s
@@ -155,3 +171,26 @@ def test_deleting_profile_removes_its_files(make_user_client, storage):
     upload(a, pid, make_pdf())
     assert a.delete(f"/api/v1/profiles/{pid}").status_code == 204
     assert storage.objects == {}
+
+
+def test_new_upload_enqueues_processing_job(make_user_client, storage, queue):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    did = upload(a, pid, make_pdf()).json()["id"]
+    assert queue.jobs == [did]
+
+
+def test_duplicate_upload_does_not_enqueue_again(make_user_client, storage, queue):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    pdf = make_pdf()
+    upload(a, pid, pdf)
+    upload(a, pid, pdf)
+    assert len(queue.jobs) == 1
+
+
+def test_rejected_upload_does_not_enqueue(make_user_client, storage, queue):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    upload(a, pid, b"MZ not a pdf")
+    assert queue.jobs == []
