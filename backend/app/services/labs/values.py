@@ -8,7 +8,7 @@ from decimal import Decimal
 _NUM = r"\d+(?:\.\d+)?"
 _VALUE_RE = re.compile(rf"^\s*(?P<qual>[<>]=?)?\s*(?P<num>{_NUM})\s*$")
 _RANGE_BETWEEN_RE = re.compile(rf"^\s*(?P<low>{_NUM})\s*[-–]\s*(?P<high>{_NUM})\s*$")
-_RANGE_LIMIT_RE = re.compile(rf"^\s*(?P<op>[<>])=?\s*(?P<num>{_NUM})\s*$")
+_RANGE_LIMIT_RE = re.compile(rf"^\s*(?P<op>[<>]|up\s*to)=?\s*(?P<num>{_NUM})\s*$", re.IGNORECASE)
 
 # Lowercased spelling -> canonical spelling. Unknown units pass through unchanged.
 _UNIT_SPELLINGS = {
@@ -53,7 +53,7 @@ def parse_range(raw: str | None) -> tuple[Decimal | None, Decimal | None]:
         return Decimal(m["low"]), Decimal(m["high"])
     if m := _RANGE_LIMIT_RE.match(raw):
         n = Decimal(m["num"])
-        return (None, n) if m["op"] == "<" else (n, None)
+        return (n, None) if m["op"] == ">" else (None, n)  # "<" or "up to"
     return None, None
 
 

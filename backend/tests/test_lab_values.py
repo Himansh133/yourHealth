@@ -130,3 +130,8 @@ def test_flag_less_than_value_below_upper_limit_is_normal():
 def test_ocr_l_for_i_confusion_in_tsh_unit():
     # RapidOCR reads "uIU/mL" as "ulU/mL"
     assert normalize_unit("ulU/mL") == "µIU/mL"
+
+
+@pytest.mark.parametrize("raw", ["Up to 40", "upto 40", "UPTO 40"])
+def test_range_up_to_is_upper_limit(raw):
+    assert parse_range(raw) == (None, Decimal("40"))
