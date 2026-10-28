@@ -5,7 +5,7 @@ Family health report tracker: lab report trends, medicine-to-lab links, Hindi ex
 ## Run locally
 
 ```bash
-docker compose up -d postgres          # Postgres 16 + pgvector, creates yourhealth and yourhealth_test DBs
+docker compose up -d postgres s3       # Postgres 16 + pgvector (yourhealth + yourhealth_test DBs), S3 store
 cd backend
 python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
@@ -23,4 +23,6 @@ cd backend
 .venv/bin/pytest
 ```
 
-Tests use the separate `yourhealth_test` database and need the Postgres container running.
+Tests use the separate `yourhealth_test` database and need the `postgres` and `s3` containers running.
+
+File storage is any S3-compatible service. Locally that is SeaweedFS (MinIO no longer publishes public Docker images); set `S3_ENDPOINT` and keys in `.env` to point at real S3 in deployment.

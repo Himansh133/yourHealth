@@ -10,5 +10,10 @@ class Settings(BaseSettings):
     # Secure cookies need HTTPS; set COOKIE_SECURE=false only for local http dev/tests.
     cookie_secure: bool = True
 
+    s3_endpoint: str = "http://localhost:8333"
+    s3_access_key: str = "yourhealth"
+    s3_secret_key: str = "yourhealth-dev-secret"
+    s3_bucket: str = "yourhealth-docs"
+
 
 settings = Settings()

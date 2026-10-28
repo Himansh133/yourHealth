@@ -16,6 +16,7 @@ dependencies = [
   "email-validator",
   "pymupdf",
   "python-multipart",
+  "boto3",
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "yourhealth",
+      "credentials": [{"accessKey": "yourhealth", "secretKey": "yourhealth-dev-secret"}],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}
