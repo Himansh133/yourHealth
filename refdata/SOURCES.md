@@ -16,6 +16,7 @@ Every file in `seed/` and where it came from. Update this when you add or verify
 | File | Source | Licence | Status |
 |---|---|---|---|
 | `seed/drug_ingredients.csv` | Team list of common chronic medicines in India; ATC codes from the WHO ATC index | WHO ATC: check terms before bulk use | ATC codes **not yet checked** against whocc.no |
+| `seed/drug_brands.csv` | 41 common Indian brands, typed by the team (`source=manual`). Manufacturer left blank on purpose | Facts (brand -> composition) only | **Verify each composition** against the pack or the Jan Aushadhi / CDSCO lists before the demo. The plan's Kaggle dataset can replace this later (licence unclear: academic demo only) |
 | `seed/name_map_in_us.csv` | Plan section 9.2 (Indian vs US generic names) | n/a | |
 | `seed/drug_labels.jsonl` | openFDA Drug Label API (api.fda.gov/drug/label.json), one label per ingredient: single ingredient, oral, prescription preferred, newest. Each record has its DailyMed set id, URL and fetch date | Public domain | Regenerate with `python -m app.refdata.fetch_openfda`. Vildagliptin has no US label; cholecalciferol has no single-ingredient label |
 | `seed/drug_lab_effects.csv` | Plan section 9.4 seed rows; each row cites a label section and an evidence phrase | Ours, citing public-domain labels | 32/32 rows **supported** by label text (see `EFFECTS_VERIFICATION.md`). Still needs a human read and faculty review (`reviewed_by`) |
