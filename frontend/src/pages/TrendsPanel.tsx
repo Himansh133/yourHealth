@@ -130,7 +130,7 @@ function TrendCard({ trend }: { trend: Trend }) {
               tick={{ fill: COLOR.axis, fontSize: 11 }} tickLine={false} axisLine={{ stroke: COLOR.grid }} />
             {markers.map((m) => (
               <ReferenceLine key={`${m.medicine}-${m.kind}-${m.date}`} x={timeOf(m.date)} stroke={COLOR.marker}
-                strokeDasharray="4 3" label={{ value: m.kind === "start" ? `▶ ${m.ingredient}` : `■ ${m.ingredient}`,
+                strokeDasharray="4 3" label={{ value: m.kind === "start" ? `▸ ${m.ingredient}` : `▪ ${m.ingredient}`,
                   position: "insideTopLeft", fill: COLOR.marker, fontSize: 10 }} />
             ))}
             <YAxis width={40} tick={{ fill: COLOR.axis, fontSize: 11 }} tickLine={false} axisLine={false}
@@ -147,7 +147,7 @@ function TrendCard({ trend }: { trend: Trend }) {
         </ul>
       )}
       <p className="text-xs text-slate-500">
-        Shaded band: range printed on the latest report.{markers.length > 0 && " Dashed lines: medicine started (▶) or stopped (■)."}
+        Shaded band: range printed on the latest report.{markers.length > 0 && " Dashed lines: medicine started (▸) or stopped (▪)."}
         {" "}Tap a point to open that report.
       </p>
 
