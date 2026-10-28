@@ -14,6 +14,8 @@ dependencies = [
   "pwdlib[argon2]",
   "pyjwt",
   "email-validator",
+  "pymupdf",
+  "python-multipart",
 ]
 
 [project.optional-dependencies]
