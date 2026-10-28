@@ -18,6 +18,7 @@ function doc(over: Record<string, unknown>) {
 const routes = {
   "/profiles/:pid": <ProfilePage pollMs={20} />,
   "/documents/:did/review": <p>Review page</p>,
+  "/profiles/:pid/medicines": <p>Medicines tab</p>,
 };
 
 describe("ProfilePage reports", () => {
@@ -101,5 +102,16 @@ describe("ProfilePage reports", () => {
     mockApi({ "GET /me": ME, "GET /profiles": [PAPA] });
     renderAt("/profiles/someone-else", routes);
     expect(await screen.findByText(/not found/i)).toBeInTheDocument();
+  });
+
+  it("sends a processed prescription to the medicines tab to confirm", async () => {
+    mockApi({
+      "GET /me": ME,
+      "GET /profiles": [PAPA],
+      "GET /profiles/p1/documents": [doc({ id: "d5", doc_type: "prescription", lab_name: null, report_date: null })],
+    });
+    const user = renderAt("/profiles/p1", routes);
+    await user.click(await screen.findByRole("link", { name: /confirm medicines/i }));
+    expect(await screen.findByText("Medicines tab")).toBeInTheDocument();
   });
 });

@@ -72,4 +72,66 @@ export type TrendPoint = {
   low_confidence: boolean;
 };
 
-export type Trend = { test: LabTest; points: TrendPoint[]; latest: TrendPoint };
+export type Trend = { test: LabTest; points: TrendPoint[]; latest: TrendPoint; markers: MedicineMarker[] };
+
+export type Frequency = "OD" | "BD" | "TDS" | "QID" | "HS" | "SOS";
+
+export type Ingredient = { id: string; name: string; drug_class: string | null; used_for: string | null };
+
+export type DrugSearchResult = {
+  kind: "brand" | "ingredient";
+  id: string;
+  name: string;
+  composition: string | null;
+  ingredients: Ingredient[];
+  drug_class: string | null;
+};
+
+export type LabEffect = {
+  test: LabTest;
+  direction: "increase" | "decrease" | "either";
+  effect_type: "therapeutic" | "monitor";
+  typical_onset: string | null;
+  note_en: string;
+  source_name: string;
+  source_section: string;
+  source_url: string;
+  reviewed_by: string | null;
+};
+
+export type IngredientInfo = Ingredient & { atc_code: string | null; label_url: string | null; effects: LabEffect[] };
+
+export type Medicine = {
+  id: string;
+  name: string;
+  brand_id: string | null;
+  composition: string | null;
+  ingredients: Ingredient[];
+  raw_text: string;
+  dose_text: string | null;
+  frequency_code: Frequency | null;
+  started_on: string | null;
+  stopped_on: string | null;
+  confirmed_by_user: boolean;
+  source_document_id: string | null;
+};
+
+export type Insight = {
+  medicine_id: string;
+  medicine_name: string;
+  ingredient: string;
+  test_name: string;
+  status: "matches_expected" | "not_as_expected" | "watch" | "no_change_seen" | "not_enough_data" | "no_start_date";
+  flagged: boolean;
+  message: string;
+  source_url: string;
+  source_section: string;
+};
+
+export type MedicineMarker = {
+  date: string;
+  kind: "start" | "stop";
+  medicine: string;
+  ingredient: string;
+  effect_type: "therapeutic" | "monitor";
+};

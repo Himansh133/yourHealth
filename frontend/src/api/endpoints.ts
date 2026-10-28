@@ -1,5 +1,5 @@
 import { request } from "./client";
-import type { Doc, LabResult, Profile, Sex, Trend, User } from "./types";
+import type { Doc, DrugSearchResult, Frequency, IngredientInfo, Insight, LabResult, Medicine, Profile, Sex, Trend, User } from "./types";
 
 export const auth = {
   me: () => request<User>("GET", "/me"),
@@ -37,4 +37,25 @@ export const labs = {
     request<LabResult[]>("GET", `/profiles/${profileId}/lab-results?document_id=${encodeURIComponent(documentId)}`),
   correct: (id: string, body: LabResultPatch) => request<LabResult>("PATCH", `/lab-results/${id}`, body),
   trends: (profileId: string) => request<Trend[]>("GET", `/profiles/${profileId}/trends`),
+};
+
+export type MedicineInput = {
+  brand_id?: string;
+  ingredient_id?: string;
+  dose_text?: string;
+  frequency_code?: Frequency;
+  started_on?: string;
+  stopped_on?: string;
+};
+
+export type MedicinePatch = Partial<Omit<MedicineInput, "ingredient_id">> & { confirmed_by_user?: true };
+
+export const medicines = {
+  search: (q: string) => request<DrugSearchResult[]>("GET", `/drugs/search?q=${encodeURIComponent(q)}`),
+  ingredient: (id: string) => request<IngredientInfo>("GET", `/drugs/ingredients/${id}`),
+  list: (profileId: string) => request<Medicine[]>("GET", `/profiles/${profileId}/medicines`),
+  add: (profileId: string, body: MedicineInput) => request<Medicine>("POST", `/profiles/${profileId}/medicines`, body),
+  update: (id: string, body: MedicinePatch) => request<Medicine>("PATCH", `/medicines/${id}`, body),
+  remove: (id: string) => request<void>("DELETE", `/medicines/${id}`),
+  insights: (profileId: string) => request<Insight[]>("GET", `/profiles/${profileId}/medicine-insights`),
 };

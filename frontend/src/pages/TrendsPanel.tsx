@@ -5,6 +5,7 @@ import {
   Line,
   LineChart,
   ReferenceArea,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -12,9 +13,9 @@ import {
   type TooltipProps,
 } from "recharts";
 import { labs } from "../api/endpoints";
-import type { Flag, Trend, TrendPoint } from "../api/types";
+import type { Flag, MedicineMarker, Trend, TrendPoint } from "../api/types";
 import { Button, ErrorAlert, errorMessage } from "../components/ui";
-import { formatDate } from "../format";
+import { formatDate, formatMonth } from "../format";
 
 // Single series per chart: the card title names it, so no legend. Status colours always come
 // with a word or symbol (never colour alone). Values come straight from SQL, never from an LLM.
@@ -25,8 +26,18 @@ const COLOR = {
   band: "#e2e8f0", // slate-200, recessive reference band
   grid: "#e2e8f0",
   axis: "#64748b", // slate-500 text
+  marker: "#475569", // slate-600, medicine start/stop lines (neutral: identity is in the text label)
   surface: "#ffffff",
 };
+
+function timeOf(iso: string): number {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).getTime();
+}
+
+function markerText(m: MedicineMarker): string {
+  return `${m.medicine} ${m.kind === "start" ? "started" : "stopped"} ${formatDate(m.date)}`;
+}
 
 const FLAG_TEXT: Record<Flag, string> = {
   high: "▲ Above range",
@@ -74,12 +85,15 @@ export default function TrendsPanel({ profileId }: { profileId: string }) {
 }
 
 function TrendCard({ trend }: { trend: Trend }) {
-  const { test, points, latest } = trend;
+  const { test, points, latest, markers } = trend;
   const [showTable, setShowTable] = useState(false);
   const titleId = useId();
   const navigate = useNavigate();
   const openSource = (p: TrendPoint) => navigate(`/documents/${p.document_id}/review`);
-  const data = points.map((p) => ({ ...p, label: formatDate(p.observed_on) }));
+  // Real time on the x axis, so gaps between reports and medicine start dates sit where they happened.
+  const data = points.map((p) => ({ ...p, t: timeOf(p.observed_on) }));
+  const times = [...data.map((d) => d.t), ...markers.map((m) => timeOf(m.date))];
+  const domain = [Math.min(...times), Math.max(...times)];
   const flagTone = latest.flag === "high" || latest.flag === "low" ? "text-red-700" : "text-slate-600";
 
   return (
@@ -111,7 +125,14 @@ function TrendCard({ trend }: { trend: Trend }) {
               <ReferenceArea y1={latest.range_low ?? undefined} y2={latest.range_high ?? undefined}
                 fill={COLOR.band} fillOpacity={0.6} ifOverflow="extendDomain" />
             )}
-            <XAxis dataKey="label" tick={{ fill: COLOR.axis, fontSize: 11 }} tickLine={false} axisLine={{ stroke: COLOR.grid }} />
+            <XAxis dataKey="t" type="number" scale="time" domain={domain} ticks={data.map((d) => d.t)}
+              tickFormatter={formatMonth}
+              tick={{ fill: COLOR.axis, fontSize: 11 }} tickLine={false} axisLine={{ stroke: COLOR.grid }} />
+            {markers.map((m) => (
+              <ReferenceLine key={`${m.medicine}-${m.kind}-${m.date}`} x={timeOf(m.date)} stroke={COLOR.marker}
+                strokeDasharray="4 3" label={{ value: m.kind === "start" ? `▶ ${m.ingredient}` : `■ ${m.ingredient}`,
+                  position: "insideTopLeft", fill: COLOR.marker, fontSize: 10 }} />
+            ))}
             <YAxis width={40} tick={{ fill: COLOR.axis, fontSize: 11 }} tickLine={false} axisLine={false}
               domain={["auto", "auto"]} />
             <Tooltip content={<PointTooltip unit={test.unit} />} cursor={{ stroke: COLOR.axis, strokeDasharray: "3 3" }} />
@@ -120,8 +141,14 @@ function TrendCard({ trend }: { trend: Trend }) {
           </LineChart>
         </ResponsiveContainer>
       </div>
+      {markers.length > 0 && (
+        <ul aria-label="Medicines linked to this test" className="text-xs text-slate-600">
+          {markers.map((m) => <li key={`${m.medicine}-${m.kind}-${m.date}`}>{markerText(m)}</li>)}
+        </ul>
+      )}
       <p className="text-xs text-slate-500">
-        Shaded band: range printed on the latest report. Tap a point to open that report.
+        Shaded band: range printed on the latest report.{markers.length > 0 && " Dashed lines: medicine started (▶) or stopped (■)."}
+        {" "}Tap a point to open that report.
       </p>
 
       <div>

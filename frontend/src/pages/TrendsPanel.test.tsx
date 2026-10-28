@@ -14,8 +14,8 @@ function point(over: Record<string, unknown>) {
   };
 }
 
-function trend(points: ReturnType<typeof point>[]) {
-  return { test: HBA1C, points, latest: points[points.length - 1] };
+function trend(points: ReturnType<typeof point>[], markers: unknown[] = []) {
+  return { test: HBA1C, points, latest: points[points.length - 1], markers };
 }
 
 const routes = {
@@ -96,5 +96,21 @@ describe("TrendsPanel", () => {
     mockApi({ "GET /me": ME, "GET /profiles/p1/trends": [] });
     renderAt("/profiles/p1/trends", routes);
     expect(await screen.findByText(/appear when a test shows up in two or more reports/i)).toBeInTheDocument();
+  });
+
+  it("lists medicine start and stop dates linked to the test", async () => {
+    mockApi({
+      "GET /me": ME,
+      "GET /profiles/p1/trends": [
+        trend([point({}), point({ lab_result_id: "r2", observed_on: "2026-06-14", value: 7.2 })], [
+          { date: "2026-03-01", kind: "start", medicine: "Glycomet 500", ingredient: "metformin", effect_type: "therapeutic" },
+          { date: "2026-09-01", kind: "stop", medicine: "Glycomet 500", ingredient: "metformin", effect_type: "therapeutic" },
+        ]),
+      ],
+    });
+    renderAt("/profiles/p1/trends", routes);
+    const card = await screen.findByRole("article", { name: "HbA1c" });
+    expect(within(card).getByText("Glycomet 500 started 1 Mar 2026")).toBeInTheDocument();
+    expect(within(card).getByText("Glycomet 500 stopped 1 Sep 2026")).toBeInTheDocument();
   });
 });

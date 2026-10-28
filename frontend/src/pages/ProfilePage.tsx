@@ -4,6 +4,7 @@ import { documents as documentsApi, profiles as profilesApi } from "../api/endpo
 import type { Doc, DocumentStatus, Profile } from "../api/types";
 import { ErrorAlert, errorMessage } from "../components/ui";
 import { formatDate } from "../format";
+import MedicinesPanel from "./MedicinesPanel";
 import TrendsPanel from "./TrendsPanel";
 
 const PENDING: DocumentStatus[] = ["queued", "extracting", "parsing", "indexing"];
@@ -23,7 +24,7 @@ const ERROR_HELP: Record<string, string> = {
   processing_error: "Something went wrong while reading it. Try uploading again.",
 };
 
-export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: "reports" | "trends"; pollMs?: number }) {
+export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: "reports" | "trends" | "medicines"; pollMs?: number }) {
   const { pid = "" } = useParams();
   const [profile, setProfile] = useState<Profile | null | undefined>(undefined);
   const [error, setError] = useState("");
@@ -51,8 +52,11 @@ export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: 
       <nav className="flex gap-6 border-b border-slate-200" aria-label="Profile sections">
         <NavLink to={`/profiles/${pid}`} end className={tabClass}>Reports</NavLink>
         <NavLink to={`/profiles/${pid}/trends`} className={tabClass}>Trends</NavLink>
+        <NavLink to={`/profiles/${pid}/medicines`} className={tabClass}>Medicines</NavLink>
       </nav>
-      {tab === "reports" ? <ReportsPanel profile={profile} pollMs={pollMs} /> : <TrendsPanel profileId={pid} />}
+      {tab === "reports" && <ReportsPanel profile={profile} pollMs={pollMs} />}
+      {tab === "trends" && <TrendsPanel profileId={pid} />}
+      {tab === "medicines" && <MedicinesPanel profileId={pid} canEdit={profile.role !== "viewer"} />}
     </div>
   );
 }
@@ -142,6 +146,9 @@ function DocumentRow({ doc }: { doc: Doc }) {
         )}
         {doc.status === "done" && doc.doc_type === "lab_report" && (
           <Link to={`/documents/${doc.id}/review`} className="text-sm text-teal-700 hover:underline">View values</Link>
+        )}
+        {doc.status === "done" && doc.doc_type === "prescription" && (
+          <Link to={`/profiles/${doc.profile_id}/medicines`} className="text-sm text-teal-700 hover:underline">Confirm medicines</Link>
         )}
       </div>
     </li>
