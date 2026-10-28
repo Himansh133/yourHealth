@@ -7,7 +7,12 @@ from app.services.labs.row_parser import RawRow
 from app.services.labs.values import compute_flag, convert, parse_range, parse_value
 
 BASE_CONFIDENCE = 0.85  # plan 7.3, tier 2 (rule-based line parsing)
-PENALTY = 0.2
+REVIEW_BELOW = 0.6
+UNMAPPED_PENALTY = 0.2  # plan 7.3
+# Larger than the plan's 0.2 so that either problem alone drops a row below REVIEW_BELOW;
+# with 0.2 a misread "72" for "7.2" on a digital PDF would score 0.65 and skip review.
+SANITY_PENALTY = 0.3
+FLAG_MISMATCH_PENALTY = 0.3
 
 
 @dataclass(frozen=True)
@@ -42,14 +47,14 @@ def normalize_row(raw: RawRow, d: LabDictionary, ocr_confidence: float | None = 
 
     confidence = BASE_CONFIDENCE * (ocr_confidence if ocr_confidence is not None else 1)
     if test is None:
-        confidence -= PENALTY
+        confidence -= UNMAPPED_PENALTY
     else:
         confidence -= (100 - match.score) / 100
     if value_canonical is not None and not (test.sanity_min <= value_canonical <= test.sanity_max):
-        confidence -= PENALTY
+        confidence -= SANITY_PENALTY
     printed = {"H": "high", "L": "low"}.get(raw.printed_flag)
     if printed and flag in ("low", "high", "normal") and printed != flag:
-        confidence -= PENALTY
+        confidence -= FLAG_MISMATCH_PENALTY
 
     return NormalizedRow(
         raw=raw,

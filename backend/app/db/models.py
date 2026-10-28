@@ -1,8 +1,20 @@
 """ORM models. Mirrors plan section 6; tables are added slice by slice."""
 import uuid
 from datetime import date
+from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, Date, Float, ForeignKey, Integer, Text, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Date,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import CITEXT, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -84,3 +96,49 @@ class DocumentPage(TimestampMixin, Base):
     ocr_confidence: Mapped[float | None] = mapped_column(Float)  # mean word confidence; null for text layer
     words_json: Mapped[list | None] = mapped_column(JSONB)  # [{text, x0, y0, x1, y1[, conf]}]
     processor_version: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class LabTestRecord(TimestampMixin, Base):
+    """Row form of refdata/seed/lab_tests.csv, so lab_results can reference a test (plan 6.4)."""
+
+    __tablename__ = "lab_tests"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    loinc_code: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    canonical_name: Mapped[str] = mapped_column(Text, nullable=False)
+    display_name_hi: Mapped[str | None] = mapped_column(Text)
+    canonical_unit: Mapped[str] = mapped_column(Text, nullable=False)
+    category: Mapped[str | None] = mapped_column(Text)
+
+
+class LabResult(TimestampMixin, Base):
+    __tablename__ = "lab_results"
+    __table_args__ = (Index("lab_results_profile_test_date_idx", "profile_id", "lab_test_id", "observed_on"),)
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    profile_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False
+    )
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False
+    )
+    lab_test_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("lab_tests.id"))
+    raw_name: Mapped[str] = mapped_column(Text, nullable=False)
+    raw_value: Mapped[str] = mapped_column(Text, nullable=False)
+    raw_unit: Mapped[str | None] = mapped_column(Text)
+    raw_range: Mapped[str | None] = mapped_column(Text)
+    printed_flag: Mapped[str | None] = mapped_column(Text)  # 'H' | 'L' as printed (plan 8.4)
+    value_num: Mapped[Decimal | None] = mapped_column(Numeric)
+    value_canonical: Mapped[Decimal | None] = mapped_column(Numeric)
+    qualifier: Mapped[str | None] = mapped_column(Text)
+    range_low: Mapped[Decimal | None] = mapped_column(Numeric)
+    range_high: Mapped[Decimal | None] = mapped_column(Numeric)
+    range_low_canonical: Mapped[Decimal | None] = mapped_column(Numeric)
+    range_high_canonical: Mapped[Decimal | None] = mapped_column(Numeric)
+    flag: Mapped[str] = mapped_column(Text, nullable=False)  # low|high|normal|no_range|non_numeric
+    observed_on: Mapped[date] = mapped_column(Date, nullable=False)
+    page_no: Mapped[int | None] = mapped_column(Integer)
+    bbox: Mapped[dict | None] = mapped_column(JSONB)
+    extraction_method: Mapped[str] = mapped_column(Text, nullable=False)
+    extraction_confidence: Mapped[float | None] = mapped_column(Float)
+    verified_by_user: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

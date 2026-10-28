@@ -85,13 +85,13 @@ def test_unmapped_row_kept_with_lower_confidence(d):
 def test_value_outside_sanity_range_lowers_confidence(d):
     # OCR read 7.2 as 72
     r = normalize_row(raw("HbA1c", "72", "%", "4.0 - 5.6"), d)
-    assert r.confidence == pytest.approx(0.65)
+    assert r.confidence == pytest.approx(0.55)  # below 0.6 on its own: always reviewed
 
 
 def test_printed_flag_disagreeing_with_computed_flag_lowers_confidence(d):
     r = normalize_row(raw("HbA1c", "7.2", "%", "4.0 - 5.6", flag="L"), d)
     assert r.flag == "high"
-    assert r.confidence == pytest.approx(0.65)
+    assert r.confidence == pytest.approx(0.55)  # below 0.6 on its own: always reviewed
 
 
 def test_printed_flag_agreeing_keeps_confidence(d):

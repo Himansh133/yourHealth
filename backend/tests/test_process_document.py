@@ -145,3 +145,97 @@ def test_ocr_boxes_on_pdf_pages_are_scaled_to_pdf_points(db_session):
     # rendered at 200 dpi, PDF points are 1/72 inch
     assert page.words_json[0] == {"text": "X", "x0": 72.0, "y0": 144.0, "x1": 216.0, "y1": 288.0, "conf": 0.9}
 
+
+
+# --- lab results (plan 7.3, 8.4) -------------------------------------------------
+
+from datetime import date  # noqa: E402
+from decimal import Decimal  # noqa: E402
+
+from app.db.models import LabResult, LabTestRecord  # noqa: E402
+
+LAB_REPORT = [
+    "Dr Lal PathLabs          Sample Collected: 12/03/2026 09:15",
+    "Test Name                  Result    Unit      Reference Range",
+    "HbA1c (Glycosylated Haemoglobin)   7.2   %   4.0 - 5.6",
+    "TSH                        6.81      uIU/mL    0.35 - 5.50",
+    "Fasting Blood Sugar        5.5       mmol/L    3.9 - 5.6",
+    "Total Protein              7.1       g/dL      6.0 - 8.3",
+]
+
+
+def results_of(db, doc):
+    return {r.raw_name: r for r in db.query(LabResult).filter_by(document_id=doc.id)}
+
+
+def test_lab_report_rows_are_stored_normalised(db_session):
+    storage = MemoryStorage()
+    doc = add_document(db_session, storage, make_pdf([LAB_REPORT]))
+
+    run(db_session, storage, doc.id)
+
+    db_session.refresh(doc)
+    assert (doc.doc_type, doc.report_date, doc.lab_name) == ("lab_report", date(2026, 3, 12), "Dr Lal PathLabs")
+    assert doc.status == "done"
+    rows = results_of(db_session, doc)
+    assert set(rows) == {"HbA1c (Glycosylated Haemoglobin)", "TSH", "Fasting Blood Sugar", "Total Protein"}
+
+    hba1c = rows["HbA1c (Glycosylated Haemoglobin)"]
+    assert hba1c.profile_id == doc.profile_id
+    assert db_session.get(LabTestRecord, hba1c.lab_test_id).loinc_code == "4548-4"
+    assert (hba1c.raw_value, hba1c.raw_unit, hba1c.raw_range) == ("7.2", "%", "4.0 - 5.6")
+    assert (hba1c.value_num, hba1c.flag, hba1c.observed_on) == (Decimal("7.2"), "high", date(2026, 3, 12))
+    assert hba1c.page_no == 1 and hba1c.bbox["x0"] > 0
+    assert hba1c.extraction_method == "regex"
+    assert hba1c.verified_by_user is False
+
+    sugar = rows["Fasting Blood Sugar"]
+    assert round(sugar.value_canonical, 1) == Decimal("99.1")
+    assert sugar.flag == "normal"
+
+    assert rows["Total Protein"].lab_test_id is None  # unmapped but kept
+
+
+def test_low_confidence_row_sends_document_to_review(db_session):
+    storage = MemoryStorage()
+    misread = LAB_REPORT[:2] + ["HbA1c   72   %   4.0 - 5.6", "TSH  6.81  uIU/mL  0.35 - 5.50",
+                                "Creatinine  1.1  mg/dL  0.7 - 1.3"]
+    doc = add_document(db_session, storage, make_pdf([misread]))
+
+    run(db_session, storage, doc.id)
+
+    db_session.refresh(doc)
+    assert doc.status == "needs_review"
+
+
+def test_missing_report_date_sends_to_review_and_uses_upload_date(db_session):
+    storage = MemoryStorage()
+    doc = add_document(db_session, storage, make_pdf([LAB_REPORT[1:]]))
+
+    run(db_session, storage, doc.id)
+
+    db_session.refresh(doc)
+    assert doc.report_date is None
+    assert doc.status == "needs_review"
+    assert {r.observed_on for r in results_of(db_session, doc).values()} == {doc.created_at.date()}
+
+
+def test_rerun_replaces_lab_results(db_session):
+    storage = MemoryStorage()
+    doc = add_document(db_session, storage, make_pdf([LAB_REPORT]))
+    run(db_session, storage, doc.id)
+    run(db_session, storage, doc.id)
+    assert len(results_of(db_session, doc)) == 4
+
+
+def test_non_lab_document_has_no_lab_results(db_session):
+    storage = MemoryStorage()
+    rx = ["Dr. A Sharma MBBS Reg. No 12345", "Rx", "Tab Glycomet 500 1-0-1 x 30 days", "Tab Telma 40 OD"] + \
+         ["Advice: walk daily, avoid sugar, follow up after one month with reports"] * 3
+    doc = add_document(db_session, storage, make_pdf([rx]))
+
+    run(db_session, storage, doc.id)
+
+    db_session.refresh(doc)
+    assert (doc.doc_type, doc.status) == ("prescription", "done")
+    assert results_of(db_session, doc) == {}

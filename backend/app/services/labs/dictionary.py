@@ -9,10 +9,12 @@ import csv
 import re
 from dataclasses import dataclass
 from decimal import Decimal
+from functools import lru_cache
 from pathlib import Path
 
 from rapidfuzz import fuzz
 
+from app.core.config import settings
 from app.services.labs.values import normalize_unit
 
 FUZZY_MIN_SCORE = 90
@@ -113,3 +115,8 @@ class LabDictionary:
 def _read(path: Path) -> list[dict]:
     with path.open(encoding="utf-8") as f:
         return list(csv.DictReader(f))
+
+
+@lru_cache
+def get_lab_dictionary() -> LabDictionary:
+    return LabDictionary.from_csv(settings.refdata_dir)
