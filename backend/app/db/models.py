@@ -142,3 +142,96 @@ class LabResult(TimestampMixin, Base):
     extraction_method: Mapped[str] = mapped_column(Text, nullable=False)
     extraction_confidence: Mapped[float | None] = mapped_column(Float)
     verified_by_user: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+
+
+# --- medicines (plan 6.5) -----------------------------------------------------------------------------------
+
+class DrugIngredient(TimestampMixin, Base):
+    """Reference data, loaded from refdata/seed by app.refdata.load. Shared by everyone, not patient data."""
+
+    __tablename__ = "drug_ingredients"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    name: Mapped[str] = mapped_column(Text, unique=True, nullable=False)  # Indian generic name, e.g. 'paracetamol'
+    rxcui: Mapped[str | None] = mapped_column(Text)
+    atc_code: Mapped[str | None] = mapped_column(Text)
+    drug_class: Mapped[str | None] = mapped_column(Text)
+    used_for: Mapped[str | None] = mapped_column(Text)  # first sentence of the label's indications
+    label_url: Mapped[str | None] = mapped_column(Text)  # DailyMed page of the label we used
+
+
+class DrugBrand(TimestampMixin, Base):
+    __tablename__ = "drug_brands"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    brand_name: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    brand_normalized: Mapped[str] = mapped_column(Text, nullable=False)
+    manufacturer: Mapped[str | None] = mapped_column(Text)
+    composition_raw: Mapped[str] = mapped_column(Text, nullable=False)
+    source: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class DrugBrandIngredient(Base):
+    __tablename__ = "drug_brand_ingredients"
+
+    brand_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("drug_brands.id", ondelete="CASCADE"), primary_key=True
+    )
+    ingredient_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("drug_ingredients.id", ondelete="CASCADE"), primary_key=True
+    )
+    strength_value: Mapped[Decimal | None] = mapped_column(Numeric)
+    strength_unit: Mapped[str | None] = mapped_column(Text)
+
+
+class DrugLabEffect(TimestampMixin, Base):
+    """Curated (plan 9.4): every row cites an openFDA label section."""
+
+    __tablename__ = "drug_lab_effects"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    ingredient_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("drug_ingredients.id", ondelete="CASCADE"), nullable=False
+    )
+    lab_test_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("lab_tests.id"), nullable=False)
+    direction: Mapped[str] = mapped_column(Text, nullable=False)  # decrease | increase | either
+    effect_type: Mapped[str] = mapped_column(Text, nullable=False)  # therapeutic | monitor
+    typical_onset: Mapped[str | None] = mapped_column(Text)
+    onset_days: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    note_en: Mapped[str] = mapped_column(Text, nullable=False)
+    note_hi: Mapped[str | None] = mapped_column(Text)
+    source_name: Mapped[str] = mapped_column(Text, nullable=False)
+    source_section: Mapped[str] = mapped_column(Text, nullable=False)
+    source_url: Mapped[str] = mapped_column(Text, nullable=False)
+    reviewed_by: Mapped[str | None] = mapped_column(Text)
+
+
+class ProfileMedicine(TimestampMixin, Base):
+    __tablename__ = "profile_medicines"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    profile_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False
+    )
+    brand_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("drug_brands.id"))
+    raw_text: Mapped[str] = mapped_column(Text, nullable=False)
+    dose_text: Mapped[str | None] = mapped_column(Text)
+    frequency_code: Mapped[str | None] = mapped_column(Text)
+    started_on: Mapped[date | None] = mapped_column(Date)
+    stopped_on: Mapped[date | None] = mapped_column(Date)
+    source_document_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("documents.id", ondelete="SET NULL")
+    )
+    confirmed_by_user: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+
+class ProfileMedicineIngredient(Base):
+    __tablename__ = "profile_medicine_ingredients"
+
+    profile_medicine_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("profile_medicines.id", ondelete="CASCADE"), primary_key=True
+    )
+    ingredient_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("drug_ingredients.id"), primary_key=True
+    )

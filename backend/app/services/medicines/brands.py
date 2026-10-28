@@ -43,6 +43,11 @@ class BrandIndex:
         self.brands = brands
 
     @classmethod
+    def from_rows(cls, rows: list[tuple[str, str, str]]) -> "BrandIndex":
+        """(brand_name, composition_raw, source) rows, e.g. from the drug_brands table."""
+        return cls([Brand(n, normalize_brand(n), c, tuple(parse_composition(c)), s) for n, c, s in rows])
+
+    @classmethod
     def from_csv(cls, path: Path) -> "BrandIndex":
         with path.open(encoding="utf-8") as f:
             return cls([

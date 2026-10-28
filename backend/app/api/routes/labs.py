@@ -1,5 +1,6 @@
 import uuid
 from datetime import date
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
@@ -14,6 +15,7 @@ from app.services.labs.dictionary import get_lab_dictionary
 from app.services.labs.normalize import REVIEW_BELOW, normalize_row
 from app.services.labs.row_parser import RawRow
 from app.services.labs.store import lab_test_ids, normalized_fields, refresh_review_status
+from app.services.medicines.store import effects_for, medicine_ingredients
 
 router = APIRouter()
 
@@ -148,10 +150,21 @@ class TrendPoint(BaseModel):
     low_confidence: bool  # not yet checked by the user and the parser wasn't sure
 
 
+class MedicineMarker(BaseModel):
+    """Vertical line on a trend chart (plan 9.5): a linked medicine was started or stopped."""
+
+    date: date
+    kind: Literal["start", "stop"]
+    medicine: str
+    ingredient: str
+    effect_type: str
+
+
 class Trend(BaseModel):
     test: TestOut
     points: list[TrendPoint]
     latest: TrendPoint
+    markers: list[MedicineMarker]
 
 
 @router.get("/profiles/{pid}/trends", response_model=list[Trend])
@@ -181,8 +194,25 @@ def trends(pid: uuid.UUID, user: User = Depends(current_user), db: Session = Dep
         )
         by_test.setdefault(t.loinc_code, (t, []))[1].append(point)
 
+    markers = _medicine_markers(db, pid)
     return [
-        Trend(test=lab_test_out(t), points=points, latest=points[-1])
+        Trend(test=lab_test_out(t), points=points, latest=points[-1], markers=markers.get(t.loinc_code, []))
         for t, points in by_test.values()
         if len(points) >= 2
     ]
+
+
+def _medicine_markers(db: Session, pid: uuid.UUID) -> dict[str, list[MedicineMarker]]:
+    """Start/stop markers of confirmed medicines, on the tests their label links them to."""
+    mis = medicine_ingredients(db, pid, confirmed_only=True)
+    by_ingredient: dict[uuid.UUID, list[tuple[str, str]]] = {}
+    for e, t in effects_for(db, {mi.ingredient.id for mi in mis}):
+        by_ingredient.setdefault(e.ingredient_id, []).append((t.loinc_code, e.effect_type))
+    out: dict[str, list[MedicineMarker]] = {}
+    for mi in mis:
+        for loinc, effect_type in by_ingredient.get(mi.ingredient.id, []):
+            for kind, on in (("start", mi.medicine.started_on), ("stop", mi.medicine.stopped_on)):
+                if on:
+                    out.setdefault(loinc, []).append(MedicineMarker(
+                        date=on, kind=kind, medicine=mi.name, ingredient=mi.ingredient.name, effect_type=effect_type))
+    return {k: sorted(v, key=lambda m: m.date) for k, v in out.items()}
