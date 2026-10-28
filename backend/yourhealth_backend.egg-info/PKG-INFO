@@ -1,0 +1,18 @@
+Metadata-Version: 2.4
+Name: yourhealth-backend
+Version: 0.1.0
+Requires-Python: >=3.11
+Requires-Dist: fastapi>=0.115
+Requires-Dist: uvicorn[standard]
+Requires-Dist: pydantic>=2
+Requires-Dist: pydantic-settings
+Requires-Dist: sqlalchemy>=2
+Requires-Dist: psycopg[binary]>=3
+Requires-Dist: alembic
+Requires-Dist: rapidfuzz
+Requires-Dist: pwdlib[argon2]
+Requires-Dist: pyjwt
+Requires-Dist: email-validator
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: httpx; extra == "dev"
