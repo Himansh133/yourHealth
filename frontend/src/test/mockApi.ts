@@ -24,8 +24,11 @@ export function mockApi(routes: Record<string, unknown>) {
   return calls;
 }
 
+/** {status, body} wrapper only: a plain body may have its own "status" field (documents do). */
 function isRoute(r: unknown): r is Route {
-  return typeof r === "object" && r !== null && ("status" in r || "body" in r);
+  if (typeof r !== "object" || r === null || Array.isArray(r)) return false;
+  const keys = Object.keys(r);
+  return typeof (r as Route).status === "number" && keys.every((k) => k === "status" || k === "body");
 }
 
 function json(status: number, body: unknown) {
