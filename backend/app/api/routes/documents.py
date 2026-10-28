@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import current_user
 from app.core.permissions import require_profile_access
-from app.db.models import Document, LabResult, User
+from app.db.models import Document, DocumentPage, LabResult, User
 from app.db.session import get_db
 from app.services.extraction.validate import MAX_BYTES, UploadRejected, validate_upload
 from app.services.labs.store import refresh_review_status
@@ -131,6 +131,25 @@ def download_document(
     doc = _load(db, user, did, "view")
     # No filename in the header: user-supplied names would need escaping, and the browser doesn't need it.
     return Response(storage.get(doc.storage_key), media_type=doc.mime_type, headers={"Content-Disposition": "inline"})
+
+
+class PageOut(BaseModel):
+    page_no: int
+    method: str
+    text: str
+    ocr_confidence: float | None
+    words: list[dict]
+
+
+@router.get("/documents/{did}/pages/{n}", response_model=PageOut)
+def get_page(did: uuid.UUID, n: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """Page text and word boxes, so the review screen can highlight where a value was read."""
+    _load(db, user, did, "view")
+    page = db.scalar(select(DocumentPage).where(DocumentPage.document_id == did, DocumentPage.page_no == n))
+    if page is None:
+        raise HTTPException(404, "Page not found")
+    return PageOut(page_no=page.page_no, method=page.method, text=page.text,
+                   ocr_confidence=page.ocr_confidence, words=page.words_json or [])
 
 
 @router.delete("/documents/{did}", status_code=204)
