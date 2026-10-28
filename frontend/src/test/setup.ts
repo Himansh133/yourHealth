@@ -6,3 +6,10 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
+
+// jsdom has no layout engine; Recharts' ResponsiveContainer only needs the constructor to exist.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
