@@ -4,18 +4,21 @@ import uuid
 from collections.abc import Callable
 
 import pymupdf
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from app.db.models import Document, DocumentPage, LabResult
+from app.db.models import Document, DocumentPage, DrugBrand, DrugBrandIngredient, LabResult, ProfileMedicine
 from app.db.session import SessionLocal
 from app.services.extraction.classify import classify_document, find_lab_name, find_report_date
-from app.services.extraction.ocr import rapid_ocr
+from app.services.extraction.ocr import group_rows, rapid_ocr
 from app.services.extraction.text_layer import PageText, extract_text_layer, needs_ocr
 from app.services.labs.dictionary import LabDictionary, get_lab_dictionary
 from app.services.labs.normalize import REVIEW_BELOW, normalize_row
 from app.services.labs.row_parser import parse_words
 from app.services.labs.store import lab_test_ids, normalized_fields
+from app.services.medicines.brands import BrandIndex
+from app.services.medicines.prescription import parse_prescription_line
+from app.services.medicines.store import set_ingredients
 from app.services.storage import Storage, get_storage
 
 log = logging.getLogger(__name__)
@@ -80,6 +83,8 @@ def _store_lab_results(db: Session, doc: Document, pages: list[PageText], d: Lab
     doc.lab_name = find_lab_name(text)
     doc.report_date = find_report_date(text)
     db.execute(delete(LabResult).where(LabResult.document_id == doc.id))
+    if doc.doc_type == "prescription":
+        _store_prescription(db, doc, pages)
     if doc.doc_type != "lab_report":
         doc.status = "done"
         return
@@ -101,6 +106,31 @@ def _store_lab_results(db: Session, doc: Document, pages: list[PageText], d: Lab
     )
     low_confidence = any(n.confidence < REVIEW_BELOW for _, n in rows)
     doc.status = "needs_review" if low_confidence or doc.report_date is None else "done"
+
+
+def _store_prescription(db: Session, doc: Document, pages: list[PageText]) -> None:
+    """Medicine lines become unconfirmed medicines (plan 9.1); nothing counts until the user confirms."""
+    db.execute(delete(ProfileMedicine).where(ProfileMedicine.source_document_id == doc.id,
+                                             ProfileMedicine.confirmed_by_user.is_(False)))
+    confirmed = set(db.scalars(select(ProfileMedicine.raw_text).where(ProfileMedicine.source_document_id == doc.id)))
+    brands = {b.brand_name: b for b in db.scalars(select(DrugBrand))}
+    index = BrandIndex.from_rows([(b.brand_name, b.composition_raw, b.source) for b in brands.values()])
+
+    for page in pages:
+        for row in group_rows(page.words):
+            line = " ".join(w["text"] for w in row)
+            rx = parse_prescription_line(line)
+            if rx is None or line in confirmed:
+                continue
+            match = index.match(rx.brand_text)
+            brand = brands[match.brand_name] if match else None
+            med = ProfileMedicine(profile_id=doc.profile_id, brand_id=brand.id if brand else None, raw_text=line,
+                                  frequency_code=rx.frequency_code, source_document_id=doc.id, confirmed_by_user=False)
+            db.add(med)
+            db.flush()
+            if brand:
+                set_ingredients(db, med, list(db.scalars(
+                    select(DrugBrandIngredient.ingredient_id).where(DrugBrandIngredient.brand_id == brand.id))))
 
 
 def _extract_pages(data: bytes, mime: str, ocr: OcrEngine | None) -> list[PageText]:

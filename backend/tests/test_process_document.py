@@ -239,3 +239,57 @@ def test_non_lab_document_has_no_lab_results(db_session):
     db_session.refresh(doc)
     assert (doc.doc_type, doc.status) == ("prescription", "done")
     assert results_of(db_session, doc) == {}
+
+
+# --- prescriptions (plan 9.1) ----------------------------------------------------
+
+from app.db.models import DrugBrand, ProfileMedicine  # noqa: E402
+from app.refdata.load import load_reference_data  # noqa: E402
+
+RX = [
+    "Dr. A Sharma MBBS, MD   Reg. No 12345",
+    "Rx",
+    "1. Tab Glycomet GP 1  1-0-1 x 30 days",
+    "2. Tab Telma 40  OD",
+    "3. Tab Paracip 500  SOS",
+    "Advice: walk daily, avoid sweets, review after one month with reports",
+    "Follow up with HbA1c and lipid profile after three months please",
+]
+
+
+def meds_of(db, doc):
+    return db.query(ProfileMedicine).filter_by(source_document_id=doc.id).order_by(ProfileMedicine.raw_text).all()
+
+
+def test_prescription_creates_unconfirmed_medicines(db_session):
+    load_reference_data(db_session)
+    storage = MemoryStorage()
+    doc = add_document(db_session, storage, make_pdf([RX]))
+
+    run(db_session, storage, doc.id)
+
+    db_session.refresh(doc)
+    assert (doc.doc_type, doc.status) == ("prescription", "done")
+    meds = meds_of(db_session, doc)
+    assert [m.raw_text for m in meds] == ["1. Tab Glycomet GP 1 1-0-1 x 30 days", "2. Tab Telma 40 OD",
+                                          "3. Tab Paracip 500 SOS"]
+    assert all(m.confirmed_by_user is False and m.profile_id == doc.profile_id for m in meds)
+    brands = [db_session.get(DrugBrand, m.brand_id).brand_name if m.brand_id else None for m in meds]
+    assert brands == ["Glycomet GP 1", "Telma 40", None]  # unknown brand kept for the user to fix
+    assert [m.frequency_code for m in meds] == ["BD", "OD", "SOS"]
+
+
+def test_rerun_keeps_confirmed_and_replaces_unconfirmed(db_session):
+    load_reference_data(db_session)
+    storage = MemoryStorage()
+    doc = add_document(db_session, storage, make_pdf([RX]))
+    run(db_session, storage, doc.id)
+    first = meds_of(db_session, doc)[0]
+    first.confirmed_by_user = True
+    db_session.commit()
+
+    run(db_session, storage, doc.id)
+
+    meds = meds_of(db_session, doc)
+    assert len([m for m in meds if m.confirmed_by_user]) == 1
+    assert len([m for m in meds if not m.confirmed_by_user]) == 2
