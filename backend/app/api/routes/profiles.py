@@ -8,8 +8,9 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import current_user
 from app.core.permissions import require_profile_access
-from app.db.models import Profile, ProfileMember, User
+from app.db.models import Document, Profile, ProfileMember, User
 from app.db.session import get_db
+from app.services.storage import Storage, get_storage
 
 router = APIRouter()
 
@@ -88,10 +89,18 @@ def update_profile(
 
 
 @router.delete("/profiles/{pid}", status_code=204)
-def delete_profile(pid: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def delete_profile(
+    pid: uuid.UUID,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+    storage: Storage = Depends(get_storage),
+):
     member = require_profile_access(db, user.id, pid, "edit")
     if member.role != "owner":
         # Caregivers can edit, but only the owner can delete the whole profile.
         raise HTTPException(403, "Only the owner can delete a profile")
-    db.delete(db.get(Profile, pid))
+    keys = db.scalars(select(Document.storage_key).where(Document.profile_id == pid)).all()
+    db.delete(db.get(Profile, pid))  # rows cascade in the DB; files are removed below
     db.commit()
+    for key in keys:
+        storage.delete(key)

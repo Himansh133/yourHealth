@@ -1,7 +1,8 @@
 """ORM models. Mirrors plan section 6; tables are added slice by slice."""
 import uuid
+from datetime import date
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, Text
+from sqlalchemy import CheckConstraint, Date, ForeignKey, Integer, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import CITEXT, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -44,3 +45,26 @@ class ProfileMember(TimestampMixin, Base):
     )
     role: Mapped[str] = mapped_column(Text, nullable=False)
     relation_label: Mapped[str | None] = mapped_column(Text)
+
+
+class Document(TimestampMixin, Base):
+    __tablename__ = "documents"
+    __table_args__ = (UniqueConstraint("profile_id", "sha256", name="documents_profile_sha256_key"),)
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    profile_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False
+    )
+    uploaded_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
+    source_channel: Mapped[str] = mapped_column(Text, nullable=False)  # 'web' | 'whatsapp'
+    storage_key: Mapped[str] = mapped_column(Text, nullable=False)
+    original_filename: Mapped[str | None] = mapped_column(Text)
+    mime_type: Mapped[str] = mapped_column(Text, nullable=False)
+    size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
+    sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    doc_type: Mapped[str] = mapped_column(Text, nullable=False, default="unknown")
+    lab_name: Mapped[str | None] = mapped_column(Text)
+    report_date: Mapped[date | None] = mapped_column(Date)
+    # queued|extracting|parsing|indexing|needs_review|done|failed
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="queued")
+    error_code: Mapped[str | None] = mapped_column(Text)
