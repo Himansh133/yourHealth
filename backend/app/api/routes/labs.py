@@ -11,7 +11,7 @@ from app.core.permissions import require_profile_access
 from app.db.models import Document, LabResult, LabTestRecord, User
 from app.db.session import get_db
 from app.services.labs.dictionary import get_lab_dictionary
-from app.services.labs.normalize import normalize_row
+from app.services.labs.normalize import REVIEW_BELOW, normalize_row
 from app.services.labs.row_parser import RawRow
 from app.services.labs.store import lab_test_ids, normalized_fields, refresh_review_status
 
@@ -24,6 +24,11 @@ class TestOut(BaseModel):
     name_hi: str | None
     unit: str
     category: str | None
+
+
+def lab_test_out(t: LabTestRecord) -> TestOut:
+    return TestOut(loinc_code=t.loinc_code, name=t.canonical_name, name_hi=t.display_name_hi,
+                   unit=t.canonical_unit, category=t.category)
 
 
 class LabResultOut(BaseModel):
@@ -51,8 +56,7 @@ class LabResultOut(BaseModel):
 
 
 def result_out(r: LabResult, t: LabTestRecord | None) -> LabResultOut:
-    test = TestOut(loinc_code=t.loinc_code, name=t.canonical_name, name_hi=t.display_name_hi,
-                   unit=t.canonical_unit, category=t.category) if t else None
+    test = lab_test_out(t) if t else None
     fields = {k: getattr(r, k) for k in LabResultOut.model_fields if k != "test"}
     return LabResultOut(test=test, **fields)
 
@@ -129,3 +133,56 @@ def correct_lab_result(
     refresh_review_status(db, db.get(Document, row.document_id))
     db.commit()
     return result_out(row, db.get(LabTestRecord, row.lab_test_id) if row.lab_test_id else None)
+
+
+class TrendPoint(BaseModel):
+    lab_result_id: uuid.UUID
+    document_id: uuid.UUID
+    page_no: int | None
+    observed_on: date
+    value: float  # canonical unit
+    qualifier: str | None
+    range_low: float | None  # as printed on that report, canonical unit
+    range_high: float | None
+    flag: str
+    low_confidence: bool  # not yet checked by the user and the parser wasn't sure
+
+
+class Trend(BaseModel):
+    test: TestOut
+    points: list[TrendPoint]
+    latest: TrendPoint
+
+
+@router.get("/profiles/{pid}/trends", response_model=list[Trend])
+def trends(pid: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """Plan 3.4: pure SQL, no LLM. Only values we could put in the test's canonical unit are plotted."""
+    require_profile_access(db, user.id, pid, "view")
+    rows = db.execute(
+        select(LabResult, LabTestRecord)
+        .join(LabTestRecord, LabTestRecord.id == LabResult.lab_test_id)
+        .where(LabResult.profile_id == pid, LabResult.value_canonical.is_not(None))
+        .order_by(LabTestRecord.category, LabTestRecord.canonical_name, LabResult.observed_on, LabResult.created_at)
+    ).all()
+
+    by_test: dict[str, tuple[LabTestRecord, list[TrendPoint]]] = {}
+    for r, t in rows:
+        point = TrendPoint(
+            lab_result_id=r.id,
+            document_id=r.document_id,
+            page_no=r.page_no,
+            observed_on=r.observed_on,
+            value=r.value_canonical,
+            qualifier=r.qualifier,
+            range_low=r.range_low_canonical,
+            range_high=r.range_high_canonical,
+            flag=r.flag,
+            low_confidence=not r.verified_by_user and (r.extraction_confidence or 0) < REVIEW_BELOW,
+        )
+        by_test.setdefault(t.loinc_code, (t, []))[1].append(point)
+
+    return [
+        Trend(test=lab_test_out(t), points=points, latest=points[-1])
+        for t, points in by_test.values()
+        if len(points) >= 2
+    ]
