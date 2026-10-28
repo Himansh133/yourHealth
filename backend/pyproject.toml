@@ -1,0 +1,23 @@
+[project]
+name = "yourhealth-backend"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]",
+  "pydantic>=2",
+  "pydantic-settings",
+  "sqlalchemy>=2",
+  "psycopg[binary]>=3",
+  "alembic",
+  "rapidfuzz",
+  "pwdlib[argon2]",
+  "pyjwt",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "httpx"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
