@@ -1,16 +1,19 @@
 import uuid
 from datetime import date
 
-from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import current_user
 from app.core.permissions import require_profile_access
-from app.db.models import LabResult, LabTestRecord, User
+from app.db.models import Document, LabResult, LabTestRecord, User
 from app.db.session import get_db
 from app.services.labs.dictionary import get_lab_dictionary
+from app.services.labs.normalize import normalize_row
+from app.services.labs.row_parser import RawRow
+from app.services.labs.store import lab_test_ids, normalized_fields, refresh_review_status
 
 router = APIRouter()
 
@@ -83,3 +86,46 @@ def list_lab_results(
     if document_id:
         q = q.where(LabResult.document_id == document_id)
     return [result_out(r, t) for r, t in db.execute(q).all()]
+
+
+class LabResultPatch(BaseModel):
+    raw_name: str | None = Field(default=None, max_length=200)
+    raw_value: str | None = Field(default=None, max_length=50)
+    raw_unit: str | None = Field(default=None, max_length=50)
+    raw_range: str | None = Field(default=None, max_length=100)
+
+    @field_validator("raw_name", "raw_value")
+    @classmethod
+    def not_blank(cls, v: str | None) -> str | None:
+        if v is not None and not v.strip():
+            raise ValueError("must not be blank")
+        return v.strip() if v else v
+
+
+@router.patch("/lab-results/{rid}", response_model=LabResultOut)
+def correct_lab_result(
+    rid: uuid.UUID, body: LabResultPatch, user: User = Depends(current_user), db: Session = Depends(get_db)
+):
+    """User checked this row against the original (plan 3.2). An empty body confirms it as correct."""
+    row = db.get(LabResult, rid)
+    if row is None:
+        raise HTTPException(404, "Lab result not found")
+    require_profile_access(db, user.id, row.profile_id, "edit")
+
+    changes = body.model_dump(exclude_unset=True)
+    raw = RawRow(
+        raw_name=changes.get("raw_name", row.raw_name),
+        raw_value=changes.get("raw_value", row.raw_value),
+        raw_unit=changes.get("raw_unit", row.raw_unit),
+        raw_range=changes.get("raw_range", row.raw_range),
+        # A corrected value makes the printed flag meaningless.
+        printed_flag=None if "raw_value" in changes else row.printed_flag,
+        bbox=row.bbox,
+    )
+    d = get_lab_dictionary()
+    for field, value in normalized_fields(normalize_row(raw, d), lab_test_ids(db, d)).items():
+        setattr(row, field, value)
+    row.verified_by_user = True
+    refresh_review_status(db, db.get(Document, row.document_id))
+    db.commit()
+    return result_out(row, db.get(LabTestRecord, row.lab_test_id) if row.lab_test_id else None)

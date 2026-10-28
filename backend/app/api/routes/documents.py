@@ -4,14 +4,15 @@ from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.api.deps import current_user
 from app.core.permissions import require_profile_access
-from app.db.models import Document, User
+from app.db.models import Document, LabResult, User
 from app.db.session import get_db
 from app.services.extraction.validate import MAX_BYTES, UploadRejected, validate_upload
+from app.services.labs.store import refresh_review_status
 from app.services.queue import DocumentQueue, get_queue
 from app.services.storage import Storage, get_storage
 
@@ -99,6 +100,25 @@ def list_documents(pid: uuid.UUID, user: User = Depends(current_user), db: Sessi
 @router.get("/documents/{did}", response_model=DocumentOut)
 def get_document(did: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
     return _load(db, user, did, "view")
+
+
+class DocumentPatch(BaseModel):
+    report_date: date
+
+
+@router.patch("/documents/{did}", response_model=DocumentOut)
+def update_document(
+    did: uuid.UUID, body: DocumentPatch, user: User = Depends(current_user), db: Session = Depends(get_db)
+):
+    """Set the report date when the report didn't print one (or it was read wrong)."""
+    if body.report_date > date.today():
+        raise HTTPException(422, {"code": "future_date", "message": "Report date can't be in the future."})
+    doc = _load(db, user, did, "edit")
+    doc.report_date = body.report_date
+    db.execute(update(LabResult).where(LabResult.document_id == doc.id).values(observed_on=body.report_date))
+    refresh_review_status(db, doc)
+    db.commit()
+    return doc
 
 
 @router.get("/documents/{did}/file")
