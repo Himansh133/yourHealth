@@ -19,11 +19,20 @@ sed -i "s|^JWT_SECRET=.*|JWT_SECRET=$(python3 -c 'import secrets; print(secrets.
 
 API docs: http://localhost:8000/docs
 
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev        # http://localhost:5173, proxies /api to the backend
+# backend on another port?  API_URL=http://localhost:8010 npm run dev
+```
+
 ## Tests
 
 ```bash
-cd backend
-.venv/bin/pytest
+cd backend && .venv/bin/pytest
+cd frontend && npm test && npm run typecheck
 ```
 
 Tests use the separate `yourhealth_test` database and need the `postgres`, `redis` and `s3` containers running.

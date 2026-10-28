@@ -121,8 +121,8 @@ function ResultRow({ row, onSave }: { row: LabResult; onSave: (p: LabResultPatch
         {row.test && row.test.name !== row.raw_name && <span className="block text-xs text-slate-500">{row.test.name}</span>}
         {!row.test && <span className="block text-xs text-slate-500">Not in our test list</span>}
       </td>
-      <td className="px-3 py-2"><span>{row.raw_value}</span> <span className="text-slate-500">{row.raw_unit}</span></td>
-      <td className="px-3 py-2 text-slate-600">{row.raw_range ?? "—"}</td>
+      <td className="whitespace-nowrap px-3 py-2"><span>{row.raw_value}</span> <span className="text-slate-500">{row.raw_unit}</span></td>
+      <td className="whitespace-nowrap px-3 py-2 text-slate-600">{row.raw_range ?? "—"}</td>
       <td className={`px-3 py-2 ${row.flag === "high" || row.flag === "low" ? "font-medium text-red-700" : "text-slate-600"}`}>
         {FLAG_LABEL[row.flag]}
       </td>
