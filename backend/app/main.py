@@ -1,5 +1,7 @@
 from fastapi import APIRouter, FastAPI
 
+from app.api.routes import auth, profiles
+
 app = FastAPI(title="YourHealth")
 api = APIRouter(prefix="/api/v1")
 
@@ -9,4 +11,6 @@ def live():
     return {"status": "ok"}
 
 
+api.include_router(auth.router)
+api.include_router(profiles.router)
 app.include_router(api)
