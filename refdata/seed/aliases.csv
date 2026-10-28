@@ -1,0 +1,67 @@
+alias,loinc_code
+hba1c,4548-4
+a1c,4548-4
+ghb,4548-4
+glycated hemoglobin,4548-4
+glycosylated hemoglobin,4548-4
+glycosylated hb,4548-4
+fasting glucose,1558-6
+glucose fasting,1558-6
+fasting blood sugar,1558-6
+fasting blood glucose,1558-6
+fasting plasma glucose,1558-6
+plasma glucose fasting,1558-6
+fbs,1558-6
+fbg,1558-6
+tsh,3016-3
+thyroid stimulating hormone,3016-3
+free t4,3024-7
+ft4,3024-7
+free thyroxine,3024-7
+hemoglobin,718-7
+hb,718-7
+hgb,718-7
+total cholesterol,2093-3
+cholesterol total,2093-3
+cholesterol,2093-3
+ldl cholesterol,13457-7
+ldl,13457-7
+ldl c,13457-7
+low density lipoprotein,13457-7
+hdl cholesterol,2085-9
+hdl,2085-9
+hdl c,2085-9
+high density lipoprotein,2085-9
+triglycerides,2571-8
+triglyceride,2571-8
+tg,2571-8
+creatinine,2160-0
+uric acid,3084-1
+alt,1742-6
+sgpt,1742-6
+alt sgpt,1742-6
+alanine aminotransferase,1742-6
+alanine transaminase,1742-6
+ast,1920-8
+sgot,1920-8
+ast sgot,1920-8
+aspartate aminotransferase,1920-8
+aspartate transaminase,1920-8
+vitamin d,62292-8
+vitamin d 25 oh,62292-8
+25 oh vitamin d,62292-8
+25 hydroxy vitamin d,62292-8
+vitamin d 25 hydroxy,62292-8
+vitamin d3,62292-8
+vitamin b12,2132-9
+b12,2132-9
+cyanocobalamin,2132-9
+cobalamin,2132-9
+sodium,2951-2
+na,2951-2
+potassium,2823-3
+k,2823-3
+creatine kinase,2157-6
+ck,2157-6
+cpk,2157-6
+creatine phosphokinase,2157-6

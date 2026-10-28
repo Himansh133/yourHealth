@@ -1,0 +1,12 @@
+loinc_code,from_unit,to_unit,multiplier,offset
+1558-6,mmol/L,mg/dL,18.016,0
+2093-3,mmol/L,mg/dL,38.67,0
+13457-7,mmol/L,mg/dL,38.67,0
+2085-9,mmol/L,mg/dL,38.67,0
+2571-8,mmol/L,mg/dL,88.57,0
+2160-0,µmol/L,mg/dL,0.011310,0
+3084-1,µmol/L,mg/dL,0.016812,0
+62292-8,nmol/L,ng/mL,0.40064,0
+2132-9,pmol/L,pg/mL,1.3554,0
+718-7,g/L,g/dL,0.1,0
+4548-4,mmol/mol,%,0.09152,2.15
