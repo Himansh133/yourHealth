@@ -84,3 +84,12 @@ def test_discharge_summary_is_detected_even_with_medicine_lines():
 
 def test_word_discharge_alone_is_not_enough():
     assert classify_document("Tab Pan 40 OD\nRx\nNo discharge from wound", 0) == "prescription"
+
+
+def test_discharge_summary_uses_the_discharge_date_over_admission():
+    text = "DISCHARGE SUMMARY\nDate of Admission: 25/02/2026\nDate of Discharge: 02/03/2026\nDiagnosis: diabetes"
+    assert find_report_date(text) == date(2026, 3, 2)
+
+
+def test_admission_date_when_no_discharge_date():
+    assert find_report_date("Admitted on 25 Feb 2026\nDiagnosis: diabetes") == date(2026, 2, 25)

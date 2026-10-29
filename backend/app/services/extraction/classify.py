@@ -10,7 +10,8 @@ _DATE = (
     r"|(?P<dmony>\d{1,2}[\s\-/]*[a-z]{3,9}[\s\-/,]*\d{2,4})"
 )
 # Indian reports: collection date is the one that matters for a trend; then reported, then registered.
-_LABELS_BY_PRIORITY = [r"collect\w*", r"report\w*", r"regist\w*|reg\.?\s*date"]
+# Discharge summaries: the discharge date, else the admission date.
+_LABELS_BY_PRIORITY = [r"collect\w*", r"report\w*", r"regist\w*|reg\.?\s*date", r"discharg\w*", r"admi(?:t|ss)\w*"]
 
 _LAB_CHAINS = {
     "lal pathlabs": "Dr Lal PathLabs",

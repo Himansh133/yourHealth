@@ -35,7 +35,7 @@ Commit hashes point to where the fix landed.
 | 2.6 | Photos need OCR but no engine was wired at first. | Image uploads could not be read. | Fixed | Pluggable OCR; images fail with `ocr_unavailable` and a helpful message if no engine (`c237c2c`, `72bfa95`). |
 | 2.7 | A document counts as a lab report only with 3+ result rows and a range keyword. | Our first two-row test PDF was filed as "other" and nothing was extracted. | Fixed (test data) | Real reports have many rows; the sample PDFs now have four. Kept the rule, since it stops prescriptions being read as lab reports. |
 | 2.8 | Discharge summaries were never detected; they were filed as "other". | No section chunks; the frontend's "Discharge summary" label never showed. | Fixed | Detect "discharge summary", or "discharge" plus "diagnosis", before the prescription rule, since discharge summaries list medicines too (`a8c4860`). |
-| 2.9 | The report date on a discharge summary ("Date of Discharge: 02/03/2026") is not found. | The document has no date in search results and answers. | Open | Add "discharge" and "admission" to the date labels in `classify.py`, preferring the discharge date. |
+| 2.9 | The report date on a discharge summary ("Date of Discharge: 02/03/2026") was not found. | No date in search results, and the discharge summary was left off the doctor sheet's report list. | Fixed | "Discharge", then "admission", added to the date labels after the lab-report labels. |
 
 ## 3. Lab tests and units
 
@@ -61,7 +61,11 @@ Commit hashes point to where the fix landed.
 | 5.1 | Browser locale data writes "Sept" for en-GB. | Dates read differently across browsers and did not match the backend. | Fixed | Fixed month names in `format.ts` (`2477b44`). |
 | 5.2 | Chrome drew the arrow marker on charts as an emoji. | Medicine markers looked wrong. | Fixed | Plain text glyphs (`e9710f1`). |
 | 5.3 | The test fake backend treated any object with a `status` field as a reply wrapper. | Document objects (which have `status`) broke tests. | Fixed | Only `{status, body}` objects are wrappers (`d7a0895`). |
-| 5.4 | The chat screen has not been checked visually in a real browser. | Layout problems could go unnoticed (tests check behaviour, not looks). | Open | Check the Ask tab in a browser at phone and desktop widths. |
+| 5.4 | The chat and doctor sheet screens have not been checked visually in a real browser. | Layout problems could go unnoticed (tests check behaviour, not looks). | Open | Check the Ask and Doctor sheet tabs in a browser at phone and desktop widths, and the printed sheet. |
+
+| 5.5 | The API sends Decimal values as JSON strings ("7.2"). | Treating them as numbers would silently mis-type. | Fixed | Frontend types say `string`; the sparkline converts with `Number()` only for drawing. |
+| 5.6 | The test fake backend dropped query strings. | Could not test which period the sheet asked for. | Fixed | The fake records the full URL too. |
+| 5.7 | Five profile tabs don't fit on a phone. | Tab bar overflowed the screen. | Fixed | The tab bar scrolls sideways. |
 
 ## 6. Q&A assistant (RAG)
 
@@ -82,3 +86,14 @@ Commit hashes point to where the fix landed.
 | 6.13 | Each answer takes 4 to 10 seconds; questions the rules can't place add a classifier call. | Feels slow. | Open | Stream the answer, or show the retrieved facts first and the written answer when ready. |
 | 6.14 | Section chunks of a discharge summary are not split by size. | A very long section becomes one big chunk, diluting search. | Open | Window long sections the same way as page text. |
 | 6.15 | The LLM checks have only been tried on a handful of questions. | Model choice and prompt quality are not measured. | Open | Build the eval harness from plan 14 (synthetic patients, labelled questions, faithfulness and number-check metrics). |
+
+## 7. Doctor sheet and sharing
+
+| # | Problem | Impact | Status | Solution |
+|---|---|---|---|---|
+| 7.1 | PDF export with WeasyPrint needs system libraries (Pango, Cairo). | Heavy install for one feature that the plan lists as cuttable. | Worked around | Print from the browser (Save as PDF works too); app header and tabs are hidden when printing. Add WeasyPrint later if a server-made PDF is needed. |
+| 7.2 | The medicine insights needed by the sheet were computed inside an API route. | Could not reuse them without copying. | Fixed | Moved into `medicines/store.py` as `profile_insights` (`098a1d7`). |
+| 7.3 | A forwarded QR photo would give anyone the sheet. | Privacy risk. | Fixed | Link plus 4-digit PIN; only hashes stored; lock after 5 wrong PINs; links expire (1 h / 24 h / 7 days) and can be turned off; every open is logged (`d5ead08`). |
+| 7.4 | A doctor's session cookie for one link could be tried on another. | Could open a different patient's sheet. | Fixed | The cookie is scoped to the link's path and names the link it unlocked; tested. |
+| 7.5 | The share link points at the frontend's address, which differs by environment. | QR codes from a deployed server would point at localhost. | Worked around | `PUBLIC_BASE_URL` setting; must be set in deployment. |
+| 7.6 | The sheet has no LLM-written summary yet (plan 13.1 item 7, optional). | Doctors read the tables only. | Open | Generate 3-4 sentences through the same answer validator, labelled "Auto-generated summary, check against reports". |
