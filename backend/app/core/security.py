@@ -33,3 +33,16 @@ def decode_session_token(token: str) -> uuid.UUID | None:
         return uuid.UUID(payload["sub"])
     except (jwt.InvalidTokenError, KeyError, ValueError):
         return None
+
+
+def create_share_session_token(share_id: uuid.UUID, expires_at: datetime) -> str:
+    """For a doctor who entered the PIN. A different claim from user sessions, so neither works as the other."""
+    return jwt.encode({"share": str(share_id), "exp": expires_at}, settings.jwt_secret, algorithm="HS256")
+
+
+def decode_share_session_token(token: str) -> uuid.UUID | None:
+    try:
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
+        return uuid.UUID(payload["share"])
+    except (jwt.InvalidTokenError, KeyError, ValueError):
+        return None

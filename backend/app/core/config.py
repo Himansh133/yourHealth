@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_model: str = ""
 
+    # Where the frontend is served: share links and their QR codes point here.
+    public_base_url: str = "http://localhost:5173"
+    share_session_minutes: int = 30
+
     refdata_dir: Path = Path(__file__).resolve().parents[3] / "refdata" / "seed"
 
 

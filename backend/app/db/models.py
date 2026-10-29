@@ -1,13 +1,15 @@
 """ORM models. Mirrors plan section 6; tables are added slice by slice."""
 import uuid
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     CheckConstraint,
     Computed,
     Date,
+    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -15,6 +17,7 @@ from sqlalchemy import (
     Numeric,
     Text,
     UniqueConstraint,
+    func,
 )
 from sqlalchemy.dialects.postgresql import CITEXT, JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -261,3 +264,38 @@ class Chunk(TimestampMixin, Base):
     # 'simple': no stemming, works the same for English, Hinglish and test names like "TSH"
     tsv = mapped_column(TSVECTOR, Computed("to_tsvector('simple', text)", persisted=True))
     chunker_version: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+# --- sharing and audit (plan 6.7) ------------------------------------------------------------------------------
+
+class ShareLink(TimestampMixin, Base):
+    """A doctor's view of one profile. Only hashes of the token and PIN are stored."""
+
+    __tablename__ = "share_links"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    profile_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    created_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
+    token_hash: Mapped[str] = mapped_column(Text, unique=True, nullable=False)  # sha256 of the token in the QR
+    pin_hash: Mapped[str] = mapped_column(Text, nullable=False)  # argon2 of the 4-digit PIN
+    scope: Mapped[dict] = mapped_column(JSONB, nullable=False)  # {"from", "to", "include_medicines"}
+    snapshot_json: Mapped[dict] = mapped_column(JSONB, nullable=False)  # the sheet, frozen at share time
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    failed_pin_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+
+class AuditEvent(Base):
+    __tablename__ = "audit_events"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    actor_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))  # null for a share-link viewer
+    actor_kind: Mapped[str] = mapped_column(Text, nullable=False)  # user | share_link | whatsapp | system
+    profile_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), index=True)
+    action: Mapped[str] = mapped_column(Text, nullable=False)  # share.create, share.open, ...
+    resource_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), index=True)
+    outcome: Mapped[str] = mapped_column(Text, nullable=False)  # ok | denied | error
+    meta: Mapped[dict | None] = mapped_column(JSONB)  # minimal, never medical text
