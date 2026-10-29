@@ -8,12 +8,12 @@ type Route = { status?: number; body?: Handler };
  * A route value can be a plain body (200) or {status, body}. Unknown routes return 404.
  */
 export function mockApi(routes: Record<string, unknown>) {
-  const calls: { method: string; path: string; body: unknown }[] = [];
+  const calls: { method: string; path: string; url: string; body: unknown }[] = [];
   vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
     const method = init?.method ?? "GET";
     const path = String(input).replace(/^\/api\/v1/, "").split("?")[0];
     const body = typeof init?.body === "string" ? JSON.parse(init.body) : init?.body;
-    calls.push({ method, path, body });
+    calls.push({ method, path, url: String(input), body });
 
     const route = routes[`${method} ${path}`];
     if (route === undefined) return json(404, { detail: "Not found" });

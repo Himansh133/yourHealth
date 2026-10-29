@@ -5,6 +5,7 @@ import type { Doc, DocumentStatus, Profile } from "../api/types";
 import { ErrorAlert, errorMessage } from "../components/ui";
 import { formatDate } from "../format";
 import ChatPanel from "./ChatPanel";
+import DoctorSheetPanel from "./DoctorSheetPanel";
 import MedicinesPanel from "./MedicinesPanel";
 import TrendsPanel from "./TrendsPanel";
 
@@ -25,7 +26,7 @@ const ERROR_HELP: Record<string, string> = {
   processing_error: "Something went wrong while reading it. Try uploading again.",
 };
 
-export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: "reports" | "trends" | "medicines" | "ask"; pollMs?: number }) {
+export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: "reports" | "trends" | "medicines" | "ask" | "sheet"; pollMs?: number }) {
   const { pid = "" } = useParams();
   const [profile, setProfile] = useState<Profile | null | undefined>(undefined);
   const [error, setError] = useState("");
@@ -46,20 +47,22 @@ export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: 
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+      <div className="print:hidden">
         <Link to="/" className="text-sm text-teal-700 hover:underline">← Family</Link>
         <h1 className="mt-1 text-2xl font-semibold">{profile.display_name}</h1>
       </div>
-      <nav className="flex gap-6 border-b border-slate-200" aria-label="Profile sections">
+      <nav className="flex gap-6 overflow-x-auto border-b border-slate-200 print:hidden" aria-label="Profile sections">
         <NavLink to={`/profiles/${pid}`} end className={tabClass}>Reports</NavLink>
         <NavLink to={`/profiles/${pid}/trends`} className={tabClass}>Trends</NavLink>
         <NavLink to={`/profiles/${pid}/medicines`} className={tabClass}>Medicines</NavLink>
         <NavLink to={`/profiles/${pid}/ask`} className={tabClass}>Ask</NavLink>
+        <NavLink to={`/profiles/${pid}/sheet`} className={tabClass}>Doctor sheet</NavLink>
       </nav>
       {tab === "reports" && <ReportsPanel profile={profile} pollMs={pollMs} />}
       {tab === "trends" && <TrendsPanel profileId={pid} />}
       {tab === "medicines" && <MedicinesPanel profileId={pid} canEdit={profile.role !== "viewer"} />}
       {tab === "ask" && <ChatPanel profileId={pid} profileName={profile.display_name} />}
+      {tab === "sheet" && <DoctorSheetPanel profileId={pid} canShare={profile.role !== "viewer"} />}
     </div>
   );
 }

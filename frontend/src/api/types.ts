@@ -154,3 +154,37 @@ export type ChatAnswer = {
 };
 
 export type Lang = "en" | "hi";
+
+/** Doctor visit sheet (plan 13.1). Decimal values arrive as strings. */
+export type SheetReading = { value: string; observed_on: string };
+
+export type Sheet = {
+  profile: { display_name: string; age: number | null; sex: string | null };
+  generated_on: string;
+  date_from: string;
+  date_to: string;
+  include_medicines: boolean;
+  flagged: {
+    test_name: string; unit: string; value: string; flag: "low" | "high"; observed_on: string;
+    range_low: string | null; range_high: string | null; previous: SheetReading | null;
+    lab_result_id: string; document_id: string;
+  }[];
+  medicine_flags: { medicine_name: string; test_name: string; message: string; source_url: string }[];
+  trends: { test_name: string; unit: string; range_low: string | null; range_high: string | null; points: SheetReading[] }[];
+  medicines: { name: string; generic: string; dose_text: string | null; frequency: string | null; started_on: string | null }[];
+  reports: { document_id: string; doc_type: string; title: string | null; report_date: string }[];
+};
+
+export type ShareExpiry = "1h" | "24h" | "7d";
+
+export type ShareCreated = { share_id: string; url: string; pin: string; qr_png_base64: string; expires_at: string };
+
+export type Share = {
+  id: string;
+  created_at: string;
+  expires_at: string;
+  state: "active" | "expired" | "revoked" | "locked";
+  scope: { from: string; to: string; include_medicines: boolean };
+  opens: number;
+  last_opened_at: string | null;
+};

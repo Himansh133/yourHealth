@@ -1,5 +1,5 @@
 import { request } from "./client";
-import type { ChatAnswer, Doc, DrugSearchResult, Frequency, IngredientInfo, Insight, LabResult, Lang, Medicine, Profile, Sex, Trend, User } from "./types";
+import type { ChatAnswer, Doc, DrugSearchResult, Frequency, IngredientInfo, Insight, LabResult, Lang, Medicine, Profile, Sex, Share, ShareCreated, ShareExpiry, Sheet, Trend, User } from "./types";
 
 export const auth = {
   me: () => request<User>("GET", "/me"),
@@ -63,4 +63,25 @@ export const medicines = {
 export const chat = {
   ask: (profileId: string, question: string, lang: Lang) =>
     request<ChatAnswer>("POST", `/profiles/${profileId}/chat`, { question, lang }),
+};
+
+export type SheetQuery = { from: string; include_medicines: boolean };
+
+export const sheets = {
+  preview: (profileId: string, q: SheetQuery) =>
+    request<Sheet>("GET", `/profiles/${profileId}/sheet?from=${q.from}&include_medicines=${q.include_medicines}`),
+};
+
+export const shares = {
+  create: (profileId: string, body: SheetQuery & { expires_in: ShareExpiry }) =>
+    request<ShareCreated>("POST", `/profiles/${profileId}/shares`, body),
+  list: (profileId: string) => request<Share[]>("GET", `/profiles/${profileId}/shares`),
+  revoke: (id: string) => request<void>("POST", `/shares/${id}/revoke`),
+};
+
+/** What a doctor uses: no account, just the link's token and the PIN. */
+export const publicShare = {
+  unlock: (token: string, pin: string) => request<{ ok: true }>("POST", `/s/${token}/unlock`, { pin }),
+  sheet: (token: string) => request<Sheet>("GET", `/s/${token}/sheet`),
+  documentUrl: (token: string, documentId: string) => `/api/v1/s/${token}/documents/${documentId}`,
 };

@@ -13,3 +13,12 @@ export function formatMonth(t: number): string {
   const date = new Date(t);
   return `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
 }
+
+/** Local calendar date n months before `today`, as "yyyy-mm-dd" (31 Mar minus 1 month is 28 Feb). */
+export function monthsAgo(n: number, today = new Date()): string {
+  const target = new Date(today.getFullYear(), today.getMonth() - n, 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(today.getDate(), lastDay));
+  const pad = (x: number) => String(x).padStart(2, "0");
+  return `${target.getFullYear()}-${pad(target.getMonth() + 1)}-${pad(target.getDate())}`;
+}
