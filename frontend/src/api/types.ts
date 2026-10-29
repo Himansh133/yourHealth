@@ -188,3 +188,6 @@ export type Share = {
   opens: number;
   last_opened_at: string | null;
 };
+
+export type WhatsAppStatus = { linked: boolean; phone: string | null; linked_at: string | null };
+export type WhatsAppLinkCode = { code: string; expires_at: string; bot_number: string };

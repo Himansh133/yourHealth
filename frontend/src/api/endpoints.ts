@@ -1,5 +1,5 @@
 import { request } from "./client";
-import type { ChatAnswer, Doc, DrugSearchResult, Frequency, IngredientInfo, Insight, LabResult, Lang, Medicine, Profile, Sex, Share, ShareCreated, ShareExpiry, Sheet, Trend, User } from "./types";
+import type { ChatAnswer, Doc, DrugSearchResult, Frequency, IngredientInfo, Insight, LabResult, Lang, Medicine, Profile, Sex, Share, ShareCreated, ShareExpiry, Sheet, Trend, User, WhatsAppLinkCode, WhatsAppStatus } from "./types";
 
 export const auth = {
   me: () => request<User>("GET", "/me"),
@@ -84,4 +84,10 @@ export const publicShare = {
   unlock: (token: string, pin: string) => request<{ ok: true }>("POST", `/s/${token}/unlock`, { pin }),
   sheet: (token: string) => request<Sheet>("GET", `/s/${token}/sheet`),
   documentUrl: (token: string, documentId: string) => `/api/v1/s/${token}/documents/${documentId}`,
+};
+
+export const whatsapp = {
+  status: () => request<WhatsAppStatus>("GET", "/me/whatsapp"),
+  linkCode: () => request<WhatsAppLinkCode>("POST", "/me/whatsapp/link-code"),
+  unlink: () => request<void>("DELETE", "/me/whatsapp"),
 };

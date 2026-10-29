@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import PublicSharePage from "./pages/PublicSharePage";
 import ReviewPage from "./pages/ReviewPage";
+import WhatsAppPage from "./pages/WhatsAppPage";
 
 function Private({ children }: { children: ReactNode }) {
   return (
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/profiles/:pid/ask" element={<Private><ProfilePage tab="ask" /></Private>} />
           <Route path="/profiles/:pid/sheet" element={<Private><ProfilePage tab="sheet" /></Private>} />
           <Route path="/s/:token" element={<PublicSharePage />} />
+          <Route path="/settings/whatsapp" element={<Private><WhatsAppPage /></Private>} />
           <Route path="/documents/:did/review" element={<Private><ReviewPage /></Private>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

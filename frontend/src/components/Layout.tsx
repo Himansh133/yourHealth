@@ -13,6 +13,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             YourHealth
           </Link>
           <div className="flex items-center gap-3 text-sm text-slate-600">
+            <Link to="/settings/whatsapp" className="text-teal-700 hover:underline">WhatsApp</Link>
             <span className="hidden sm:inline">{user?.email}</span>
             <Button variant="secondary" className="!px-3 !py-1 text-sm" onClick={() => void logout()}>
               Sign out
