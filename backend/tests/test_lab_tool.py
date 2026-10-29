@@ -79,3 +79,19 @@ def test_unconverted_value_is_shown_as_printed_and_missing_range_said(db_session
         low=None, high=None, flag="no_range", lab=None)
     [fact] = lab_lookup(db_session, pid, "4548-4", "latest")
     assert fact.evidence_text() == "lab_result | HbA1c 53 mmol/mol (no range printed) | 2026-06-14 | p.2"
+
+
+def test_converted_value_is_rounded_and_shows_what_was_printed(db_session, test_ids, pid):
+    doc = Document(profile_id=pid, source_channel="web", storage_key="docs/si", mime_type="application/pdf",
+                   size_bytes=1, sha256="si", doc_type="lab_report", status="done", lab_name="Arogya Labs")
+    db_session.add(doc)
+    db_session.flush()
+    db_session.add(LabResult(profile_id=pid, document_id=doc.id, lab_test_id=test_ids["3084-1"], raw_name="Uric Acid",
+                             raw_value="333", raw_unit="µmol/L", value_num=Decimal("333"),
+                             value_canonical=Decimal("5.598396"), range_low_canonical=Decimal("3.496896"),
+                             range_high_canonical=Decimal("7.195536"), flag="normal", observed_on=date(2025, 6, 16),
+                             page_no=1, extraction_method="regex"))
+    db_session.commit()
+    [fact] = lab_lookup(db_session, pid, "3084-1", "latest")
+    assert fact.evidence_text() == ("lab_result | Uric acid 5.6 mg/dL (printed as 333 µmol/L) (ref 3.5-7.2) within range"
+                                    " | 2025-06-16 | Arogya Labs p.1")

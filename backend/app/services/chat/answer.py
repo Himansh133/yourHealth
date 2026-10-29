@@ -20,13 +20,15 @@ class ChatAnswer(Answer):
     fallback: bool = False  # true when we show retrieved facts instead of a written answer
 
 
-def answer_question(llm: LLM, question: str, profile_name: str, evidence: list[Evidence], lang: str) -> ChatAnswer:
+def answer_question(llm: LLM, question: str, profile_name: str, evidence: list[Evidence], lang: str,
+                    note: str | None = None) -> ChatAnswer:
+    """note: what the evidence is, e.g. "the most recent value", so ambiguous words like Hindi पिछला are read right."""
     if not evidence:
         return ChatAnswer(answerable=False, summary=f"I couldn't find this in {profile_name}'s reports.", claims=[],
                           missing_info=[], doctor_note="")
 
     system = SYSTEM.format(lang=lang)
-    user = f"Question: {question}\nProfile: {profile_name}\n<evidence>\n"
+    user = f"Question: {question}\nProfile: {profile_name}\n" + (f"Note: {note}\n" if note else "") + "<evidence>\n"
     user += "\n".join(f"[{e.id}] {e.text}" for e in evidence) + "\n</evidence>"
 
     for attempt in range(2):

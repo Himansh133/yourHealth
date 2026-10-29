@@ -22,6 +22,12 @@ from app.services.medicines.store import effects_for, medicine_ingredients
 
 router = APIRouter()
 
+EVIDENCE_NOTES = {
+    "value": "The lab results below are the most recent value of each test asked about, from all of the reports. "
+             "\"Last\", \"latest\" and \"पिछला\" mean this value.",
+    "trend": "The lab results below are every value of the test, oldest first.",
+}
+
 SAFETY_SUMMARY = ("Choosing or changing a medicine depends on things this app can't see, like other conditions, "
                   "allergies, kidney function or pregnancy, so it is your doctor's call.")
 OUT_OF_SCOPE = ("I can only answer from the reports and medicines saved here, and I can't diagnose. "
@@ -124,5 +130,5 @@ def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(current_user), db: S
         answer = ChatAnswer(answerable=True, summary=SAFETY_SUMMARY, missing_info=[], doctor_note=SAFETY_NOTE,
                             claims=[Claim(text=e.text, evidence_ids=[e.id]) for e in evidence])
     else:
-        answer = answer_question(llm, body.question, name, evidence, body.lang)
+        answer = answer_question(llm, body.question, name, evidence, body.lang, note=EVIDENCE_NOTES.get(label))
     return ChatOut(**answer.model_dump(), route=labels, sources=sources)

@@ -60,3 +60,9 @@ def test_no_evidence_abstains_without_calling_the_llm():
     assert out.answerable is False
     assert out.summary == "I couldn't find this in Papa's reports."
     assert llm.prompts == []
+
+
+def test_note_about_the_evidence_goes_before_it():
+    llm = FakeLLM([GOOD])
+    answer_question(llm, "papa ka pichhla hba1c?", "Papa", EVIDENCE, "hi", note="These are the most recent values.")
+    assert "Note: These are the most recent values.\n<evidence>" in llm.prompts[0][1]
