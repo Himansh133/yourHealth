@@ -74,3 +74,13 @@ def test_prescription():
 
 def test_other():
     assert classify_document("Invoice total Rs 500", lab_row_count=0) == "other"
+
+
+def test_discharge_summary_is_detected_even_with_medicine_lines():
+    text = ("City Care Hospital\nDISCHARGE SUMMARY\nDiagnosis: Type 2 diabetes\n"
+            "Medications on discharge:\nTab Glycomet 500 BD\nTab Ecosprin 75 OD")
+    assert classify_document(text, 0) == "discharge"
+
+
+def test_word_discharge_alone_is_not_enough():
+    assert classify_document("Tab Pan 40 OD\nRx\nNo discharge from wound", 0) == "prescription"

@@ -66,6 +66,9 @@ def classify_document(text: str, lab_row_count: int) -> str:
     lower = text.lower()
     if lab_row_count >= 3 and any(k in lower for k in _LAB_KEYWORDS):
         return "lab_report"
+    # Before prescriptions: discharge summaries list medicines too.
+    if "discharge summary" in lower or ("discharge" in lower and "diagnosis" in lower):
+        return "discharge"
     if _MED_LINE_RE.search(text) and any(re.search(p, lower) for p in _RX_MARKERS):
         return "prescription"
     return "other"
