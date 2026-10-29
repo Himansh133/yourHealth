@@ -128,3 +128,10 @@ def test_no_conversion_needed_for_canonical_unit(d):
 def test_unknown_unit_has_no_conversion(d):
     hba1c = d.match("HbA1c").test
     assert d.conversion(hba1c.loinc_code, "furlongs") is None
+
+
+def test_common_total_spellings_map():
+    from app.services.labs.dictionary import get_lab_dictionary
+    d = get_lab_dictionary()
+    assert d.match("Vitamin D Total").test.loinc_code == "62292-8"
+    assert d.match("CK - Total").test.loinc_code == "2157-6"

@@ -75,3 +75,12 @@ def test_parse_words_groups_rows_and_returns_bbox():
     rows = parse_words(words)
     assert [(r.raw_name, r.raw_value) for r in rows] == [("TSH", "6.81"), ("HbA1c", "7.2")]
     assert rows[0].bbox == {"x0": 40, "y0": 119, "x1": 490, "y1": 131}
+
+
+def test_ocr_garbage_after_the_value_is_not_read_as_a_unit():
+    # OCR read "22 U/L" as "22 7/n": better to lose the row than to store 7
+    assert parse_line("SGOT (AST) 22 7/n 10 - 40") is None
+
+
+def test_count_units_starting_with_a_slash_still_parse():
+    assert parse_line("Platelets 2.5 /cumm 1.5 - 4.5").raw_unit == "/cumm"

@@ -57,10 +57,16 @@ def parse_range(raw: str | None) -> tuple[Decimal | None, Decimal | None]:
     return None, None
 
 
+# How OCR garbles "mg/dL" on phone photos: g read as 9 or dropped, "/" dropped, dL read as "dlL".
+_OCR_MG_DL = re.compile(r"^m[g9]?/?dl+$")
+
+
 def normalize_unit(raw: str | None) -> str | None:
     if raw is None:
         return None
     unit = raw.strip()
+    if _OCR_MG_DL.match(unit.lower()):
+        return "mg/dL"
     return _UNIT_SPELLINGS.get(unit.lower(), unit)
 
 

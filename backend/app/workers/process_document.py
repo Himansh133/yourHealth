@@ -82,7 +82,7 @@ def run(db: Session, storage: Storage, document_id: uuid.UUID, ocr: OcrEngine | 
 def _store_lab_results(db: Session, doc: Document, pages: list[PageText], d: LabDictionary) -> None:
     rows = [(p.page_no, normalize_row(r, d, p.ocr_confidence)) for p in pages for r in parse_words(p.words)]
     text = "\n".join(p.text for p in pages)
-    doc.doc_type = classify_document(text, len(rows))
+    doc.doc_type = classify_document(text, len(rows), sum(1 for _, n in rows if n.test))
     doc.lab_name = find_lab_name(text)
     doc.report_date = find_report_date(text)
     db.execute(delete(LabResult).where(LabResult.document_id == doc.id))

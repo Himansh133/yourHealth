@@ -11,7 +11,9 @@ from app.services.extraction.ocr import group_rows
 from app.services.labs.values import normalize_unit
 
 _NUM = r"\d+(?:\.\d+)?"
-_UNIT = r"(?:10\^\d+/\S+|[^\s\d<>\-–][^\s]*)"
+# A unit starts with a letter, µ or % (or is a count unit): OCR junk such as "7/n" must not pass as one, or the
+# number before it gets read as the test's name and the junk's digit as the value.
+_UNIT = r"(?:10\^\d+/\S+|/cumm|[A-Za-zµμ%][^\s]*)"
 _RANGE = rf"(?:{_NUM}\s*[-–]\s*{_NUM}|[<>]=?\s*{_NUM}|up\s*to\s*{_NUM})"
 _WORD_RE = re.compile(r"[A-Za-z]{2,}")
 _TAIL_RE = re.compile(

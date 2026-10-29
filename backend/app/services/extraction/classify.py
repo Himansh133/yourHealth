@@ -63,9 +63,11 @@ def find_lab_name(text: str) -> str | None:
     return next((name for key, name in _LAB_CHAINS.items() if key in lower), None)
 
 
-def classify_document(text: str, lab_row_count: int) -> str:
+def classify_document(text: str, lab_row_count: int, mapped_row_count: int = 0) -> str:
+    """mapped_row_count: rows whose test we recognised. One is enough for a short report (say, creatinine and uric
+    acid only); rows we can't map need three, so a prescription's lines don't make it a lab report."""
     lower = text.lower()
-    if lab_row_count >= 3 and any(k in lower for k in _LAB_KEYWORDS):
+    if (lab_row_count >= 3 or mapped_row_count >= 1) and any(k in lower for k in _LAB_KEYWORDS):
         return "lab_report"
     # Before prescriptions: discharge summaries list medicines too.
     if "discharge summary" in lower or ("discharge" in lower and "diagnosis" in lower):

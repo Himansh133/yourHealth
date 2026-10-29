@@ -135,3 +135,15 @@ def test_ocr_l_for_i_confusion_in_tsh_unit():
 @pytest.mark.parametrize("raw", ["Up to 40", "upto 40", "UPTO 40"])
 def test_range_up_to_is_upper_limit(raw):
     assert parse_range(raw) == (None, Decimal("40"))
+
+
+def test_ocr_reads_g_as_9_in_mg_per_dl():
+    from app.services.labs.values import normalize_unit
+    assert normalize_unit("m9/dL") == "mg/dL"
+
+
+def test_ocr_garbled_mg_per_dl_spellings():
+    from app.services.labs.values import normalize_unit
+    for raw in ["m/dl", "mdl", "m9/dlL", "m/dlL", "mg/dlL"]:
+        assert normalize_unit(raw) == "mg/dL", raw
+    assert normalize_unit("mmol/L") == "mmol/L"  # not swallowed by the mg/dL pattern

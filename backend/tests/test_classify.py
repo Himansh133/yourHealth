@@ -93,3 +93,13 @@ def test_discharge_summary_uses_the_discharge_date_over_admission():
 
 def test_admission_date_when_no_discharge_date():
     assert find_report_date("Admitted on 25 Feb 2026\nDiagnosis: diabetes") == date(2026, 2, 25)
+
+
+def test_short_lab_report_with_a_recognised_test_is_a_lab_report():
+    text = "Sunrise Diagnostics\nTest Name Result Unit Reference Range\nCreatinine 1.0 mg/dL 0.7 - 1.3\nUric Acid 5.0 mg/dL"
+    assert classify_document(text, lab_row_count=2, mapped_row_count=2) == "lab_report"
+
+
+def test_rows_without_recognised_tests_still_need_three():
+    text = "Test Name Result Units\nFoo 1 mg/dL 1 - 2\nBar 2 mg/dL 1 - 3"
+    assert classify_document(text, lab_row_count=2, mapped_row_count=0) == "other"
