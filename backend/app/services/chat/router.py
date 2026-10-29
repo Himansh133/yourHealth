@@ -1,10 +1,9 @@
-"""Question router, rules stage (plan 10.3).
-
-Fast and explainable. When the rules can't decide, labels is empty and the LLM classifier takes over.
-"""
+"""Question router (plan 10.3): fast, explainable rules first; an LLM classifier when they can't decide."""
+import json
 import re
 from dataclasses import dataclass, field
 
+from app.services.chat.llm import LLM, LLMError
 from app.services.labs.dictionary import LabDictionary, LabTest, normalize_name
 
 TREATMENT = re.compile(
@@ -55,3 +54,33 @@ def _find_tests(question: str, d: LabDictionary) -> list[LabTest]:
         return [d.aliases[max(found, key=len)]]
     words = text.split()
     return [d.tests[code] for term, codes in EVERYDAY_TERMS.items() if term in words for code in codes]
+
+
+LABELS = ["value", "trend", "document", "medicine", "treatment", "out_of_scope"]
+CLASSIFIER_SYSTEM = """You sort questions that people ask about a family member's own medical reports.
+Labels:
+- value: the latest or a past value of a lab test
+- trend: how a lab test changed over time
+- document: what a report, prescription or discharge summary says
+- medicine: what a medicine is for, or how it relates to a test
+- treatment: which medicine to take, or starting, stopping or changing one
+- out_of_scope: anything else, including asking for a diagnosis
+A question can have more than one label. If it is about a lab test, give the test's usual name, else null.
+Reply with JSON only: {"labels": [...], "test": "..." or null}"""
+
+
+@dataclass(frozen=True)
+class Classification:
+    labels: list[str]
+    test: str | None = None
+
+
+def classify(llm: LLM, question: str) -> Classification:
+    """Stage 2. Any failure means 'search their documents', the safest general answer."""
+    try:
+        out = json.loads(llm.complete_json(CLASSIFIER_SYSTEM, f"Question: {question}"))
+        labels = [label for label in out.get("labels", []) if label in LABELS]
+        test = out.get("test") if isinstance(out.get("test"), str) else None
+    except (LLMError, ValueError, AttributeError):
+        return Classification(["document"])
+    return Classification(labels or ["document"], test)

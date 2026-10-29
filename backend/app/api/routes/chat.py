@@ -14,7 +14,7 @@ from app.services.chat.doc_search import search_chunks
 from app.services.chat.lab_tool import LabFact, lab_lookup
 from app.services.chat.llm import LLM, LLMError, get_llm
 from app.services.chat.medicine_tool import MedicineFact, medicine_facts, medicine_vocabulary
-from app.services.chat.router import route
+from app.services.chat.router import classify, route
 from app.services.chat.validator import Claim, Evidence
 from app.services.labs.dictionary import get_lab_dictionary
 from app.services.medicines.store import effects_for, medicine_ingredients
@@ -23,6 +23,8 @@ router = APIRouter()
 
 SAFETY_SUMMARY = ("Choosing or changing a medicine depends on things this app can't see, like other conditions, "
                   "allergies, kidney function or pregnancy, so it is your doctor's call.")
+OUT_OF_SCOPE = ("I can only answer from the reports and medicines saved here, and I can't diagnose. "
+                "Please ask a doctor about this.")
 SAFETY_NOTE = "Want me to make a doctor visit sheet with this value flagged?"
 
 
@@ -83,15 +85,22 @@ def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(current_user), db: S
     name = db.get(Profile, pid).display_name
     vocab = medicine_vocabulary(db)
     r = route(body.question, get_lab_dictionary(), set(vocab))
-    labels = r.labels or ["document"]  # rules couldn't place it: look in their documents
+    labels, tests = r.labels, r.tests
+    if not labels:
+        c = classify(llm, body.question)
+        labels = c.labels
+        match = get_lab_dictionary().match(c.test) if c.test else None
+        tests = [match.test] if match else tests
     label = labels[0]
+    if (label in ("value", "trend") and not tests) or (label == "medicine" and not r.medicines):
+        label, labels = "document", ["document"]  # nothing specific to look up: their documents may mention it
     asked_ingredients = {i for m in r.medicines for i in vocab[m]}
-    loinc_codes = {t.loinc_code for t in r.tests}
+    loinc_codes = {t.loinc_code for t in tests}
 
     found: list[tuple[str, dict]] = []  # (evidence text, source fields)
     if label in ("value", "trend", "treatment", "medicine_lab"):
         mode = "latest" if label in ("value", "treatment") else "trend"
-        for t in r.tests:
+        for t in tests:
             found += [(f.evidence_text(), _lab_source(f)) for f in lab_lookup(db, pid, t.loinc_code, mode)]
     if label in ("medicine", "medicine_lab"):
         facts = medicine_facts(db, pid, asked_ingredients, loinc_codes if label == "medicine_lab" else None)
@@ -109,7 +118,9 @@ def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(current_user), db: S
     evidence = [Evidence(id=f"E{i}", text=text) for i, (text, _) in enumerate(found, 1)]
     sources = [Source(id=e.id, **fields) for e, (_, fields) in zip(evidence, found)]
 
-    if label == "treatment":
+    if label == "out_of_scope":
+        answer = ChatAnswer(answerable=False, summary=OUT_OF_SCOPE, claims=[], missing_info=[], doctor_note="")
+    elif label == "treatment":
         answer = ChatAnswer(answerable=True, summary=SAFETY_SUMMARY, missing_info=[], doctor_note=SAFETY_NOTE,
                             claims=[Claim(text=e.text, evidence_ids=[e.id]) for e in evidence])
     else:

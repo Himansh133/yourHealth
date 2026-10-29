@@ -121,25 +121,25 @@ def test_document_question_searches_their_documents(make_user_client, db_session
     answer = json.dumps({"answerable": True, "summary": "The discharge advice was a low sugar diet.",
                          "claims": [{"text": "Advised a low sugar diet", "evidence_ids": ["E1"]}],
                          "missing_info": [], "doctor_note": ""})
-    llm = use_llm(FakeLLM([answer]))
+    llm = use_llm(FakeLLM([json.dumps({"labels": ["document"], "test": None}), answer]))
 
     body = a.post(f"/api/v1/profiles/{pid}/chat",
                   json={"question": "What did the discharge summary say about diet?"}).json()
 
     assert body["route"] == ["document"]
-    assert "document | Discharge summary, City Hospital, p.2 | Advice on Discharge: low sugar diet" in llm.prompts[0][1]
+    assert "document | Discharge summary, City Hospital, p.2 | Advice on Discharge: low sugar diet" in llm.prompts[1][1]
     assert body["sources"][0] == {"id": "E1", "kind": "document", "document_id": str(doc.id), "page_no": 2}
 
 
 def test_document_question_with_nothing_found_abstains(make_user_client, use_llm):
     a = make_user_client("a@example.com")
     pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
-    llm = use_llm(FakeLLM([]))
+    llm = use_llm(FakeLLM([json.dumps({"labels": ["document"], "test": None})]))
     body = a.post(f"/api/v1/profiles/{pid}/chat",
                   json={"question": "What did the discharge summary say about diet?"}).json()
     assert body["answerable"] is False
     assert body["summary"] == "I couldn't find this in Papa's reports."
-    assert llm.prompts == []
+    assert len(llm.prompts) == 1  # only the classifier
 
 
 def test_unconfigured_llm_falls_back_to_facts(make_user_client, db_session, test_ids, monkeypatch):
@@ -239,3 +239,29 @@ def test_treatment_answer_lists_linked_medicines_they_take(make_user_client, db_
     claims = [c["text"] for c in body["claims"]]
     assert any(c.startswith("lab_result | HbA1c 7.2 %") for c in claims)
     assert any(c.startswith("medicine | Glycomet 500") for c in claims)
+
+
+def test_classifier_finds_the_test_the_rules_missed(make_user_client, db_session, test_ids, use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    add_hba1c(db_session, pid, test_ids, "8.1", date(2026, 1, 10))
+    add_hba1c(db_session, pid, test_ids, "7.2", date(2026, 6, 14))
+    llm = use_llm(FakeLLM([json.dumps({"labels": ["trend"], "test": "glycated hemoglobin"}), good_answer("E2")]))
+
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "How has papa's three month average been?"}).json()
+
+    assert body["route"] == ["trend"]
+    assert "[E2] lab_result | HbA1c 7.2 %" in llm.prompts[1][1]
+
+
+def test_out_of_scope_question_is_declined_without_answering(make_user_client, use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    llm = use_llm(FakeLLM([json.dumps({"labels": ["out_of_scope"], "test": None})]))
+
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "Do I have cancer?"}).json()
+
+    assert body["route"] == ["out_of_scope"]
+    assert body["answerable"] is False
+    assert "doctor" in body["summary"]
+    assert len(llm.prompts) == 1  # only the classifier

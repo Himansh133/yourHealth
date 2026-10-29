@@ -81,3 +81,34 @@ def test_treatment_question_about_sugar_keeps_the_tests():
     d = r("Which medicine should papa take for his sugar?")
     assert d.labels == ["treatment"]
     assert {t.loinc_code for t in d.tests} == {"4548-4", "1558-6"}
+
+
+# --- LLM classifier (stage 2) -----------------------------------------------------------------------------------
+
+import json
+
+from app.services.chat.llm import FakeLLM, LLMError
+from app.services.chat.router import classify
+
+
+def test_classifier_returns_labels_and_test():
+    llm = FakeLLM([json.dumps({"labels": ["trend"], "test": "creatinine"})])
+    c = classify(llm, "How are papa's kidneys doing?")
+    assert c.labels == ["trend"]
+    assert c.test == "creatinine"
+    assert "How are papa's kidneys doing?" in llm.prompts[0][1]
+
+
+def test_classifier_drops_unknown_labels():
+    c = classify(FakeLLM([json.dumps({"labels": ["poetry", "out_of_scope"], "test": None})]), "q")
+    assert c.labels == ["out_of_scope"]
+
+
+def test_classifier_failure_means_search_documents():
+    class Down:
+        def complete_json(self, system, user):
+            raise LLMError("down")
+
+    assert classify(Down(), "q").labels == ["document"]
+    assert classify(FakeLLM(["not json"]), "q").labels == ["document"]
+    assert classify(FakeLLM([json.dumps({"labels": []})]), "q").labels == ["document"]
