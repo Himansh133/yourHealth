@@ -30,7 +30,7 @@ class Route:
 
 
 def route(question: str, d: LabDictionary, medicine_names: set[str]) -> Route:
-    """medicine_names: lowercase brand and ingredient names known for this profile."""
+    """medicine_names: lowercase brand and generic names to look for."""
     lower = question.lower()
     words = set(re.findall(r"[a-z0-9]+", lower))
     tests = _find_tests(question, d)

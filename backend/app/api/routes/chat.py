@@ -11,18 +11,19 @@ from app.db.models import Profile, User
 from app.db.session import get_db
 from app.services.chat.answer import ChatAnswer, answer_question
 from app.services.chat.lab_tool import LabFact, lab_lookup
+from app.services.chat.medicine_tool import MedicineFact, medicine_facts, medicine_vocabulary
 from app.services.chat.llm import LLM, LLMError, get_llm
 from app.services.chat.router import route
 from app.services.chat.validator import Claim, Evidence
 from app.services.labs.dictionary import get_lab_dictionary
-from app.services.medicines.store import medicine_ingredients
+from app.services.medicines.store import effects_for, medicine_ingredients
 
 router = APIRouter()
 
 SAFETY_SUMMARY = ("Choosing or changing a medicine depends on things this app can't see, like other conditions, "
                   "allergies, kidney function or pregnancy, so it is your doctor's call.")
 SAFETY_NOTE = "Want me to make a doctor visit sheet with this value flagged?"
-NOT_YET = "I can answer questions about test values and trends for now. Other questions are coming soon."
+NOT_YET = "I can answer questions about test values, trends and medicines for now. Other questions are coming soon."
 
 
 class _Unconfigured:
@@ -52,10 +53,12 @@ class ChatIn(BaseModel):
 
 class Source(BaseModel):
     id: str
-    kind: Literal["lab_result"]
-    lab_result_id: uuid.UUID
-    document_id: uuid.UUID
-    page_no: int | None
+    kind: Literal["lab_result", "medicine", "drug_label"]
+    lab_result_id: uuid.UUID | None = None
+    document_id: uuid.UUID | None = None
+    page_no: int | None = None
+    medicine_id: uuid.UUID | None = None
+    url: str | None = None
 
 
 class ChatOut(ChatAnswer):
@@ -63,27 +66,49 @@ class ChatOut(ChatAnswer):
     sources: list[Source]
 
 
-@router.post("/profiles/{pid}/chat", response_model=ChatOut)
+def _lab_source(f: LabFact) -> dict:
+    return {"kind": "lab_result", "lab_result_id": f.lab_result_id, "document_id": f.document_id, "page_no": f.page_no}
+
+
+def _medicine_source(f: MedicineFact) -> dict:
+    if f.kind == "medicine":
+        return {"kind": "medicine", "medicine_id": f.medicine_id}
+    return {"kind": "drug_label", "url": f.url}
+
+
+@router.post("/profiles/{pid}/chat", response_model=ChatOut, response_model_exclude_none=True)
 def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(current_user), db: Session = Depends(get_db),
          llm: LLM = Depends(chat_llm)):
     require_profile_access(db, user.id, pid, "view")
     name = db.get(Profile, pid).display_name
-    meds = {n.lower() for mi in medicine_ingredients(db, pid) for n in (mi.name, mi.ingredient.name)}
-    r = route(body.question, get_lab_dictionary(), meds)
+    vocab = medicine_vocabulary(db)
+    r = route(body.question, get_lab_dictionary(), set(vocab))
     label = r.labels[0] if r.labels else None
+    asked_ingredients = {i for m in r.medicines for i in vocab[m]}
+    loinc_codes = {t.loinc_code for t in r.tests}
 
-    facts: list[LabFact] = []
-    if label in ("value", "trend", "treatment"):
+    found: list[tuple[str, dict]] = []  # (evidence text, source fields)
+    if label in ("value", "trend", "treatment", "medicine_lab"):
+        mode = "latest" if label in ("value", "treatment") else "trend"
         for t in r.tests:
-            facts += lab_lookup(db, pid, t.loinc_code, "trend" if label == "trend" else "latest")
-    evidence = [Evidence(id=f"E{i}", text=f.evidence_text()) for i, f in enumerate(facts, 1)]
-    sources = [Source(id=e.id, kind="lab_result", lab_result_id=f.lab_result_id, document_id=f.document_id,
-                      page_no=f.page_no) for e, f in zip(evidence, facts)]
+            found += [(f.evidence_text(), _lab_source(f)) for f in lab_lookup(db, pid, t.loinc_code, mode)]
+    if label in ("medicine", "medicine_lab"):
+        facts = medicine_facts(db, pid, asked_ingredients, loinc_codes if label == "medicine_lab" else None)
+        found += [(f.text, _medicine_source(f)) for f in facts]
+    if label == "treatment":
+        # Plan 9.6: mention medicines they already take for this test, from their own list.
+        taken = {mi.ingredient.id for mi in medicine_ingredients(db, pid)}
+        linked = {e.ingredient_id for e, t in effects_for(db, taken) if t.loinc_code in loinc_codes}
+        facts = medicine_facts(db, pid, linked | asked_ingredients)
+        found += [(f.text, _medicine_source(f)) for f in facts if f.kind == "medicine"]
+
+    evidence = [Evidence(id=f"E{i}", text=text) for i, (text, _) in enumerate(found, 1)]
+    sources = [Source(id=e.id, **fields) for e, (_, fields) in zip(evidence, found)]
 
     if label == "treatment":
         answer = ChatAnswer(answerable=True, summary=SAFETY_SUMMARY, missing_info=[], doctor_note=SAFETY_NOTE,
                             claims=[Claim(text=e.text, evidence_ids=[e.id]) for e in evidence])
-    elif label in ("value", "trend"):
+    elif label:
         answer = answer_question(llm, body.question, name, evidence, body.lang)
     else:
         answer = ChatAnswer(answerable=False, summary=NOT_YET, claims=[], missing_info=[], doctor_note="")

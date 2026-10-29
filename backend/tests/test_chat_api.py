@@ -150,3 +150,68 @@ def test_everyday_word_finds_the_values(make_user_client, db_session, test_ids, 
     use_llm(FakeLLM([]))
     body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "Which medicine should papa take for his sugar?"}).json()
     assert [c["evidence_ids"] for c in body["claims"]] == [["E1"]]
+
+
+# --- medicines ------------------------------------------------------------------------------------------------
+
+@pytest.fixture
+def refdata(db_session):
+    from app.refdata.load import load_reference_data
+    load_reference_data(db_session)
+
+
+def add_glycomet(db, client, pid):
+    from sqlalchemy import select
+    from app.db.models import DrugBrand
+    bid = str(db.scalar(select(DrugBrand.id).where(DrugBrand.brand_name == "Glycomet 500")))
+    return client.post(f"/api/v1/profiles/{pid}/medicines",
+                       json={"brand_id": bid, "frequency_code": "BD", "started_on": "2026-03-01"}).json()
+
+
+def test_medicine_question_uses_the_label(make_user_client, refdata, use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    llm = use_llm(FakeLLM([good_answer("E1").replace("HbA1c was 7.2% on 14 Jun 2026", "It treats thyroid problems")]))
+
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "What is Thyronorm for?"}).json()
+
+    assert body["route"] == ["medicine"]
+    assert "drug_info | levothyroxine" in llm.prompts[0][1]
+    assert body["sources"][0]["kind"] == "drug_label"
+    assert body["sources"][0]["url"].startswith("https://dailymed.nlm.nih.gov/")
+
+
+def test_medicine_and_test_question_sends_values_medicine_and_effect(make_user_client, db_session, test_ids, refdata,
+                                                                    use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    med = add_glycomet(db_session, a, pid)
+    add_hba1c(db_session, pid, test_ids, "8.1", date(2026, 1, 10))
+    add_hba1c(db_session, pid, test_ids, "7.2", date(2026, 6, 14))
+    llm = use_llm(FakeLLM([good_answer("E2")]))
+
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "Is Glycomet bringing papa's HbA1c down?"}).json()
+
+    prompt = llm.prompts[0][1]
+    assert body["route"] == ["medicine_lab"]
+    assert "HbA1c 8.1 %" in prompt and "HbA1c 7.2 %" in prompt
+    assert "medicine | Glycomet 500 (metformin) | twice a day | started 2026-03-01" in prompt
+    assert "drug_effect | metformin and HbA1c" in prompt
+    assert "Vitamin B12" not in prompt  # only effects on the asked test
+    kinds = {s["kind"] for s in body["sources"]}
+    assert kinds == {"lab_result", "medicine", "drug_label"}
+    assert {s.get("medicine_id") for s in body["sources"]} >= {med["id"]}
+
+
+def test_treatment_answer_lists_linked_medicines_they_take(make_user_client, db_session, test_ids, refdata, use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    add_glycomet(db_session, a, pid)
+    add_hba1c(db_session, pid, test_ids, "7.2", date(2026, 6, 14))
+    use_llm(FakeLLM([]))
+
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "Which medicine should papa take for his HbA1c?"}).json()
+
+    claims = [c["text"] for c in body["claims"]]
+    assert any(c.startswith("lab_result | HbA1c 7.2 %") for c in claims)
+    assert any(c.startswith("medicine | Glycomet 500") for c in claims)
