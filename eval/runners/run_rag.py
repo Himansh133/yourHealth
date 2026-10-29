@@ -10,6 +10,7 @@ All use the same LLM. Usage (from backend/, after load_eval_db):
 """
 import argparse
 import json
+import sys
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
@@ -80,7 +81,7 @@ def ours(client, q: dict, pid: uuid.UUID) -> dict:
                      body["doctor_note"]])
     with SessionLocal() as db:
         leaks = sum(_owner(db, s) not in (None, pid) for s in body["sources"])
-    return {"answerable": body["answerable"], "text": text, "latency": latency, "leaks": leaks,
+    return {"answerable": body["answerable"], "text": text, "latency": latency, "leaks": leaks, "lang": body.get("lang"),
             "route": body["route"], "fallback": body["fallback"]}
 
 
@@ -95,12 +96,20 @@ def _owner(db, source: dict) -> uuid.UUID | None:
     return None
 
 
-def main(system: str, split: str) -> Path:
+def main(system: str, split: str, lang: str | None = None, label: str | None = None) -> Path:
     if not settings.database_url.endswith("/yourhealth_eval"):
         raise SystemExit("DATABASE_URL must point at the yourhealth_eval database")
     db_info = json.loads((DATA / "eval_db.json").read_text())
     questions = [json.loads(line) for line in (DATA / f"questions_{split}.jsonl").read_text().splitlines()]
+    questions = [q for q in questions if lang is None or q["lang"] == lang]
     pid = {k: uuid.UUID(v) for k, v in db_info["profiles"].items()}
+    done = 0
+
+    def progress(q: dict, a: dict) -> dict:
+        nonlocal done
+        done += 1
+        print(f"[{done}/{len(questions)}] {q['id']} {a['latency']:.1f}s", file=sys.stderr, flush=True)
+        return a
 
     if system == "ours":
         from fastapi.testclient import TestClient
@@ -108,12 +117,12 @@ def main(system: str, split: str) -> Path:
         from app.main import app
         client = TestClient(app)
         client.post("/api/v1/auth/login", json={"email": db_info["email"], "password": db_info["password"]})
-        answers = [ours(client, q, pid[q["patient_key"]]) for q in questions]
+        answers = [progress(q, ours(client, q, pid[q["patient_key"]])) for q in questions]
     else:
         with ThreadPoolExecutor(4) as pool:
-            answers = list(pool.map(lambda q: baseline(system, q, pid[q["patient_key"]]), questions))
+            answers = list(pool.map(lambda q: progress(q, baseline(system, q, pid[q["patient_key"]])), questions))
 
-    out = EVAL / "results" / f"{date.today().isoformat()}_rag_{system}_{split}.jsonl"
+    out = EVAL / "results" / f"{date.today().isoformat()}_rag_{label or system}_{split}.jsonl"
     out.write_text("".join(json.dumps({"id": q["id"], **a}, ensure_ascii=False) + "\n"
                            for q, a in zip(questions, answers)))
     print(f"{system}: {len(answers)} answers -> {out}")
@@ -124,5 +133,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--system", choices=["b0", "b1", "ours"], required=True)
     ap.add_argument("--split", choices=["dev", "test"], default="test")
+    ap.add_argument("--lang", choices=["en", "hi"], help="only questions in this language")
+    ap.add_argument("--label", help="name for the output file instead of the system, e.g. ours-translate")
     args = ap.parse_args()
-    main(args.system, args.split)
+    main(args.system, args.split, args.lang, args.label)
