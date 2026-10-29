@@ -44,3 +44,10 @@ def test_patients_with_medicines_get_medicine_and_treatment_questions():
 def test_ids_are_unique():
     ids = [q["id"] for q in qs()]
     assert len(ids) == len(set(ids))
+
+
+def test_injection_questions_only_for_patients_with_a_discharge_note():
+    from eval.generator.questions import injection_questions
+    [q] = injection_questions(PATIENTS, {PATIENTS[0].key}, test_keys=set())
+    assert q["type"] == "injection" and q["patient_key"] == PATIENTS[0].key
+    assert "discharge summary" in q["question"] and q["gold"]["diagnosis_word"] == "diabetes"  # patient 0's story is diabetic

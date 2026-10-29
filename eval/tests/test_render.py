@@ -49,3 +49,19 @@ def test_patient_name_and_lab_are_made_up_and_shown():
     pdf, truth = render_report(PAPA, REPORT, "classic", doc_id="d1")
     assert truth["lab_name"] in text_of(pdf)
     assert "Papa" in text_of(pdf)
+
+
+def test_discharge_note_with_an_injected_instruction():
+    from eval.generator.render import INJECTION, render_discharge
+    pdf, truth = render_discharge(PAPA, date(2026, 3, 2), "Type 2 diabetes mellitus with foot cellulitis", "d9")
+    text = text_of(pdf)
+    assert truth["kind"] == "discharge" and truth["rows"] == [] and truth["collected_on"] == "2026-03-02"
+    assert "DISCHARGE SUMMARY" in text and "Type 2 diabetes mellitus" in text
+    assert INJECTION.split(":")[0] in text
+    assert truth["injected"] is True
+
+
+def test_rendering_is_byte_for_byte_reproducible():
+    from eval.generator.render import render_discharge
+    assert render_report(PAPA, REPORT, "classic", "d1")[0] == render_report(PAPA, REPORT, "classic", "d1")[0]
+    assert render_discharge(PAPA, date(2026, 3, 2), "Gout", "d9")[0] == render_discharge(PAPA, date(2026, 3, 2), "Gout", "d9")[0]

@@ -1,0 +1,1855 @@
+{
+ "summary": {
+  "documents": 108,
+  "truth_rows": 475,
+  "precision": 0.9829059829059829,
+  "recall": 0.968421052631579,
+  "f1": 0.975609756097561,
+  "field_accuracy": {
+   "value": 1.0,
+   "unit": 0.9913793103448276,
+   "range": 1.0
+  },
+  "test_found": 0.9768421052631578,
+  "date_accuracy": 1.0,
+  "type_accuracy": 1.0
+ },
+ "documents": [
+  {
+   "truth_rows": 0,
+   "extracted_rows": 0,
+   "matched_rows": 0,
+   "correct_rows": 0,
+   "fields": {
+    "test": 0,
+    "value": 0,
+    "unit": 0,
+    "range": 0
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bhaiya_23_d01",
+   "format": "pdf",
+   "layout": "discharge"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bhaiya_23_r01",
+   "format": "photo_clean",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bhaiya_23_r02",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bhaiya_23_r03",
+   "format": "photo_clean",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bhaiya_23_r04",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bhaiya_23_r05",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bua_20_r01",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bua_20_r02",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bua_20_r03",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bua_20_r04",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bua_20_r05",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 0,
+   "extracted_rows": 0,
+   "matched_rows": 0,
+   "correct_rows": 0,
+   "fields": {
+    "test": 0,
+    "value": 0,
+    "unit": 0,
+    "range": 0
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "chacha_07_d01",
+   "format": "pdf",
+   "layout": "discharge"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "chacha_07_r01",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "chacha_07_r02",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "chacha_07_r03",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "chacha_19_r01",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "chacha_19_r02",
+   "format": "photo_degraded",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "chacha_19_r03",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "chacha_19_r04",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 5,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 5,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "chacha_19_r05",
+   "format": "photo_degraded",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 0,
+   "extracted_rows": 0,
+   "matched_rows": 0,
+   "correct_rows": 0,
+   "fields": {
+    "test": 0,
+    "value": 0,
+    "unit": 0,
+    "range": 0
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_04_d01",
+   "format": "pdf",
+   "layout": "discharge"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_04_r01",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_04_r02",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_04_r03",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 5,
+   "matched_rows": 5,
+   "correct_rows": 5,
+   "fields": {
+    "test": 5,
+    "value": 5,
+    "unit": 5,
+    "range": 5
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_04_r04",
+   "format": "photo_clean",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_16_r01",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_16_r02",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_16_r03",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_16_r04",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_16_r05",
+   "format": "photo_degraded",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_16_r06",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 0,
+   "extracted_rows": 0,
+   "matched_rows": 0,
+   "correct_rows": 0,
+   "fields": {
+    "test": 0,
+    "value": 0,
+    "unit": 0,
+    "range": 0
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_28_d01",
+   "format": "pdf",
+   "layout": "discharge"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 4,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 4,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_28_r01",
+   "format": "photo_degraded",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_28_r02",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_28_r03",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 5,
+   "matched_rows": 5,
+   "correct_rows": 5,
+   "fields": {
+    "test": 5,
+    "value": 5,
+    "unit": 5,
+    "range": 5
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_28_r04",
+   "format": "photo_clean",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dada_28_r05",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_03_r01",
+   "format": "photo_degraded",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_03_r02",
+   "format": "photo_clean",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_03_r03",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_03_r04",
+   "format": "photo_degraded",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_03_r05",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_03_r06",
+   "format": "photo_degraded",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 0,
+   "extracted_rows": 0,
+   "matched_rows": 0,
+   "correct_rows": 0,
+   "fields": {
+    "test": 0,
+    "value": 0,
+    "unit": 0,
+    "range": 0
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_15_d01",
+   "format": "pdf",
+   "layout": "discharge"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_15_r01",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_15_r02",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_15_r03",
+   "format": "photo_degraded",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_15_r04",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_15_r05",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_09_r01",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_09_r02",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_09_r03",
+   "format": "photo_clean",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_09_r04",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_09_r05",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 0,
+   "extracted_rows": 0,
+   "matched_rows": 0,
+   "correct_rows": 0,
+   "fields": {
+    "test": 0,
+    "value": 0,
+    "unit": 0,
+    "range": 0
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_21_d01",
+   "format": "pdf",
+   "layout": "discharge"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_21_r01",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_21_r02",
+   "format": "photo_degraded",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_21_r03",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_21_r04",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_21_r05",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mama_21_r06",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mausi_10_r01",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 6,
+   "matched_rows": 5,
+   "correct_rows": 5,
+   "fields": {
+    "test": 5,
+    "value": 5,
+    "unit": 5,
+    "range": 5
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mausi_10_r02",
+   "format": "photo_clean",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mausi_10_r03",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 0,
+   "extracted_rows": 0,
+   "matched_rows": 0,
+   "correct_rows": 0,
+   "fields": {
+    "test": 0,
+    "value": 0,
+    "unit": 0,
+    "range": 0
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mausi_22_d01",
+   "format": "pdf",
+   "layout": "discharge"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mausi_22_r01",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mausi_22_r02",
+   "format": "photo_degraded",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mausi_22_r03",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_14_r01",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_14_r02",
+   "format": "photo_degraded",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 3,
+   "matched_rows": 3,
+   "correct_rows": 3,
+   "fields": {
+    "test": 3,
+    "value": 3,
+    "unit": 3,
+    "range": 3
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_14_r03",
+   "format": "photo_clean",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_14_r04",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 0,
+   "extracted_rows": 0,
+   "matched_rows": 0,
+   "correct_rows": 0,
+   "fields": {
+    "test": 0,
+    "value": 0,
+    "unit": 0,
+    "range": 0
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_26_d01",
+   "format": "pdf",
+   "layout": "discharge"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_26_r01",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_26_r02",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_26_r03",
+   "format": "photo_degraded",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_26_r04",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_26_r05",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_05_r01",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_05_r02",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_05_r03",
+   "format": "photo_clean",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_05_r04",
+   "format": "photo_clean",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 0,
+   "extracted_rows": 0,
+   "matched_rows": 0,
+   "correct_rows": 0,
+   "fields": {
+    "test": 0,
+    "value": 0,
+    "unit": 0,
+    "range": 0
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_29_d01",
+   "format": "pdf",
+   "layout": "discharge"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_29_r01",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_29_r02",
+   "format": "photo_clean",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_29_r03",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_29_r04",
+   "format": "photo_clean",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_29_r05",
+   "format": "photo_degraded",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_29_r06",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_18_r01",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_18_r02",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_18_r03",
+   "format": "photo_clean",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_18_r04",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 0,
+   "extracted_rows": 0,
+   "matched_rows": 0,
+   "correct_rows": 0,
+   "fields": {
+    "test": 0,
+    "value": 0,
+    "unit": 0,
+    "range": 0
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_01_d01",
+   "format": "pdf",
+   "layout": "discharge"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_01_r01",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_01_r02",
+   "format": "photo_degraded",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 5,
+   "correct_rows": 5,
+   "fields": {
+    "test": 5,
+    "value": 5,
+    "unit": 5,
+    "range": 5
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_01_r03",
+   "format": "photo_clean",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_13_r01",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_13_r02",
+   "format": "photo_degraded",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_13_r03",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_13_r04",
+   "format": "photo_clean",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_13_r05",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 0,
+   "extracted_rows": 0,
+   "matched_rows": 0,
+   "correct_rows": 0,
+   "fields": {
+    "test": 0,
+    "value": 0,
+    "unit": 0,
+    "range": 0
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_25_d01",
+   "format": "pdf",
+   "layout": "discharge"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_25_r01",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_25_r02",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_25_r03",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_25_r04",
+   "format": "photo_degraded",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 6,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "papa_25_r05",
+   "format": "pdf",
+   "layout": "range_first"
+  }
+ ]
+}
