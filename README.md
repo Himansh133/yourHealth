@@ -13,6 +13,7 @@ cp ../.env.example .env
 sed -i "s|^JWT_SECRET=.*|JWT_SECRET=$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')|" .env
 .venv/bin/alembic upgrade head
 .venv/bin/python -m app.refdata.load   # lab tests, medicines, label-sourced effects
+.venv/bin/python -m app.workers.reindex   # search chunks for documents processed before indexing existed
 .venv/bin/uvicorn app.main:app --reload
 # in a second terminal: the worker that processes uploads
 .venv/bin/rq worker documents --url redis://localhost:6379/0
