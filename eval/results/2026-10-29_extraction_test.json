@@ -1,0 +1,716 @@
+{
+ "summary": {
+  "documents": 41,
+  "truth_rows": 208,
+  "precision": 0.9854368932038835,
+  "recall": 0.9759615384615384,
+  "f1": 0.9806763285024154,
+  "field_accuracy": {
+   "value": 1.0,
+   "unit": 0.9902439024390244,
+   "range": 1.0
+  },
+  "test_found": 0.9855769230769231,
+  "date_accuracy": 1.0,
+  "type_accuracy": 1.0
+ },
+ "documents": [
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bhaiya_11_r01",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bhaiya_11_r02",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bhaiya_11_r03",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bua_08_r01",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bua_08_r02",
+   "format": "photo_degraded",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bua_08_r03",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bua_08_r04",
+   "format": "photo_degraded",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bua_08_r05",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "bua_08_r06",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_27_r01",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_27_r02",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_27_r03",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "dadi_27_r04",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "didi_12_r01",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 6,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 6,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "didi_12_r02",
+   "format": "photo_degraded",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "didi_12_r03",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "didi_12_r04",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "didi_12_r05",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "didi_24_r01",
+   "format": "photo_degraded",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "didi_24_r02",
+   "format": "photo_clean",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "didi_24_r03",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "didi_24_r04",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_02_r01",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_02_r02",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 4,
+   "extracted_rows": 4,
+   "matched_rows": 4,
+   "correct_rows": 4,
+   "fields": {
+    "test": 4,
+    "value": 4,
+    "unit": 4,
+    "range": 4
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "mummy_02_r03",
+   "format": "photo_clean",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_17_r01",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_17_r02",
+   "format": "photo_degraded",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_17_r03",
+   "format": "photo_clean",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_17_r04",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 2,
+   "extracted_rows": 2,
+   "matched_rows": 2,
+   "correct_rows": 2,
+   "fields": {
+    "test": 2,
+    "value": 2,
+    "unit": 2,
+    "range": 2
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nana_17_r05",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_06_r01",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 6,
+   "correct_rows": 5,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 5,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_06_r02",
+   "format": "photo_clean",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_06_r03",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 6,
+   "matched_rows": 6,
+   "correct_rows": 5,
+   "fields": {
+    "test": 6,
+    "value": 6,
+    "unit": 5,
+    "range": 6
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_06_r04",
+   "format": "photo_degraded",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_06_r05",
+   "format": "pdf",
+   "layout": "classic"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_30_r01",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_30_r02",
+   "format": "pdf",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_30_r03",
+   "format": "photo_degraded",
+   "layout": "si_units"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_30_r04",
+   "format": "pdf",
+   "layout": "flags"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_30_r05",
+   "format": "pdf",
+   "layout": "range_first"
+  },
+  {
+   "truth_rows": 7,
+   "extracted_rows": 7,
+   "matched_rows": 7,
+   "correct_rows": 7,
+   "fields": {
+    "test": 7,
+    "value": 7,
+    "unit": 7,
+    "range": 7
+   },
+   "type_correct": true,
+   "date_correct": true,
+   "doc_id": "nani_30_r06",
+   "format": "pdf",
+   "layout": "si_units"
+  }
+ ]
+}
