@@ -1,6 +1,6 @@
 from fastapi import APIRouter, FastAPI
 
-from app.api.routes import auth, documents, labs, medicines, profiles
+from app.api.routes import auth, chat, documents, labs, medicines, profiles
 
 app = FastAPI(title="YourHealth")
 api = APIRouter(prefix="/api/v1")
@@ -16,4 +16,5 @@ api.include_router(profiles.router)
 api.include_router(documents.router)
 api.include_router(labs.router)
 api.include_router(medicines.router)
+api.include_router(chat.router)
 app.include_router(api)
