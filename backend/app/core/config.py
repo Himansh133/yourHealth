@@ -29,6 +29,14 @@ class Settings(BaseSettings):
     public_base_url: str = "http://localhost:5173"
     share_session_minutes: int = 30
 
+    # Search models (plan 10.5), ONNX files under models_dir. Missing files or disabled: keyword search only.
+    embeddings_enabled: bool = True
+    models_dir: Path = Path(__file__).resolve().parents[2] / "models"
+    embedding_model: str = "bge-m3/onnx/model.onnx"  # 8-bit, less RAM: bge-m3-int8/onnx/model_int8.onnx
+    embedding_tokenizer: str = "bge-m3/onnx/tokenizer.json"
+    reranker_model: str = "bge-reranker-v2-m3/onnx/model.onnx"  # 8-bit: bge-reranker-v2-m3/onnx/model_int8.onnx
+    reranker_tokenizer: str = "bge-reranker-v2-m3/tokenizer.json"
+
     refdata_dir: Path = Path(__file__).resolve().parents[3] / "refdata" / "seed"
 
 

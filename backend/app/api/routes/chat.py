@@ -11,6 +11,7 @@ from app.db.models import Profile, User
 from app.db.session import get_db
 from app.services.chat.answer import ChatAnswer, answer_question
 from app.services.chat.doc_search import search_chunks
+from app.services.chat.embeddings import get_embedder, get_reranker
 from app.services.chat.lab_tool import LabFact, lab_lookup
 from app.services.chat.llm import LLM, LLMError, get_llm
 from app.services.chat.medicine_tool import MedicineFact, medicine_facts, medicine_vocabulary
@@ -112,7 +113,7 @@ def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(current_user), db: S
         found += [(f.text, _medicine_source(f)) for f in facts if f.kind == "medicine"]
     if label == "document":
         found += [(h.evidence_text(), {"kind": "document", "document_id": h.document_id, "page_no": h.page_start})
-                  for h in search_chunks(db, pid, body.question)]
+                  for h in search_chunks(db, pid, body.question, embedder=get_embedder(), reranker=get_reranker())]
 
     evidence = [Evidence(id=f"E{i}", text=text) for i, (text, _) in enumerate(found, 1)]
     sources = [Source(id=e.id, **fields) for e, (_, fields) in zip(evidence, found)]

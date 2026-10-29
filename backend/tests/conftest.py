@@ -1,6 +1,7 @@
 import os
 
 os.environ.setdefault("COOKIE_SECURE", "false")  # TestClient talks plain http
+os.environ["EMBEDDINGS_ENABLED"] = "false"  # tests use stand-in models, never the multi-GB real ones
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
