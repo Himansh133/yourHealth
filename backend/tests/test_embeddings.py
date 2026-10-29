@@ -20,3 +20,11 @@ def test_missing_model_files_mean_no_model(tmp_path, monkeypatch):
     finally:
         embeddings.get_embedder.cache_clear()
         embeddings.get_reranker.cache_clear()
+
+
+def test_batches_group_similar_lengths_and_cover_every_text_once():
+    texts = ["a " * 300, "b", "c " * 290, "d"]
+    batches = embeddings.length_batches(texts, size=2)
+    assert sorted(i for b in batches for i in b) == [0, 1, 2, 3]
+    assert all(len(b) <= 2 for b in batches)
+    assert {0, 2} in [set(b) for b in batches]  # the two long ones share a batch

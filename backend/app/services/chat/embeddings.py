@@ -25,6 +25,13 @@ MAX_TOKENS = 1024  # chunks are about 300 words; bge-m3 allows 8192, but CPU tim
 BATCH = 8
 
 
+def length_batches(texts: list[str], size: int = BATCH) -> list[list[int]]:
+    """Indexes of texts in batches of similar length: a batch is padded to its longest text, so mixing one long
+    passage with short ones makes every one of them cost as much as the long one."""
+    order = sorted(range(len(texts)), key=lambda i: len(texts[i]))
+    return [order[i:i + size] for i in range(0, len(order), size)]
+
+
 class _OnnxModel:
     def __init__(self, model_path: Path, tokenizer_path: Path):
         import onnxruntime as ort  # heavy import: only processes that use the models pay for it
@@ -57,12 +64,13 @@ class OnnxEmbedder(_OnnxModel):
         self.name = name
 
     def embed(self, texts: list[str]) -> list[list[float]]:
-        out = []
-        for i in range(0, len(texts), BATCH):
-            result = self.run(self.tokenizer.encode_batch(texts[i:i + BATCH]))
+        out: list[list[float]] = [[]] * len(texts)
+        for batch in length_batches(texts):
+            result = self.run(self.tokenizer.encode_batch([texts[i] for i in batch]))
             vectors = result["dense_vecs"] if "dense_vecs" in result else next(iter(result.values()))[:, 0]
             vectors = vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
-            out += vectors.tolist()
+            for i, v in zip(batch, vectors.tolist()):
+                out[i] = v
         return out
 
 
@@ -70,11 +78,12 @@ class OnnxReranker(_OnnxModel):
     """bge-reranker-v2-m3: a relevance logit per (question, passage) pair, as a probability."""
 
     def score(self, query: str, passages: list[str]) -> list[float]:
-        out = []
-        for i in range(0, len(passages), BATCH):
-            result = self.run(self.tokenizer.encode_batch([(query, p) for p in passages[i:i + BATCH]]))
+        out = [0.0] * len(passages)
+        for batch in length_batches(passages):
+            result = self.run(self.tokenizer.encode_batch([(query, passages[i]) for i in batch]))
             logits = next(iter(result.values())).reshape(-1)
-            out += (1 / (1 + np.exp(-logits))).tolist()
+            for i, p in zip(batch, (1 / (1 + np.exp(-logits))).tolist()):
+                out[i] = p
         return out
 
 

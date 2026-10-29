@@ -19,7 +19,7 @@ from app.services.chat.embeddings import Embedder, Reranker
 
 TOP_K = 6
 CANDIDATES = 30  # from each search
-RERANK_TOP = 20
+RERANK_TOP = 10  # plan says 20; on CPU the reranker costs ~1 s per long passage, and the LLM sees 6
 RRF_K = 60
 DOC_TYPE_TEXT = {"lab_report": "Lab report", "prescription": "Prescription", "discharge": "Discharge summary"}
 
