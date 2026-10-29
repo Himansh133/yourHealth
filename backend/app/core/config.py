@@ -20,6 +20,11 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://localhost:6379/0"
 
+    # Any OpenAI-compatible chat API; default is GMI Cloud.
+    llm_base_url: str = "https://api.gmi-serving.com/v1"
+    llm_api_key: str = ""
+    llm_model: str = ""
+
     refdata_dir: Path = Path(__file__).resolve().parents[3] / "refdata" / "seed"
 
 

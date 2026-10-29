@@ -20,6 +20,7 @@ dependencies = [
   "rq",
   "rapidocr",
   "onnxruntime",
+  "httpx",
 ]
 
 [project.optional-dependencies]
