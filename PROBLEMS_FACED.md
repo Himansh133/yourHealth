@@ -12,7 +12,7 @@ Commit hashes point to where the fix landed.
 | # | Problem | Impact | Status | Solution |
 |---|---|---|---|---|
 | 1.1 | MinIO stopped publishing public Docker images. | The plan's local file store could not be pulled. | Worked around | Use SeaweedFS, which speaks the same S3 API. The code only talks S3, so real S3 works in deployment (`707ce44`). |
-| 1.2 | Disk space was tight (about 6 GB free) at the start. | The plan's heavy ML (bge-m3, reranker, PaddleOCR with torch) would not fit. | Worked around | RapidOCR (PaddleOCR models on ONNX Runtime) instead of PaddleOCR; embeddings postponed (see 6.1). Disk now shows 29 GB free, so this can be revisited. |
+| 1.2 | Disk space was tight (about 6 GB free) at the start. | The plan's heavy ML (bge-m3, reranker, PaddleOCR with torch) would not fit. | Fixed | RapidOCR (PaddleOCR models on ONNX Runtime) instead of PaddleOCR. Once 29 GB was free, the search models were added as ONNX (5.8 GB with the 8-bit fallbacks), still without PyTorch (see 6.1). |
 | 1.3 | Editable install picked up folders outside the app package. | `pip install -e .` failed. | Fixed | Limit setuptools package discovery to `app*` (`01551c7`). |
 | 1.4 | A short JWT secret silently weakens HS256 session tokens. | Insecure sessions if someone used a short secret. | Fixed | Require 32+ bytes; the README generates one (`53b7c2c`). |
 | 1.5 | The Vite dev proxy assumed the backend was on port 8000. | Frontend could not reach a backend on another port. | Fixed | `API_URL` env var for the proxy target (`4075d0a`). |
@@ -71,7 +71,7 @@ Commit hashes point to where the fix landed.
 
 | # | Problem | Impact | Status | Solution |
 |---|---|---|---|---|
-| 6.1 | No embedding model yet (disk, see 1.2). | Document search is keyword only: "food" will not find "diet". | Open | Add a multilingual embedding model (bge-m3 as planned, or a smaller one such as multilingual-e5-small) plus a pgvector column, and fuse with keyword results (plan 10.5). |
+| 6.1 | No embedding model at first (disk, see 1.2). | Document search was keyword only: "food" did not find "diet". | Fixed | bge-m3 and bge-reranker-v2-m3 as full-precision ONNX on CPU (no PyTorch), a pgvector column, keyword + meaning results fused with RRF, then reranked (`afe4a3f`, `950cf6a`). "What food should papa avoid?" now finds the diet advice. |
 | 6.2 | GMI Cloud's model prices are not on its public site, and its blog posts disagree. | Could not pick the cheapest model from the web. | Fixed | `GET /v1/models` returns prices per model; models were ranked from that. |
 | 6.3 | The cheapest GMI models did not respond (Ling-3.0 404; gpt-oss-120b and gemma-4-31b 503). | Could not use them. | Worked around | Benchmarked the next cheapest through our real prompt and validator; DeepSeek-V4-Flash passed 12/12 (`69602ae`). Re-run the benchmark later; availability changes. |
 | 6.4 | GMI's free 1.5B model is too small for JSON answers that cite evidence. | Most answers would fail checks and fall back to tables. | Worked around | Not used. |
@@ -83,9 +83,17 @@ Commit hashes point to where the fix landed.
 | 6.10 | The classifier named "kidney function", which is not a test. | "How are his kidneys?" found nothing. | Fixed | Its test name goes through the same matcher as the rules, so everyday words work; "kidneys" added (`6deab64`). |
 | 6.11 | The classifier can label the same question differently on different runs, even at temperature 0. | Answers may change between asks. | Open | Measure router accuracy on a labelled question set (plan 14) and add examples for the questions it gets wrong. |
 | 6.12 | The model once wrote "[E1]" inside the answer text. | Odd text in the chat. | Fixed | Prompt rule: IDs go only in `evidence_ids` (`6deab64`). Proposed: also strip `[E\d+]` from text in the validator if it recurs. |
-| 6.13 | Each answer takes 4 to 10 seconds; questions the rules can't place add a classifier call. | Feels slow. | Open | Stream the answer, or show the retrieved facts first and the written answer when ready. |
+| 6.13 | Answers take 4–7 s; document questions 12–14 s. Measured: the classifier call to GMI ~6 s, the answer call ~5 s, reranking 1–7 s. | Feels slow. | Open | Skip the classifier when the rules or a confident search already decide; stream the answer; or show the retrieved facts first. For reranking see 6.21. |
 | 6.14 | Section chunks of a discharge summary are not split by size. | A very long section becomes one big chunk, diluting search. | Open | Window long sections the same way as page text. |
 | 6.15 | The LLM checks have only been tried on a handful of questions. | Model choice and prompt quality are not measured. | Open | Build the eval harness from plan 14 (synthetic patients, labelled questions, faithfulness and number-check metrics). |
+
+| 6.16 | Hugging Face downloads hung at 406 MB, then failed with a Xet transfer error. | Models would not download. | Worked around | Restart (it resumes); the last file came over plain HTTP with `HF_HUB_DISABLE_XET=1`. |
+| 6.17 | Both full-precision models need RAM: 3.2 GB in the API (both models), 1.6 GB in the worker (embedder). About 5 GB was free. | The machine may swap when other apps are open. | Worked around | Models load only when first used; 8-bit versions (0.57 GB each) are downloaded and one `.env` line away. |
+| 6.18 | `tokenizers` pads with id 0, but XLM-RoBERTa models pad with id 1 and use it to compute positions. | Subtly wrong vectors for padded texts. | Fixed | Pad id read from the tokenizer (`<pad>`). |
+| 6.19 | The reranker's scores can't separate relevant from unrelated passages on our text: right answers scored -6 to -7, "knee x-ray" also -6. A cut-off of 0.1 would have dropped every answer. | No safe relevance threshold. | Fixed | The reranker only reorders; whether passages answer the question stays with the LLM (it answered "not in the reports" for the knee x-ray) (`5331a1e`). |
+| 6.20 | The reranker gives Hinglish questions the same floor score for every passage. Keyword search misses Hinglish too. | Hinglish document questions rely on the embedder alone. | Worked around | Equal scores keep the fused order, and "khane mein kya parhez" was answered correctly live. Proposed: translate Hinglish questions to English before searching (plan 11.4). |
+| 6.21 | The full-precision reranker is slow on CPU: 4.5 s for 5 passages, 7 s for 10 with long ones. | Adds seconds to every document question. | Worked around | Batches sorted by length (less padding) and only the top 10 reranked. The 8-bit reranker is 2x faster and picked the same top passage in 6 of 7 test questions. |
+| 6.22 | The test suite must never load multi-GB models. | Slow or failing tests on machines without the models. | Fixed | Tests set `EMBEDDINGS_ENABLED=false` and use stand-in models; missing model files also mean keyword-only search. |
 
 ## 7. Doctor sheet and sharing
 
