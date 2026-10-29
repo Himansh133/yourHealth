@@ -64,5 +64,37 @@ def test_no_evidence_abstains_without_calling_the_llm():
 
 def test_note_about_the_evidence_goes_before_it():
     llm = FakeLLM([GOOD])
-    answer_question(llm, "papa ka pichhla hba1c?", "Papa", EVIDENCE, "hi", note="These are the most recent values.")
+    answer_question(llm, "papa ka pichhla hba1c?", "Papa", EVIDENCE, "hi", note="These are the most recent values.",
+                    hindi_mode="direct")
     assert "Note: These are the most recent values.\n<evidence>" in llm.prompts[0][1]
+
+
+HINDI = json.dumps({"summary": "पापा का हाल का HbA1c रिपोर्ट की सीमा से ज़्यादा है।",
+                    "claims": ["14 Jun 2026 को HbA1c 7.2% था"], "missing_info": [],
+                    "doctor_note": "डॉक्टर से HbA1c के लक्ष्य पर बात करें।"}, ensure_ascii=False)
+
+
+def test_hindi_is_written_in_english_validated_then_translated():
+    llm = FakeLLM([GOOD, HINDI])
+    out = answer_question(llm, "papa ka hba1c?", "Papa", EVIDENCE, "hi", hindi_mode="translate",
+                          glossary={"HbA1c": "पिछले 3 महीने की औसत शुगर"})
+    assert "Language: en" in llm.prompts[0][0]
+    assert (out.lang, out.summary) == ("hi", "पापा का हाल का HbA1c रिपोर्ट की सीमा से ज़्यादा है।")
+    assert out.claims[0].evidence_ids == ["E1"]
+
+
+def test_failed_translation_falls_back_to_the_checked_english():
+    wrong = HINDI.replace("7.2%", "7.5%")
+    out = answer_question(FakeLLM([GOOD, wrong, wrong]), "q", "Papa", EVIDENCE, "hi", hindi_mode="translate")
+    assert out.lang == "en" and out.summary == "Papa's latest HbA1c is above the report's range."
+
+
+def test_direct_mode_writes_hindi_in_one_call():
+    llm = FakeLLM([GOOD])
+    out = answer_question(llm, "q", "Papa", EVIDENCE, "hi", hindi_mode="direct")
+    assert "Language: hi" in llm.prompts[0][0] and len(llm.prompts) == 1 and out.lang == "hi"
+
+
+def test_not_found_message_in_hindi():
+    out = answer_question(FakeLLM([]), "q", "Papa", [], "hi")
+    assert out.summary == "Papa की रिपोर्ट में यह नहीं मिला।" and out.lang == "hi"

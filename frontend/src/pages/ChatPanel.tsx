@@ -4,7 +4,7 @@ import { chat, documents } from "../api/endpoints";
 import type { ChatAnswer, ChatSource, Lang } from "../api/types";
 import { Button, ErrorAlert, errorMessage } from "../components/ui";
 
-type Turn = { question: string; answer: ChatAnswer };
+type Turn = { question: string; lang: Lang; answer: ChatAnswer };
 
 const LANGS: { value: Lang; label: string }[] = [
   { value: "en", label: "English" },
@@ -26,7 +26,7 @@ export default function ChatPanel({ profileId, profileName }: { profileId: strin
     setAsking(true);
     try {
       const answer = await chat.ask(profileId, q, lang);
-      setTurns((prev) => [...prev, { question: q, answer }]);
+      setTurns((prev) => [...prev, { question: q, lang, answer }]);
       setQuestion("");
     } catch (err) {
       setError(errorMessage(err));
@@ -46,7 +46,7 @@ export default function ChatPanel({ profileId, profileName }: { profileId: strin
       {turns.map((t, i) => (
         <div key={i} className="flex flex-col gap-2">
           <p className="self-end rounded-lg bg-teal-700 px-4 py-2 text-white">{t.question}</p>
-          <AnswerCard answer={t.answer} profileId={profileId} />
+          <AnswerCard answer={t.answer} profileId={profileId} askedLang={t.lang} />
         </div>
       ))}
 
@@ -86,10 +86,15 @@ export default function ChatPanel({ profileId, profileName }: { profileId: strin
   );
 }
 
-function AnswerCard({ answer, profileId }: { answer: ChatAnswer; profileId: string }) {
+function AnswerCard({ answer, profileId, askedLang }: { answer: ChatAnswer; profileId: string; askedLang: Lang }) {
   const byId = new Map(answer.sources.map((s) => [s.id, s]));
   return (
     <article aria-label="Answer" className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4">
+      {askedLang === "hi" && answer.lang === "en" && (
+        <p className="text-xs text-slate-500">
+          Shown in English: the Hindi translation didn't pass the checks (same numbers, no advice).
+        </p>
+      )}
       <p className={answer.answerable && !answer.fallback ? "font-medium" : "text-slate-600"}>{answer.summary}</p>
       {answer.claims.length > 0 && (
         <ul className="flex flex-col gap-2">

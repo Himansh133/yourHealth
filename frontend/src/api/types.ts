@@ -149,6 +149,7 @@ export type ChatAnswer = {
   missing_info: string[];
   doctor_note: string;
   fallback: boolean; // the LLM answer failed checks, so these are the values straight from the reports
+  lang: Lang; // the language the text is in: a Hindi answer falls back to English if its translation fails checks
   route: string[];
   sources: ChatSource[];
 };

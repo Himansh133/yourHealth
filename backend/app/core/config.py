@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     public_base_url: str = "http://localhost:5173"
     share_session_minutes: int = 30
 
+    # Hindi answers (plan 11): "translate" = write and validate English, then translate and check the numbers;
+    # "direct" = the LLM writes Hindi itself. Compared in the eval.
+    hindi_mode: str = "translate"
+
     # Search models (plan 10.5), ONNX files under models_dir. Missing files or disabled: keyword search only.
     embeddings_enabled: bool = True
     models_dir: Path = Path(__file__).resolve().parents[2] / "models"

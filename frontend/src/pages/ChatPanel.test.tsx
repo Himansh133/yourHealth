@@ -17,6 +17,7 @@ function answer(over: Record<string, unknown> = {}) {
     missing_info: [],
     doctor_note: "Discuss the target HbA1c with his doctor.",
     fallback: false,
+    lang: "en",
     route: ["trend"],
     sources: [
       { id: "E1", kind: "lab_result", lab_result_id: "r1", document_id: "d1", page_no: 1 },
@@ -140,5 +141,15 @@ describe("ChatPanel", () => {
     const doc = within(reply).getByRole("link", { name: /document, page 2/i });
     expect(doc).toHaveAttribute("href", "/api/v1/documents/d9/file");
     expect(doc).toHaveAttribute("target", "_blank");
+  });
+
+  it("says when a Hindi answer is shown in English", async () => {
+    mockApi({ "GET /me": ME, "POST /profiles/p1/chat": answer({ lang: "en" }) });
+    const user = renderAt("/profiles/p1/ask", routes);
+    await user.click(await screen.findByRole("radio", { name: "हिंदी" }));
+    await user.type(screen.getByRole("textbox", { name: /ask about papa's reports/i }), "hba1c kitna hai");
+    await user.click(screen.getByRole("button", { name: "Ask" }));
+    const reply = await screen.findByRole("article", { name: "Answer" });
+    expect(within(reply).getByText(/shown in english/i)).toBeInTheDocument();
   });
 });

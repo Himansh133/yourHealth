@@ -275,3 +275,11 @@ def test_classifier_test_name_can_be_an_everyday_word(make_user_client, db_sessi
     body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "How well controlled is he?"}).json()
     assert body["route"] == ["value"]
     assert "HbA1c 7.2 %" in llm.prompts[1][1]
+
+
+def test_treatment_answer_in_hindi(make_user_client, db_session, test_ids, use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    use_llm(FakeLLM([]))
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "kaunsi dawai lu hba1c ke liye", "lang": "hi"}).json()
+    assert body["route"] == ["treatment"] and "डॉक्टर" in body["summary"] and body["lang"] == "hi"

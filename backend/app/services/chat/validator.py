@@ -16,6 +16,7 @@ NUMBER = re.compile(r"(?<![A-Za-z\d.])\d+(?:\.\d+)?")
 BANNED = re.compile(
     r"stop taking|start taking|(?:increase|decrease|reduce|change|double) (?:the |your )?dose"
     r"|dawai band|dawa band|dose badha|dose kam"
+    r"|दवा बंद|दवाई बंद|दवाइयाँ बंद|दवाएं बंद|लेना बंद|खुराक बढ़ा|खुराक कम|डोज़ बढ़ा|डोज बढ़ा|डोज़ कम|डोज कम"
     r"|you have (?:diabetes|cancer|hypothyroidism|hyperthyroidism|anaemia|anemia|kidney disease|liver disease)",
     re.IGNORECASE,
 )

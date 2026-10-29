@@ -24,11 +24,22 @@ EVIDENCE_NOTES = {
     "trend": "The lab results below are every value of the test, oldest first.",
 }
 
-SAFETY_SUMMARY = ("Choosing or changing a medicine depends on things this app can't see, like other conditions, "
-                  "allergies, kidney function or pregnancy, so it is your doctor's call.")
-OUT_OF_SCOPE = ("I can only answer from the reports and medicines saved here, and I can't diagnose. "
-                "Please ask a doctor about this.")
-SAFETY_NOTE = "Want me to make a doctor visit sheet with this value flagged?"
+SAFETY_SUMMARY = {
+    "en": "Choosing or changing a medicine depends on things this app can't see, like other conditions, allergies, "
+          "kidney function or pregnancy, so it is your doctor's call.",
+    "hi": "कौन सी दवा लेनी है या दवा बदलनी है, यह उन बातों पर निर्भर करता है जो यह ऐप नहीं देख सकता, जैसे दूसरी "
+          "बीमारियाँ, एलर्जी, किडनी की हालत या गर्भावस्था। इसलिए यह फ़ैसला आपके डॉक्टर का है।",
+}
+OUT_OF_SCOPE = {
+    "en": "I can only answer from the reports and medicines saved here, and I can't diagnose. "
+          "Please ask a doctor about this.",
+    "hi": "मैं सिर्फ़ यहाँ सेव की गई रिपोर्ट और दवाओं से जवाब दे सकता हूँ, और बीमारी का पता नहीं लगा सकता। "
+          "इसके बारे में डॉक्टर से पूछें।",
+}
+SAFETY_NOTE = {
+    "en": "Want me to make a doctor visit sheet with this value flagged?",
+    "hi": "क्या मैं डॉक्टर के लिए एक शीट बना दूँ जिसमें यह मान दिखाया गया हो?",
+}
 
 
 class Source(BaseModel):
@@ -93,11 +104,15 @@ def answer_chat(db: Session, pid: uuid.UUID, question: str, lang: str, llm: LLM)
     evidence = [Evidence(id=f"E{i}", text=text) for i, (text, _) in enumerate(found, 1)]
     sources = [Source(id=e.id, **fields) for e, (_, fields) in zip(evidence, found)]
 
+    fixed_lang = lang if lang in OUT_OF_SCOPE else "en"
     if label == "out_of_scope":
-        answer = ChatAnswer(answerable=False, summary=OUT_OF_SCOPE, claims=[], missing_info=[], doctor_note="")
+        answer = ChatAnswer(answerable=False, summary=OUT_OF_SCOPE[fixed_lang], claims=[], missing_info=[],
+                            doctor_note="", lang=fixed_lang)
     elif label == "treatment":
-        answer = ChatAnswer(answerable=True, summary=SAFETY_SUMMARY, missing_info=[], doctor_note=SAFETY_NOTE,
+        answer = ChatAnswer(answerable=True, summary=SAFETY_SUMMARY[fixed_lang], missing_info=[],
+                            doctor_note=SAFETY_NOTE[fixed_lang], lang=fixed_lang,
                             claims=[Claim(text=e.text, evidence_ids=[e.id]) for e in evidence])
     else:
-        answer = answer_question(llm, question, name, evidence, lang, note=EVIDENCE_NOTES.get(label))
+        glossary = {t.canonical_name: t.display_name_hi for t in tests if t.display_name_hi}
+        answer = answer_question(llm, question, name, evidence, lang, note=EVIDENCE_NOTES.get(label), glossary=glossary)
     return ChatOut(**answer.model_dump(), route=labels, sources=sources)
