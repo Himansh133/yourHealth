@@ -127,17 +127,23 @@ def test_meaning_finds_what_keywords_miss(db_session, pid):
     assert hits and "Low sugar diet" in hits[0].text
 
 
-def test_reranker_orders_and_drops_unrelated_chunks(db_session, pid):
+def test_reranker_puts_the_most_relevant_chunk_first(db_session, pid):
     add_doc_with_models(db_session, pid, DISCHARGE, StubEmbedder())
     hits = search_chunks(db_session, pid, "what food is allowed?", embedder=StubEmbedder(),
                          reranker=StubReranker("walk daily"))
-    assert hits and all("walk daily" in h.text for h in hits)
+    assert "walk daily" in hits[0].text
 
 
-def test_reranker_can_say_nothing_matches(db_session, pid):
+def test_reranker_ties_keep_the_fused_order(db_session, pid):
+    # bge-reranker-v2-m3 gives every passage the same floor score for questions it can't read (e.g. Hinglish)
+    class Flat:
+        def score(self, query, passages):
+            return [0.0] * len(passages)
+
     add_doc_with_models(db_session, pid, DISCHARGE, StubEmbedder())
-    assert search_chunks(db_session, pid, "knee x-ray?", embedder=StubEmbedder(),
-                         reranker=StubReranker("no such text")) == []
+    fused = search_chunks(db_session, pid, "what food is allowed?", embedder=StubEmbedder())
+    reranked = search_chunks(db_session, pid, "what food is allowed?", embedder=StubEmbedder(), reranker=Flat())
+    assert [h.text for h in reranked] == [h.text for h in fused]
 
 
 def test_dense_search_never_crosses_profiles(db_session, pid, make_user_client):

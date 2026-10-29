@@ -1,6 +1,6 @@
 """Index document text and find the chunks that answer a question (plan 10.5).
 
-Two searches, fused with reciprocal rank fusion, then reranked:
+Two searches, fused with reciprocal rank fusion, then reordered by the reranker:
 - keyword: Postgres full-text ('simple' config), an OR of the question's content words
 - meaning: cosine distance between bge-m3 vectors (skipped when the model isn't installed)
 The profile filter is part of both queries, before any ranking.
@@ -20,7 +20,6 @@ from app.services.chat.embeddings import Embedder, Reranker
 TOP_K = 6
 CANDIDATES = 30  # from each search
 RERANK_TOP = 20
-RERANK_MIN = 0.1  # reranker probability below this: not about the question
 RRF_K = 60
 DOC_TYPE_TEXT = {"lab_report": "Lab report", "prescription": "Prescription", "discharge": "Discharge summary"}
 
@@ -90,8 +89,11 @@ def search_chunks(db: Session, profile_id: uuid.UUID, question: str, limit: int 
     ).all()}
     hits = [_hit(*rows[i]) for i in order]
     if reranker:
-        scored = sorted(zip(reranker.score(question, [h.text for h in hits]), range(len(hits))), reverse=True)
-        hits = [hits[i] for score, i in scored if score >= RERANK_MIN]
+        # Order only, no cut-off: on medical text its scores are low even for the right passage, and an unrelated
+        # question can score as high (measured). Whether the passages answer the question is the LLM's call.
+        # Stable sort: equal scores keep the fused order.
+        scores = reranker.score(question, [h.text for h in hits])
+        hits = [h for _, h in sorted(zip(scores, hits), key=lambda sh: -sh[0])]
     return hits[:limit]
 
 
