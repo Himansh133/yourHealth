@@ -135,3 +135,18 @@ export type MedicineMarker = {
   ingredient: string;
   effect_type: "therapeutic" | "monitor";
 };
+
+export type ChatSource = { id: string; kind: "lab_result"; lab_result_id: string; document_id: string; page_no: number | null };
+
+export type ChatAnswer = {
+  answerable: boolean;
+  summary: string;
+  claims: { text: string; evidence_ids: string[] }[];
+  missing_info: string[];
+  doctor_note: string;
+  fallback: boolean; // the LLM answer failed checks, so these are the values straight from the reports
+  route: string[];
+  sources: ChatSource[];
+};
+
+export type Lang = "en" | "hi";

@@ -25,6 +25,7 @@ export default function App() {
           <Route path="/profiles/:pid" element={<Private><ProfilePage /></Private>} />
           <Route path="/profiles/:pid/trends" element={<Private><ProfilePage tab="trends" /></Private>} />
           <Route path="/profiles/:pid/medicines" element={<Private><ProfilePage tab="medicines" /></Private>} />
+          <Route path="/profiles/:pid/ask" element={<Private><ProfilePage tab="ask" /></Private>} />
           <Route path="/documents/:did/review" element={<Private><ReviewPage /></Private>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

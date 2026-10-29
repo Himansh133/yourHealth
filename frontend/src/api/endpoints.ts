@@ -1,5 +1,5 @@
 import { request } from "./client";
-import type { Doc, DrugSearchResult, Frequency, IngredientInfo, Insight, LabResult, Medicine, Profile, Sex, Trend, User } from "./types";
+import type { ChatAnswer, Doc, DrugSearchResult, Frequency, IngredientInfo, Insight, LabResult, Lang, Medicine, Profile, Sex, Trend, User } from "./types";
 
 export const auth = {
   me: () => request<User>("GET", "/me"),
@@ -58,4 +58,9 @@ export const medicines = {
   update: (id: string, body: MedicinePatch) => request<Medicine>("PATCH", `/medicines/${id}`, body),
   remove: (id: string) => request<void>("DELETE", `/medicines/${id}`),
   insights: (profileId: string) => request<Insight[]>("GET", `/profiles/${profileId}/medicine-insights`),
+};
+
+export const chat = {
+  ask: (profileId: string, question: string, lang: Lang) =>
+    request<ChatAnswer>("POST", `/profiles/${profileId}/chat`, { question, lang }),
 };

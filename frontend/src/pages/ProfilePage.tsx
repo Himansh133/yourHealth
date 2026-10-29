@@ -4,6 +4,7 @@ import { documents as documentsApi, profiles as profilesApi } from "../api/endpo
 import type { Doc, DocumentStatus, Profile } from "../api/types";
 import { ErrorAlert, errorMessage } from "../components/ui";
 import { formatDate } from "../format";
+import ChatPanel from "./ChatPanel";
 import MedicinesPanel from "./MedicinesPanel";
 import TrendsPanel from "./TrendsPanel";
 
@@ -24,7 +25,7 @@ const ERROR_HELP: Record<string, string> = {
   processing_error: "Something went wrong while reading it. Try uploading again.",
 };
 
-export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: "reports" | "trends" | "medicines"; pollMs?: number }) {
+export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: "reports" | "trends" | "medicines" | "ask"; pollMs?: number }) {
   const { pid = "" } = useParams();
   const [profile, setProfile] = useState<Profile | null | undefined>(undefined);
   const [error, setError] = useState("");
@@ -53,10 +54,12 @@ export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: 
         <NavLink to={`/profiles/${pid}`} end className={tabClass}>Reports</NavLink>
         <NavLink to={`/profiles/${pid}/trends`} className={tabClass}>Trends</NavLink>
         <NavLink to={`/profiles/${pid}/medicines`} className={tabClass}>Medicines</NavLink>
+        <NavLink to={`/profiles/${pid}/ask`} className={tabClass}>Ask</NavLink>
       </nav>
       {tab === "reports" && <ReportsPanel profile={profile} pollMs={pollMs} />}
       {tab === "trends" && <TrendsPanel profileId={pid} />}
       {tab === "medicines" && <MedicinesPanel profileId={pid} canEdit={profile.role !== "viewer"} />}
+      {tab === "ask" && <ChatPanel profileId={pid} profileName={profile.display_name} />}
     </div>
   );
 }
