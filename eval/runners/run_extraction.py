@@ -67,7 +67,7 @@ def table(groups: dict[str, list[dict]]) -> list[str]:
     return lines
 
 
-def main(split: str, data: Path) -> Path:
+def main(split: str, data: Path, stamp: str = date.today().isoformat()) -> Path:
     docs, errors = [], []
     for truth_file in sorted((data / "truth").glob("*.json")):
         truth = json.loads(truth_file.read_text())
@@ -86,7 +86,7 @@ def main(split: str, data: Path) -> Path:
 
     out_dir = EVAL / "results"
     out_dir.mkdir(exist_ok=True)
-    stem = out_dir / f"{date.today().isoformat()}_extraction_{split}"
+    stem = out_dir / f"{stamp}_extraction_{split}"
     md = [f"# Extraction results ({split} split, {data.name})", "",
           "A row is correct only if test, value, unit and range all match the printed report. Value, unit and range",
           "columns are accuracies over rows whose test was found.", "",
@@ -103,5 +103,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", choices=["dev", "test", "all"], default="dev")
     ap.add_argument("--data", type=Path, default=EVAL / "data" / "v1")
+    ap.add_argument("--stamp", default=date.today().isoformat(), help="file name prefix, e.g. 'ci'")
     args = ap.parse_args()
-    print(main(args.split, args.data))
+    print(main(args.split, args.data, args.stamp))

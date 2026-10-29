@@ -1,0 +1,12 @@
+{
+ "f1": 0.9806763285024154,
+ "precision": 0.9854368932038835,
+ "recall": 0.9759615384615384,
+ "field_accuracy": {
+  "value": 1.0,
+  "unit": 0.9902439024390244,
+  "range": 1.0
+ },
+ "type_accuracy": 1.0,
+ "date_accuracy": 1.0
+}

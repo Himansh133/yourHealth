@@ -8,3 +8,4 @@ dist/
 yourhealth-implementation-plan.md
 backend/models/
 eval/data/
+eval/results/ci_*
