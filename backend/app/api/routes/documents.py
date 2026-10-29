@@ -1,4 +1,3 @@
-import hashlib
 import uuid
 from datetime import date, datetime
 
@@ -11,15 +10,13 @@ from app.api.deps import current_user
 from app.core.permissions import require_profile_access
 from app.db.models import Document, DocumentPage, LabResult, User
 from app.db.session import get_db
-from app.services.extraction.validate import MAX_BYTES, UploadRejected, validate_upload
+from app.services.extraction.validate import MAX_BYTES, UploadRejected
 from app.services.labs.store import refresh_review_status
 from app.services.queue import DocumentQueue, get_queue
 from app.services.storage import Storage, get_storage
+from app.services.uploads import store_upload
 
 router = APIRouter()
-
-_EXT = {"application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png"}
-
 
 class DocumentOut(BaseModel):
     model_config = {"from_attributes": True}
@@ -59,33 +56,11 @@ def upload_document(
     require_profile_access(db, user.id, pid, "edit")
     data = file.file.read(MAX_BYTES + 1)  # one extra byte is enough to detect "too large"
     try:
-        mime, _pages = validate_upload(data)
+        doc, created = store_upload(db, storage, queue, pid, user.id, data, file.filename, channel="web")
     except UploadRejected as e:
         raise HTTPException(422, {"code": e.code, "message": e.message})
-
-    sha = hashlib.sha256(data).hexdigest()
-    existing = db.scalar(select(Document).where(Document.profile_id == pid, Document.sha256 == sha))
-    if existing:
+    if not created:
         response.status_code = 200
-        return existing
-
-    doc_id = uuid.uuid4()
-    key = f"docs/{doc_id}.{_EXT[mime]}"
-    storage.put(key, data, mime)
-    doc = Document(
-        id=doc_id,
-        profile_id=pid,
-        uploaded_by=user.id,
-        source_channel="web",
-        storage_key=key,
-        original_filename=(file.filename or "")[:255] or None,
-        mime_type=mime,
-        size_bytes=len(data),
-        sha256=sha,
-    )
-    db.add(doc)
-    db.commit()
-    queue.enqueue_document(doc.id)  # after commit, so the worker can see the row
     return doc
 
 
