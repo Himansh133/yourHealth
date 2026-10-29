@@ -10,6 +10,7 @@ from pathlib import Path
 
 from eval.generator.degrade import to_photo
 from eval.generator.patients import generate_patients
+from eval.generator.questions import make_questions
 from eval.generator.render import LAYOUTS, render_report
 
 FORMATS = [("pdf", 0.6), ("photo_clean", 0.2), ("photo_degraded", 0.2)]
@@ -45,8 +46,14 @@ def build(out: Path, seed: int = 1) -> dict:
     (out / "patients.json").write_text(json.dumps(
         [asdict(p) | {"split": "test" if p.key in test_keys else "dev"} for p in patients],
         indent=1, default=str, ensure_ascii=False))
+    questions = make_questions(patients, test_keys)
+    for split in ("dev", "test"):
+        with (out / f"questions_{split}.jsonl").open("w") as f:
+            for q in questions:
+                if q["split"] == split:
+                    f.write(json.dumps(q, ensure_ascii=False) + "\n")
     return {"patients": len(patients), "documents": sum(counts.values()), **counts,
-            "rows": sum(len(r.values) for p in patients for r in p.reports)}
+            "rows": sum(len(r.values) for p in patients for r in p.reports), "questions": len(questions)}
 
 
 if __name__ == "__main__":
