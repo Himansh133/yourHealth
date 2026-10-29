@@ -31,6 +31,18 @@ npm run dev        # http://localhost:5173, proxies /api to the backend
 # backend on another port?  API_URL=http://localhost:8010 npm run dev
 ```
 
+## WhatsApp bot (optional)
+
+1. Create a Meta developer app and add the WhatsApp product (Meta gives a test number).
+2. Set `WA_TOKEN`, `WA_PHONE_NUMBER_ID`, `WA_APP_SECRET`, `WA_VERIFY_TOKEN` and `WA_DISPLAY_NUMBER` in `backend/.env`.
+   Check Meta's docs for the current Graph API version (`WA_GRAPH_VERSION`).
+3. Expose the API over HTTPS (ngrok or cloudflared) and set the webhook URL to
+   `https://<host>/api/v1/whatsapp/webhook` with your verify token; subscribe to `messages`.
+4. In the app: header → WhatsApp → Get a code, then send `LINK <code>` to the bot.
+
+The worker handles messages, so it must be running. To try the bot without Meta, point `WA_API_BASE` at a local
+stand-in for the Graph API and post signed webhook payloads yourself.
+
 ## Tests
 
 ```bash

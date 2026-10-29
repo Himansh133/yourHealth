@@ -54,3 +54,11 @@ def test_download_media_gets_the_url_then_the_bytes_with_the_token():
     assert (data, mime) == (b"%PDF-1.4", "application/pdf")
     assert calls == [("https://graph.facebook.com/v23.0/MEDIA1", "Bearer tok"),
                      ("https://lookaside.example/file", "Bearer tok")]
+
+
+def test_api_base_is_configurable_for_local_testing():
+    seen = {}
+    api = CloudApi("tok", "PNID", "v23.0", base="http://localhost:8020",
+                   transport=httpx.MockTransport(lambda r: (seen.update(url=str(r.url)), httpx.Response(200, json={}))[1]))
+    api.send_text("+911", "hi")
+    assert seen["url"] == "http://localhost:8020/v23.0/PNID/messages"

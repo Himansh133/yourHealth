@@ -259,3 +259,26 @@ def test_done_notification_goes_only_to_the_whatsapp_sender(family, db_session):
     notify_report_done(db_session, wa, docs["web"].id)
     [(_, to, body)] = wa.sent
     assert to == PHONE and body.startswith("Sorry, I couldn't read Papa's file")
+
+
+def test_profiles_with_the_same_name_get_numbered_buttons(family, db_session):
+    family["client"].post("/api/v1/profiles", json={"display_name": "Papa"})
+    wa = run(db_session, doc_msg())
+    assert [title for _, title in wa.sent[0][3]] == ["Papa", "Mummy", "Papa (2)"]
+
+
+def test_sending_a_report_makes_that_profile_the_one_questions_are_about(family, db_session):
+    run(db_session, doc_msg())
+    pending = db_session.query(WhatsAppPendingUpload).one()
+    run(db_session, tap(f"up:{pending.id}:{family['mummy']}"), wa=FakeWhatsApp(media={"MEDIA1": (pdf(), "application/pdf")}))
+    wa = run(db_session, text("latest HbA1c?", mid="wamid.8"))
+    assert wa.sent[0][2].startswith("Answering for Mummy.")
+
+
+def test_a_name_shared_by_two_profiles_prefers_the_one_last_used(family, db_session):
+    second = uuid.UUID(family["client"].post("/api/v1/profiles", json={"display_name": "Papa"}).json()["id"])
+    link = db_session.query(WhatsAppLink).one()
+    link.last_profile_id = second
+    db_session.commit()
+    wa = run(db_session, text("papa ka hba1c?"))
+    assert f"/profiles/{second}/ask" in wa.sent[0][2]

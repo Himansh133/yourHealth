@@ -125,3 +125,15 @@ After the fixes below: dev 97.6%, and test 98.1% (run once, after tuning on dev)
 | 8.10 | Hindi "पिछला" can mean "last" or "the one before"; the model twice read it as the one before the latest and declined to answer. | Hindi value accuracy 78% on the first test run. | Fixed | The prompt now says what the evidence is ("the most recent value"; "last", "latest" and "पिछला" mean this one). Hindi value accuracy 100% on dev and test after. |
 | 8.11 | The first Q&A scorer counted date parts ("07" in 2025-07-04) as made-up numbers and judged trends by keywords. | Ours looked worse than it was (31% "made-up" numbers, 44% trends). | Fixed | Dates are set aside, the records include the app's stored values, and an LLM judge reads the trend direction. |
 | 8.12 | The test split was looked at before the two fixes above. | Strictly, test is no longer untouched. | Worked around | Both runs are kept and reported (`eval/results/2026-10-29_summary.md`); the fixes were confirmed on dev. A fresh seed (v2) would give a clean test set. |
+
+## 9. WhatsApp bot
+
+| # | Problem | Impact | Status | Solution |
+|---|---|---|---|---|
+| 9.1 | No Meta developer account or public HTTPS URL during development. | The bot couldn't be tried against real WhatsApp. | Worked around | Tests use a fake client; a local stand-in for the Graph API (`WA_API_BASE`) plus signed webhook posts ran the whole flow live: link, report, buttons, processing, "Done" message, Hindi answer. Needs one real test once a Meta app exists. |
+| 9.2 | Meta's current Graph API version couldn't be confirmed from public search. | Calls could target an old version. | Open | `WA_GRAPH_VERSION` setting (default v23.0); check Meta's docs when setting up. |
+| 9.3 | Two family profiles with the same name ("Papa") gave two identical buttons, and questions went to the first one. Found in the live run. | Report saved or question answered for the wrong person. | Fixed | Buttons are numbered ("Papa", "Papa (2)"); a name matching several profiles picks the one used last; sending a report makes that profile the default for questions. |
+| 9.4 | Meta retries webhooks and may deliver a message twice. | Duplicate documents or replies. | Fixed | Each message id is inserted with `ON CONFLICT DO NOTHING`; only a new row is queued. |
+| 9.5 | Webhook must answer within seconds, but downloading, OCR and answering take longer. | Meta would retry and flood the bot. | Fixed | The webhook only verifies, records and queues; the worker does the work. |
+| 9.6 | A 6-digit link code could in theory be guessed by sending many LINK messages. | Someone could link their phone to another account. | Open | Codes expire in 10 minutes and are single use. Add a per-phone limit on failed LINK attempts. |
+| 9.7 | The "Done" message is a proactive message; outside WhatsApp's 24-hour window it needs an approved template. | Late replies could be refused by Meta. | Open | Processing takes seconds, so replies stay inside the window; add a template for retries. |

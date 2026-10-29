@@ -22,8 +22,9 @@ class WhatsApp(Protocol):
 
 
 class CloudApi:
-    def __init__(self, token: str, phone_number_id: str, version: str, transport: httpx.BaseTransport | None = None):
-        self._client = httpx.Client(base_url=f"https://graph.facebook.com/{version}/", timeout=30,
+    def __init__(self, token: str, phone_number_id: str, version: str, base: str = "https://graph.facebook.com",
+                 transport: httpx.BaseTransport | None = None):
+        self._client = httpx.Client(base_url=f"{base.rstrip('/')}/{version}/", timeout=30,
                                     headers={"Authorization": f"Bearer {token}"}, transport=transport)
         self._phone_number_id = phone_number_id
 
@@ -68,4 +69,4 @@ class LogOnly:
 def get_whatsapp() -> WhatsApp:
     if not (settings.wa_token and settings.wa_phone_number_id):
         return LogOnly()
-    return CloudApi(settings.wa_token, settings.wa_phone_number_id, settings.wa_graph_version)
+    return CloudApi(settings.wa_token, settings.wa_phone_number_id, settings.wa_graph_version, settings.wa_api_base)

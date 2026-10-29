@@ -47,6 +47,7 @@ class Settings(BaseSettings):
     wa_verify_token: str = ""
     wa_graph_version: str = "v23.0"  # check Meta's docs for the current version
     wa_display_number: str = ""  # the bot's number, shown on the Connect WhatsApp screen
+    wa_api_base: str = "https://graph.facebook.com"  # point at a local stand-in to test without Meta
 
     refdata_dir: Path = Path(__file__).resolve().parents[3] / "refdata" / "seed"
 

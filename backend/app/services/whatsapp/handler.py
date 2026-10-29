@@ -102,11 +102,21 @@ def _profiles(db: Session, user_id: uuid.UUID, need: str) -> list[Profile]:
 def _choose(wa: WhatsApp, phone: str, prompt: str, prefix: str, profiles: list[Profile], extra: str = "") -> None:
     if not profiles:
         return wa.send_text(phone, "Add a family profile in the YourHealth app first.")
-    options = [(f"{prefix}:{extra}{p.id}", p.display_name) for p in profiles]
+    options = [(f"{prefix}:{extra}{p.id}", title) for p, title in zip(profiles, _titles(profiles))]
     if len(options) <= MAX_BUTTONS:
         wa.send_buttons(phone, prompt, options)
     else:
         wa.send_list(phone, prompt, "Choose", options)
+
+
+def _titles(profiles: list[Profile]) -> list[str]:
+    """Display names, numbered when two profiles share one: "Papa", "Papa (2)"."""
+    seen: dict[str, int] = {}
+    out = []
+    for p in profiles:
+        seen[p.display_name] = seen.get(p.display_name, 0) + 1
+        out.append(p.display_name if seen[p.display_name] == 1 else f"{p.display_name} ({seen[p.display_name]})")
+    return out
 
 
 def _ask_whose_report(db: Session, wa: WhatsApp, link: WhatsAppLink, media: dict) -> None:
@@ -149,6 +159,7 @@ def _on_choice(db: Session, wa: WhatsApp, storage: Storage, queue: DocumentQueue
     except UploadRejected as e:
         return wa.send_text(link.phone_e164, f"I couldn't take this file: {e.message}")
     db.delete(pending)
+    link.last_profile_id = profile.id  # questions that follow are most likely about this report
     db.commit()
     if created:
         wa.send_text(link.phone_e164, f"Got it. Reading {profile.display_name}'s report…")
@@ -159,8 +170,8 @@ def _on_choice(db: Session, wa: WhatsApp, storage: Storage, queue: DocumentQueue
 
 def _answer(db: Session, wa: WhatsApp, llm: LLM, link: WhatsAppLink, question: str) -> None:
     profiles = _profiles(db, link.user_id, "view")
-    pid = _named(question, profiles) or (link.last_profile_id if link.last_profile_id in {p.id for p in profiles}
-                                         else None)
+    pid = _named(question, profiles, link.last_profile_id) or (
+        link.last_profile_id if link.last_profile_id in {p.id for p in profiles} else None)
     if pid is None and len(profiles) == 1:
         pid = profiles[0].id
     if pid is None:
@@ -179,14 +190,16 @@ def _answer(db: Session, wa: WhatsApp, llm: LLM, link: WhatsAppLink, question: s
     wa.send_text(link.phone_e164, "\n".join(lines))
 
 
-def _named(text: str, profiles: list[Profile]) -> uuid.UUID | None:
+def _named(text: str, profiles: list[Profile], last: uuid.UUID | None) -> uuid.UUID | None:
+    """The profile the question names; when two share the name, the one used last."""
     lower = text.lower()
+    matches = []
     for p in profiles:
         name = p.display_name.lower()
         names = [name, *HINDI_NAMES.get(name, [])]
         if any(re.search(rf"\b{re.escape(n)}\b", lower) if n.isascii() else n in text for n in names):
-            return p.id
-    return None
+            matches.append(p.id)
+    return last if last in matches else (matches[0] if matches else None)
 
 
 def _readable(text: str) -> str:
