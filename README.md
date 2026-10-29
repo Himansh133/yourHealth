@@ -13,7 +13,7 @@ cp ../.env.example .env
 sed -i "s|^JWT_SECRET=.*|JWT_SECRET=$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')|" .env
 .venv/bin/alembic upgrade head
 .venv/bin/python -m app.refdata.load   # lab tests, medicines, label-sourced effects
-.venv/bin/python -m app.services.chat.download_models   # search models, ~4.6 GB (add --int8 for ~1.2 GB)
+.venv/bin/python -m app.services.chat.download_models   # search models, ~2.9 GB (add --int8 for ~1.2 GB)
 .venv/bin/python -m app.workers.reindex   # search chunks + embeddings for documents processed before
 .venv/bin/uvicorn app.main:app --reload
 # in a second terminal: the worker that processes uploads

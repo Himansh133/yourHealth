@@ -32,9 +32,12 @@ class Settings(BaseSettings):
     # Search models (plan 10.5), ONNX files under models_dir. Missing files or disabled: keyword search only.
     embeddings_enabled: bool = True
     models_dir: Path = Path(__file__).resolve().parents[2] / "models"
+    # Full-precision embedder: cheap per question, and its vectors are stored (changing it means a reindex).
+    # 8-bit reranker: 2x faster on CPU, same top passage in 6 of 7 test questions; it stores nothing, so switching
+    # back to onnx/model.onnx is just a restart.
     embedding_model: str = "bge-m3/onnx/model.onnx"  # 8-bit, less RAM: bge-m3-int8/onnx/model_int8.onnx
     embedding_tokenizer: str = "bge-m3/onnx/tokenizer.json"
-    reranker_model: str = "bge-reranker-v2-m3/onnx/model.onnx"  # 8-bit: bge-reranker-v2-m3/onnx/model_int8.onnx
+    reranker_model: str = "bge-reranker-v2-m3/onnx/model_int8.onnx"
     reranker_tokenizer: str = "bge-reranker-v2-m3/tokenizer.json"
 
     refdata_dir: Path = Path(__file__).resolve().parents[3] / "refdata" / "seed"
