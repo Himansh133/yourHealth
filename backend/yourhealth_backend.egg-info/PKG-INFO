@@ -13,6 +13,17 @@ Requires-Dist: rapidfuzz
 Requires-Dist: pwdlib[argon2]
 Requires-Dist: pyjwt
 Requires-Dist: email-validator
+Requires-Dist: pymupdf
+Requires-Dist: python-multipart
+Requires-Dist: boto3
+Requires-Dist: rq
+Requires-Dist: rapidocr
+Requires-Dist: onnxruntime
+Requires-Dist: httpx
+Requires-Dist: qrcode
+Requires-Dist: pgvector
+Requires-Dist: tokenizers
+Requires-Dist: huggingface_hub
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
 Requires-Dist: httpx; extra == "dev"

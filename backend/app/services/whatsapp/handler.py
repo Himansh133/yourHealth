@@ -8,12 +8,13 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import httpx
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.permissions import _ALLOWED
 from app.db.models import (
+    AuditEvent,
     Document,
     LabResult,
     LabTestRecord,
@@ -25,6 +26,7 @@ from app.db.models import (
     WhatsAppPendingUpload,
 )
 from app.services.chat.llm import LLM
+from app.services.audit import record
 from app.services.chat.service import answer_chat
 from app.services.extraction.validate import UploadRejected
 from app.services.queue import DocumentQueue
@@ -33,6 +35,8 @@ from app.services.uploads import store_upload
 from app.services.whatsapp.client import MAX_BUTTONS, WhatsApp
 
 PENDING_MINUTES = 30
+# A 6-digit code could be guessed by brute force: after this many wrong codes a phone waits an hour (plan 7.4).
+MAX_LINK_FAILURES_PER_HOUR = 5
 MAX_CLAIMS_IN_REPLY = 3
 LINK_RE = re.compile(r"^link\s+(\d{6})$", re.IGNORECASE)
 DEVANAGARI = re.compile(r"[ऀ-ॿ]")
@@ -46,6 +50,7 @@ NOT_LINKED = ("Hi! To use YourHealth here, link your account first: open YourHea
               "then send me LINK and the 6-digit code.")
 BAD_CODE = "That code didn't work or has expired. Make a new one in YourHealth → Connect WhatsApp."
 HELP = "I can read PDFs and photos of lab reports and prescriptions, and answer typed questions about them."
+TOO_MANY_TRIES = "Too many tries with wrong codes. Please wait an hour, then make a new code in the app."
 SEND_AGAIN = "That upload has expired or isn't yours. Please send it again."
 
 
@@ -78,8 +83,16 @@ def handle_message(db: Session, wa: WhatsApp, storage: Storage, queue: DocumentQ
 
 def _link(db: Session, wa: WhatsApp, phone: str, code: str) -> None:
     now = datetime.now(timezone.utc)
+    phone_key = {"phone_sha256": hashlib.sha256(phone.encode()).hexdigest()}  # audit without the number itself
+    recent_failures = db.scalar(select(func.count()).select_from(AuditEvent).where(
+        AuditEvent.action == "whatsapp.link", AuditEvent.outcome == "denied", AuditEvent.meta == phone_key,
+        AuditEvent.at > now - timedelta(hours=1)))
+    if recent_failures >= MAX_LINK_FAILURES_PER_HOUR:
+        return wa.send_text(phone, TOO_MANY_TRIES)
     row = db.get(WhatsAppLinkCode, hash_code(code))
     if row is None or row.used_at is not None or row.expires_at <= now:
+        record(db, "whatsapp.link", "denied", actor_kind="whatsapp", meta=phone_key)
+        db.commit()
         return wa.send_text(phone, BAD_CODE)
     row.used_at = now
     existing = db.scalar(select(WhatsAppLink).where(WhatsAppLink.phone_e164 == phone))

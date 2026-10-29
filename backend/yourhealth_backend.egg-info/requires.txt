@@ -9,6 +9,17 @@ rapidfuzz
 pwdlib[argon2]
 pyjwt
 email-validator
+pymupdf
+python-multipart
+boto3
+rq
+rapidocr
+onnxruntime
+httpx
+qrcode
+pgvector
+tokenizers
+huggingface_hub
 
 [dev]
 pytest

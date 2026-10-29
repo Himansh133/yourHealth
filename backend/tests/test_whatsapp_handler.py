@@ -282,3 +282,26 @@ def test_a_name_shared_by_two_profiles_prefers_the_one_last_used(family, db_sess
     db_session.commit()
     wa = run(db_session, text("papa ka hba1c?"))
     assert f"/profiles/{second}/ask" in wa.sent[0][2]
+
+
+def test_too_many_wrong_link_codes_lock_the_phone_for_an_hour(make_user_client, db_session):
+    make_user_client("a@example.com")
+    user = db_session.query(User).one()
+    db_session.add(WhatsAppLinkCode(code_hash=hash_code("482913"), user_id=user.id,
+                                    expires_at=datetime.now(timezone.utc) + timedelta(minutes=5)))
+    db_session.commit()
+    for i in range(5):
+        assert "didn't work" in run(db_session, text(f"LINK 00000{i}", mid=f"w{i}")).sent[0][2]
+
+    wa = run(db_session, text("LINK 482913", mid="w9"))  # even the right code is refused now
+
+    assert "Too many tries" in wa.sent[0][2]
+    assert db_session.query(WhatsAppLink).count() == 0
+
+
+def test_failed_attempts_are_audited_without_the_phone_number(make_user_client, db_session):
+    from app.db.models import AuditEvent
+    run(db_session, text("LINK 123456"))
+    [event] = db_session.query(AuditEvent).all()
+    assert (event.action, event.outcome, event.actor_kind) == ("whatsapp.link", "denied", "whatsapp")
+    assert PHONE not in str(event.meta) and PHONE.lstrip("+") not in str(event.meta)
