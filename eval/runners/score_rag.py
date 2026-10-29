@@ -1,6 +1,8 @@
 """Score Q&A answers against the generated gold (plan 14.3) and write the comparison table (plan 14.4).
 
-Usage (from backend/): PYTHONPATH=.. .venv/bin/python -m eval.runners.score_rag --split test
+Usage (from backend/):
+  DATABASE_URL=postgresql+psycopg://yourhealth:yourhealth@localhost:5432/yourhealth_eval \
+    PYTHONPATH=.. .venv/bin/python -m eval.runners.score_rag --split test
 """
 import argparse
 import json
@@ -80,12 +82,24 @@ def score_answer(q: dict, a: dict) -> dict:
     return {"correct": bool(correct), "false_abstain": q["answerable"] and kind != "treatment" and not a["answerable"]}
 
 
+def _records(questions: dict) -> dict[str, str]:
+    """Each person's records, rebuilt from the eval database so every run is checked against the same thing."""
+    import uuid
+
+    from app.db.session import SessionLocal
+    from eval.runners.run_rag import record_text
+    profiles = json.loads((DATA / "eval_db.json").read_text())["profiles"]
+    with SessionLocal() as db:
+        return {k: record_text(db, uuid.UUID(profiles[k])) for k in {q["patient_key"] for q in questions.values()}}
+
+
 def pct(xs: list[bool]) -> str:
     return f"{100 * sum(xs) / len(xs):.0f}% ({sum(xs)}/{len(xs)})" if xs else "–"
 
 
 def main(split: str, stamp: str) -> Path:
     questions = {q["id"]: q for q in map(json.loads, (DATA / f"questions_{split}.jsonl").read_text().splitlines())}
+    records = _records(questions)
     systems = {}
     for name in ("b0", "b1", "ours"):
         f = RESULTS / f"{stamp}_rag_{name}_{split}.jsonl"
@@ -105,7 +119,7 @@ def main(split: str, stamp: str) -> Path:
             if q["answerable"] and q["type"] != "treatment":
                 false_abs.append(s["false_abstain"])
             if a["answerable"]:
-                unsupported.append(bool(unsupported_numbers(a["text"], a["record"])))
+                unsupported.append(bool(unsupported_numbers(a["text"], records[q["patient_key"]])))
             latency.append(a["latency"])
             leaks += a.get("leaks", 0)
         r = rows
