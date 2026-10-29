@@ -21,6 +21,7 @@ dependencies = [
   "rapidocr",
   "onnxruntime",
   "httpx",
+  "qrcode",
 ]
 
 [project.optional-dependencies]

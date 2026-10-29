@@ -16,16 +16,14 @@ from app.db.models import (
     DrugBrandIngredient,
     DrugIngredient,
     DrugLabEffect,
-    LabResult,
     LabTestRecord,
     ProfileMedicine,
     User,
 )
 from app.db.session import get_db
-from app.services.medicines import insights as ins
 from app.services.medicines.brands import BrandIndex, normalize_brand
 from app.services.medicines.composition import parse_composition
-from app.services.medicines.store import effects_for, medicine_ingredients, set_ingredients
+from app.services.medicines.store import effects_for, medicine_ingredients, profile_insights, set_ingredients
 
 router = APIRouter()
 
@@ -302,23 +300,7 @@ class InsightOut(BaseModel):
 @router.get("/profiles/{pid}/medicine-insights", response_model=list[InsightOut])
 def medicine_insights(pid: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
     require_profile_access(db, user.id, pid, "view")
-    mis = medicine_ingredients(db, pid, confirmed_only=True)
-    effects = effects_for(db, {mi.ingredient.id for mi in mis})
-    names = {mi.ingredient.id: mi.ingredient.name for mi in mis}
-    test_ids = {t.id for _, t in effects}
-    readings = db.execute(
-        select(LabResult, LabTestRecord.loinc_code)
-        .join(LabTestRecord, LabTestRecord.id == LabResult.lab_test_id)
-        .where(LabResult.profile_id == pid, LabResult.lab_test_id.in_(test_ids), LabResult.value_canonical.is_not(None))
-    ).all() if test_ids else []
-
-    result = ins.compute_insights(
-        [ins.Medicine(str(mi.medicine.id), mi.name, mi.ingredient.name, mi.medicine.started_on, mi.medicine.stopped_on)
-         for mi in mis],
-        [ins.Effect(names[e.ingredient_id], t.loinc_code, t.canonical_name, t.canonical_unit, e.direction,
-                    e.effect_type, e.onset_days, e.note_en, e.source_url, e.source_section) for e, t in effects],
-        [ins.Reading(str(r.id), loinc, r.observed_on, r.value_canonical) for r, loinc in readings],
-    )
+    result = profile_insights(db, pid)
 
     def reading(r):
         return ReadingOut(lab_result_id=r.id, observed_on=r.observed_on, value=r.value) if r else None

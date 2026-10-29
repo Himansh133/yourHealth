@@ -1,4 +1,4 @@
-"""DB queries shared by the medicines routes and the trends endpoint."""
+"""DB queries shared by the medicines routes, the trends endpoint, chat and the doctor sheet."""
 import uuid
 from dataclasses import dataclass
 
@@ -9,10 +9,12 @@ from app.db.models import (
     DrugBrand,
     DrugIngredient,
     DrugLabEffect,
+    LabResult,
     LabTestRecord,
     ProfileMedicine,
     ProfileMedicineIngredient,
 )
+from app.services.medicines import insights as ins
 
 
 @dataclass(frozen=True)
@@ -49,3 +51,25 @@ def effects_for(db: Session, ingredient_ids: set[uuid.UUID]) -> list[tuple[DrugL
 def set_ingredients(db: Session, medicine: ProfileMedicine, ingredient_ids: list[uuid.UUID]) -> None:
     db.query(ProfileMedicineIngredient).filter_by(profile_medicine_id=medicine.id).delete()
     db.add_all(ProfileMedicineIngredient(profile_medicine_id=medicine.id, ingredient_id=i) for i in ingredient_ids)
+
+
+def profile_insights(db: Session, profile_id: uuid.UUID) -> list[ins.Insight]:
+    """Plan 9.5 for every confirmed medicine of this profile, from its own readings."""
+    mis = medicine_ingredients(db, profile_id, confirmed_only=True)
+    effects = effects_for(db, {mi.ingredient.id for mi in mis})
+    names = {mi.ingredient.id: mi.ingredient.name for mi in mis}
+    test_ids = {t.id for _, t in effects}
+    readings = db.execute(
+        select(LabResult, LabTestRecord.loinc_code)
+        .join(LabTestRecord, LabTestRecord.id == LabResult.lab_test_id)
+        .where(LabResult.profile_id == profile_id, LabResult.lab_test_id.in_(test_ids),
+               LabResult.value_canonical.is_not(None))
+    ).all() if test_ids else []
+
+    return ins.compute_insights(
+        [ins.Medicine(str(mi.medicine.id), mi.name, mi.ingredient.name, mi.medicine.started_on, mi.medicine.stopped_on)
+         for mi in mis],
+        [ins.Effect(names[e.ingredient_id], t.loinc_code, t.canonical_name, t.canonical_unit, e.direction,
+                    e.effect_type, e.onset_days, e.note_en, e.source_url, e.source_section) for e, t in effects],
+        [ins.Reading(str(r.id), loinc, r.observed_on, r.value_canonical) for r, loinc in readings],
+    )
