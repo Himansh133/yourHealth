@@ -11,7 +11,7 @@ def r(question, meds=MEDS):
 def test_last_value_question_goes_to_sql_value():
     d = r("What was papa's last HbA1c?")
     assert d.labels == ["value"]
-    assert d.test.loinc_code == "4548-4"
+    assert [t.loinc_code for t in d.tests] == ["4548-4"]
 
 
 def test_hinglish_value_question():
@@ -21,7 +21,7 @@ def test_hinglish_value_question():
 def test_trend_question_goes_to_sql_trend():
     d = r("Is mummy's vitamin D improving?")
     assert d.labels == ["trend"]
-    assert d.test.canonical_name.lower().startswith("vitamin d")
+    assert d.tests[0].canonical_name.lower().startswith("vitamin d")
 
 
 def test_hinglish_trend_word():
@@ -37,7 +37,7 @@ def test_medicine_question():
 def test_medicine_and_test_is_medicine_lab():
     d = r("Is Glycomet bringing my HbA1c down?")
     assert d.labels == ["medicine_lab"]
-    assert d.test.loinc_code == "4548-4"
+    assert [t.loinc_code for t in d.tests] == ["4548-4"]
 
 
 def test_treatment_choice_wins_over_everything():
@@ -47,7 +47,7 @@ def test_treatment_choice_wins_over_everything():
 
 def test_test_alias_needs_whole_words():
     # "hb" is an alias, but not inside "hba1c"; "ldl" is an alias, but not inside "vldl"
-    assert r("latest hba1c").test.loinc_code == "4548-4"
+    assert [t.loinc_code for t in r("latest hba1c").tests] == ["4548-4"]
 
 
 def test_undecided_question_has_no_labels():
@@ -58,4 +58,26 @@ def test_undecided_question_has_no_labels():
 def test_general_question_about_a_test_is_left_undecided():
     d = r("What is HbA1c?")
     assert d.labels == []
-    assert d.test.loinc_code == "4548-4"
+    assert [t.loinc_code for t in d.tests] == ["4548-4"]
+
+
+def test_everyday_words_cover_several_tests():
+    d = r("How is papa's sugar now?")
+    assert d.labels == ["value"]
+    assert {t.loinc_code for t in d.tests} == {"4548-4", "1558-6"}
+
+
+def test_thyroid_trend():
+    d = r("Is mummy's thyroid getting better?")
+    assert d.labels == ["trend"]
+    assert {t.canonical_name for t in d.tests} == {"TSH", "Free T4"}
+
+
+def test_exact_test_name_beats_everyday_word():
+    assert [t.loinc_code for t in r("latest fasting blood sugar").tests] == ["1558-6"]
+
+
+def test_treatment_question_about_sugar_keeps_the_tests():
+    d = r("Which medicine should papa take for his sugar?")
+    assert d.labels == ["treatment"]
+    assert {t.loinc_code for t in d.tests} == {"4548-4", "1558-6"}

@@ -73,8 +73,9 @@ def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(current_user), db: S
     label = r.labels[0] if r.labels else None
 
     facts: list[LabFact] = []
-    if label in ("value", "trend", "treatment") and r.test:
-        facts = lab_lookup(db, pid, r.test.canonical_name, "trend" if label == "trend" else "latest") or []
+    if label in ("value", "trend", "treatment"):
+        for t in r.tests:
+            facts += lab_lookup(db, pid, t.loinc_code, "trend" if label == "trend" else "latest")
     evidence = [Evidence(id=f"E{i}", text=f.evidence_text()) for i, f in enumerate(facts, 1)]
     sources = [Source(id=e.id, kind="lab_result", lab_result_id=f.lab_result_id, document_id=f.document_id,
                       page_no=f.page_no) for e, f in zip(evidence, facts)]

@@ -141,3 +141,12 @@ def test_empty_question_is_rejected(make_user_client, use_llm):
     a = make_user_client("a@example.com")
     pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
     assert a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "  "}).status_code == 422
+
+
+def test_everyday_word_finds_the_values(make_user_client, db_session, test_ids, use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    add_hba1c(db_session, pid, test_ids, "7.2", date(2026, 6, 14))
+    use_llm(FakeLLM([]))
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "Which medicine should papa take for his sugar?"}).json()
+    assert [c["evidence_ids"] for c in body["claims"]] == [["E1"]]

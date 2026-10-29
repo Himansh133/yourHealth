@@ -1,7 +1,7 @@
 """SQL tool for value and trend questions (plan 10.4).
 
-The LLM never writes SQL or picks the profile: it names a test and a mode, and we run a fixed query on the
-profile the permission check gave us. Each row carries its lab_result, document and page as citation IDs.
+The LLM never writes SQL or picks the profile: the router names a test and a mode, and we run a fixed query
+on the profile the permission check gave us. Each row carries its lab_result, document and page as citation IDs.
 """
 import uuid
 from dataclasses import dataclass
@@ -13,7 +13,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models import Document, LabResult, LabTestRecord
-from app.services.labs.dictionary import get_lab_dictionary
 
 FLAG_TEXT = {"low": "LOW", "high": "HIGH", "normal": "within range"}
 
@@ -52,17 +51,14 @@ def _num(d: Decimal) -> str:
     return format(d, "f")
 
 
-def lab_lookup(db: Session, profile_id: uuid.UUID, test: str, mode: Literal["latest", "trend", "range"],
-               date_from: date | None = None, date_to: date | None = None) -> list[LabFact] | None:
-    """Rows oldest first ('latest' gives just the last one). None means we don't know that test."""
-    match = get_lab_dictionary().match(test)
-    if match is None:
-        return None
+def lab_lookup(db: Session, profile_id: uuid.UUID, loinc_code: str, mode: Literal["latest", "trend", "range"],
+               date_from: date | None = None, date_to: date | None = None) -> list[LabFact]:
+    """Rows oldest first ('latest' gives just the last one)."""
     q = (
         select(LabResult, LabTestRecord, Document.lab_name)
         .join(LabTestRecord, LabTestRecord.id == LabResult.lab_test_id)
         .join(Document, Document.id == LabResult.document_id)
-        .where(LabResult.profile_id == profile_id, LabTestRecord.loinc_code == match.test.loinc_code)
+        .where(LabResult.profile_id == profile_id, LabTestRecord.loinc_code == loinc_code)
         .order_by(LabResult.observed_on, LabResult.created_at)
     )
     if date_from:

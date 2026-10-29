@@ -44,7 +44,7 @@ def test_latest_returns_most_recent_row_with_citation_ids(db_session, test_ids, 
     add(db_session, pid, test_ids, "4548-4", "8.1", date(2026, 1, 10))
     june = add(db_session, pid, test_ids, "4548-4", "7.2", date(2026, 6, 14))
 
-    [fact] = lab_lookup(db_session, pid, "hba1c", "latest")
+    [fact] = lab_lookup(db_session, pid, "4548-4", "latest")
 
     assert (fact.lab_result_id, fact.document_id, fact.page_no) == (june.id, june.document_id, 2)
     assert fact.evidence_text() == "lab_result | HbA1c 7.2 % (ref 4.0-5.6) HIGH | 2026-06-14 | Dr Lal PathLabs p.2"
@@ -53,33 +53,29 @@ def test_latest_returns_most_recent_row_with_citation_ids(db_session, test_ids, 
 def test_trend_returns_all_rows_oldest_first(db_session, test_ids, pid):
     add(db_session, pid, test_ids, "4548-4", "7.2", date(2026, 6, 14))
     add(db_session, pid, test_ids, "4548-4", "8.1", date(2026, 1, 10))
-    facts = lab_lookup(db_session, pid, "Glycated Haemoglobin", "trend")
+    facts = lab_lookup(db_session, pid, "4548-4", "trend")
     assert [f.observed_on for f in facts] == [date(2026, 1, 10), date(2026, 6, 14)]
 
 
 def test_date_window_filters_rows(db_session, test_ids, pid):
     add(db_session, pid, test_ids, "4548-4", "8.1", date(2025, 11, 1))
     add(db_session, pid, test_ids, "4548-4", "7.2", date(2026, 6, 14))
-    facts = lab_lookup(db_session, pid, "hba1c", "range", date_from=date(2026, 1, 1))
+    facts = lab_lookup(db_session, pid, "4548-4", "range", date_from=date(2026, 1, 1))
     assert [f.observed_on for f in facts] == [date(2026, 6, 14)]
 
 
-def test_unknown_test_returns_none(db_session, test_ids, pid):
-    assert lab_lookup(db_session, pid, "unobtainium", "latest") is None
-
-
 def test_known_test_with_no_rows_returns_empty_list(db_session, test_ids, pid):
-    assert lab_lookup(db_session, pid, "hba1c", "latest") == []
+    assert lab_lookup(db_session, pid, "4548-4", "latest") == []
 
 
 def test_other_profiles_rows_are_never_returned(db_session, test_ids, pid, make_user_client):
     other = make_user_client("b@example.com").post("/api/v1/profiles", json=PAPA).json()["id"]
     add(db_session, other, test_ids, "4548-4", "9.9", date(2026, 6, 14))
-    assert lab_lookup(db_session, pid, "hba1c", "trend") == []
+    assert lab_lookup(db_session, pid, "4548-4", "trend") == []
 
 
 def test_unconverted_value_is_shown_as_printed_and_missing_range_said(db_session, test_ids, pid):
     add(db_session, pid, test_ids, "4548-4", "53", date(2026, 6, 14), canonical=False, raw_unit="mmol/mol",
         low=None, high=None, flag="no_range", lab=None)
-    [fact] = lab_lookup(db_session, pid, "hba1c", "latest")
+    [fact] = lab_lookup(db_session, pid, "4548-4", "latest")
     assert fact.evidence_text() == "lab_result | HbA1c 53 mmol/mol (no range printed) | 2026-06-14 | p.2"
