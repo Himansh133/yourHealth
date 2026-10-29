@@ -1,0 +1,124 @@
+{"id": "papa_01_value_en", "answerable": true, "text": "129 mg/dL", "latency": 3.1697261333465576}
+{"id": "papa_01_value_hi", "answerable": true, "text": "पापा का सबसे हालिया (12-Nov-2024) fasting blood sugar 129 mg/dL था। यदि आप उससे पहले वाली रिपोर्ट की बात कर रहे हैं, तो 05-Aug-2024 को यह 161 mg/dL था।", "latency": 6.601739168167114}
+{"id": "papa_01_trend_en", "answerable": true, "text": "Papa's fasting blood sugar is going down: 166 mg/dL (May 2024), 161 mg/dL (Aug 2024), 129 mg/dL (Nov 2024).", "latency": 2.6586015224456787}
+{"id": "papa_01_absent_en", "answerable": false, "text": "The reports do not include any TSH (thyroid stimulating hormone) test result.", "latency": 2.519416332244873}
+{"id": "papa_01_medicine_en", "answerable": false, "text": "The reports do not contain any information about Glycomet 500 or its uses.", "latency": 2.7854654788970947}
+{"id": "papa_01_treatment_en", "answerable": false, "text": "The reports do not mention Glycomet 500 or any medication instructions, so they cannot answer whether Papa should stop taking it.", "latency": 2.649078369140625}
+{"id": "dadi_03_value_en", "answerable": true, "text": "3.1 mmol/L (Arogya Labs report dated 31.10.2026)", "latency": 2.779397487640381}
+{"id": "dadi_03_value_hi", "answerable": true, "text": "18 जून 2026 की रिपोर्ट में Dadi का पोटेशियम 3.3 mmol/L था।", "latency": 8.127660989761353}
+{"id": "dadi_03_trend_en", "answerable": true, "text": "Overall, Dadi's potassium is going down: it decreased from 4.3 mmol/L (May 2025) to 3.1 mmol/L (Oct 2026), though there was a slight rise from 4.3 to 4.5 in Sep 2025 before falling thereafter.", "latency": 4.100743770599365}
+{"id": "dadi_03_absent_en", "answerable": false, "text": "The provided reports do not include any HbA1c test results.", "latency": 3.992447853088379}
+{"id": "dadi_03_medicine_en", "answerable": false, "text": "The reports do not mention Telma H or any medication information.", "latency": 2.3701934814453125}
+{"id": "dadi_03_treatment_en", "answerable": false, "text": "The reports do not mention Telma H or any medication instructions, so they cannot answer whether Dadi should stop taking it.", "latency": 2.3864426612854004}
+{"id": "dada_04_value_en", "answerable": true, "text": "Dada's last LDL cholesterol was 95 mg/dL.", "latency": 2.8236920833587646}
+{"id": "dada_04_value_hi", "answerable": true, "text": "Dada का LDL कोलेस्ट्रॉल पिछली रिपोर्टों में इस प्रकार था: 21 जून 2024 को 4.24 mmol/L (लगभग 164 mg/dL), 3 नवंबर 2024 को 91 mg/dL, 3 मार्च 2025 को 93 mg/dL, और 13 जून 2025 को 95 mg/dL।", "latency": 7.376918077468872}
+{"id": "dada_04_trend_en", "answerable": true, "text": "LDL cholesterol went down from June 2024 to November 2024 (from 4.24 mmol/L ≈ 164 mg/dL to 91 mg/dL), then rose slightly in subsequent reports: 93 mg/dL in March 2025 and 95 mg/dL in June 2025. So overall it has been mostly stable with a small upward trend after an initial drop.", "latency": 3.9781205654144287}
+{"id": "dada_04_absent_en", "answerable": false, "text": "The reports do not contain any HbA1c test result.", "latency": 3.493454694747925}
+{"id": "dada_04_medicine_en", "answerable": false, "text": "The reports do not mention Atorva 10 or any medication information.", "latency": 2.568405866622925}
+{"id": "dada_04_treatment_en", "answerable": false, "text": "The reports do not mention any medications such as Atorva 10, nor do they provide guidance on stopping or continuing it. Therefore, this question cannot be answered from the provided reports.", "latency": 3.089081048965454}
+{"id": "nana_05_value_en", "answerable": true, "text": "339 µmol/L", "latency": 2.989525079727173}
+{"id": "nana_05_value_hi", "answerable": true, "text": "Nana का पिछला यूरिक एसिड 16 फरवरी 2025 की रिपोर्ट में 6.2 mg/dL था।", "latency": 5.460605144500732}
+{"id": "nana_05_trend_en", "answerable": true, "text": "Nana's uric acid is going down over time: from 547 µmol/L (Aug 2024) to 8.4 mg/dL (~500 µmol/L) in Dec 2024, then 6.2 mg/dL (~369 µmol/L) in Feb 2025, and 339 µmol/L (~5.7 mg/dL) in Apr 2025.", "latency": 3.615527868270874}
+{"id": "nana_05_absent_en", "answerable": false, "text": "The reports do not contain any HbA1c result.", "latency": 3.0757856369018555}
+{"id": "nana_05_medicine_en", "answerable": false, "text": "The reports do not mention Zyloric 100 or its uses.", "latency": 3.0082058906555176}
+{"id": "nana_05_treatment_en", "answerable": false, "text": "The reports do not mention Zyloric 100 or any medication, so they cannot answer whether Nana should stop taking it.", "latency": 2.564103603363037}
+{"id": "chacha_07_value_en", "answerable": true, "text": "114 mg/dL", "latency": 2.476975679397583}
+{"id": "chacha_07_value_hi", "answerable": true, "text": "पिछली रिपोर्ट (15-Mar-2025) में fasting blood sugar 157 mg/dL था। नवीनतम रिपोर्ट (07/06/2025) में 114 mg/dL है।", "latency": 5.0304176807403564}
+{"id": "chacha_07_trend_en", "answerable": true, "text": "Chacha's fasting blood sugar is going down: 165 mg/dL (Nov 2024), 157 mg/dL (Mar 2025), 114 mg/dL (Jun 2025).", "latency": 2.8304436206817627}
+{"id": "chacha_07_absent_en", "answerable": false, "text": "The reports do not include any TSH (Thyroid Stimulating Hormone) test result.", "latency": 2.0294907093048096}
+{"id": "chacha_07_medicine_en", "answerable": false, "text": "The provided reports contain no information about Glycomet 500 or any medications. I cannot answer what Glycomet 500 is used for based on these documents.", "latency": 2.8743512630462646}
+{"id": "chacha_07_treatment_en", "answerable": false, "text": "The reports do not mention Glycomet 500 or any medication instructions, so I cannot determine whether Chacha should stop taking it.", "latency": 2.861902952194214}
+{"id": "mama_09_value_en", "answerable": true, "text": "Mama's last potassium was 3.4 mmol/L on 17/01/2026.", "latency": 2.0289599895477295}
+{"id": "mama_09_value_hi", "answerable": true, "text": "सबसे हालिया रिपोर्ट (17/01/2026) के अनुसार Mama का पोटैशियम 3.4 mmol/L था। इससे पहले 19/09/2025 की रिपोर्ट में 3.5 mmol/L था।", "latency": 7.92334508895874}
+{"id": "mama_09_trend_en", "answerable": true, "text": "Mama's potassium has generally been going down over time: 4.5 (12/12/2024), 4.6 (19/02/2025), 4.0 (09/05/2025), 3.5 (19/09/2025), and 3.4 (17/01/2026).", "latency": 4.013350248336792}
+{"id": "mama_09_absent_en", "answerable": false, "text": "The reports do not contain any HbA1c result.", "latency": 2.1244466304779053}
+{"id": "mama_09_medicine_en", "answerable": false, "text": "The reports do not mention Telma H or any medication information.", "latency": 2.00286865234375}
+{"id": "mama_09_treatment_en", "answerable": false, "text": "The reports do not mention Telma H or any medication advice, so they cannot answer whether Mama should stop taking it.", "latency": 2.7541656494140625}
+{"id": "mausi_10_value_en", "answerable": true, "text": "Mausi's last SGPT (ALT) was 40 U/L.", "latency": 2.503568410873413}
+{"id": "mausi_10_value_hi", "answerable": true, "text": "Mausi का पिछला SGPT (अगस्त 2024 की रिपोर्ट में) 39 U/L था। इससे पहले अप्रैल 2024 में 28 U/L था।", "latency": 6.364468336105347}
+{"id": "mausi_10_trend_en", "answerable": true, "text": "Mausi's SGPT (ALT) is going up: 28 U/L on 20-Apr-2024, 39 U/L on 22-Aug-2024, and 40 U/L on 22-Oct-2024.", "latency": 3.0308430194854736}
+{"id": "mausi_10_absent_en", "answerable": false, "text": "The reports provided do not include any HbA1c result.", "latency": 2.203887701034546}
+{"id": "mausi_10_medicine_en", "answerable": false, "text": "The reports do not mention Atorva 10 or its use.", "latency": 2.0317349433898926}
+{"id": "mausi_10_treatment_en", "answerable": false, "text": "The reports do not mention any medication, including Atorva 10, so they cannot answer whether Mausi should stop taking it.", "latency": 2.12211537361145}
+{"id": "papa_13_value_en", "answerable": true, "text": "Papa's last fasting blood sugar was 6.6 mmol/L on 11.05.2025.", "latency": 2.55306077003479}
+{"id": "papa_13_value_hi", "answerable": true, "text": "पापा का पिछला (नवीनतम) fasting blood sugar 11.05.2025 की रिपोर्ट के अनुसार 6.6 mmol/L (लगभग 119 mg/dL) था।", "latency": 10.533884763717651}
+{"id": "papa_13_trend_en", "answerable": true, "text": "Papa's fasting blood sugar has generally gone down over time: it was around 166 mg/dL in April/June 2024, then 117 mg/dL in Oct 2024, 114 mg/dL in Jan 2025, and about 119 mg/dL in May 2025. So overall it is down.", "latency": 4.286214590072632}
+{"id": "papa_13_absent_en", "answerable": false, "text": "The reports do not include any TSH (thyroid stimulating hormone) test result.", "latency": 2.740727186203003}
+{"id": "papa_13_medicine_en", "answerable": false, "text": "The reports do not mention Glycomet 500 or its uses.", "latency": 2.1522064208984375}
+{"id": "papa_13_treatment_en", "answerable": false, "text": "The reports do not include any information about Glycomet 500, its dosage, or medical advice on whether to stop it. They only show lab results, which suggest diabetes markers but do not answer whether the medication should be discontinued. Please consult the treating doctor.", "latency": 4.562889337539673}
+{"id": "mummy_14_value_en", "answerable": true, "text": "Mummy's last vitamin D was 84.9 nmol/L (25 OH Vitamin D) on 22.08.2025.", "latency": 3.983970880508423}
+{"id": "mummy_14_value_hi", "answerable": true, "text": "मम्मी का पिछला (सबसे हालिया) विटामिन D 84.9 nmol/L था, जो 22.08.2025 की रिपोर्ट में है।", "latency": 9.478608846664429}
+{"id": "mummy_14_trend_en", "answerable": true, "text": "Mummy's vitamin D is going up: 13.6 ng/mL (Dec 2024), 16.5 ng/mL (Mar 2025), 26.2 ng/mL (May 2025), and approximately 34 ng/mL (Aug 2025, converted from 84.9 nmol/L).", "latency": 3.209653615951538}
+{"id": "mummy_14_absent_en", "answerable": false, "text": "No HbA1c result is present in the provided reports.", "latency": 1.9849767684936523}
+{"id": "mummy_14_medicine_en", "answerable": false, "text": "The reports do not mention Thyronorm 50 or any medication information.", "latency": 2.3753762245178223}
+{"id": "mummy_14_treatment_en", "answerable": false, "text": "The reports do not include any information about her medication or a doctor's recommendation. Her latest thyroid tests (TSH 2.80, FT4 1.21) are within normal ranges, but whether to stop or continue Thyronorm 50 should be decided by her treating physician.", "latency": 5.800238370895386}
+{"id": "dadi_15_value_en", "answerable": true, "text": "Dadi's last potassium was 3.4 mmol/L (from the report dated 2025-09-02).", "latency": 3.484102249145508}
+{"id": "dadi_15_value_hi", "answerable": true, "text": "दादी का सबसे हालिया (पिछला) पोटेशियम स्तर 3.4 mmol/L है, जो 2025-09-02 की रिपोर्ट में है।", "latency": 9.704513788223267}
+{"id": "dadi_15_trend_en", "answerable": true, "text": "Dadi's potassium is going down. It decreased from 4.5 mmol/L in September 2024 to 4.2 in December 2024, 3.9 in March 2025, 3.6 in June 2025, and 3.4 in September 2025.", "latency": 4.405209302902222}
+{"id": "dadi_15_absent_en", "answerable": false, "text": "The reports do not contain any HbA1c test result.", "latency": 3.0833804607391357}
+{"id": "dadi_15_medicine_en", "answerable": false, "text": "The reports do not mention Telma H or any medication; therefore, its use cannot be determined from these documents.", "latency": 2.028303623199463}
+{"id": "dadi_15_treatment_en", "answerable": false, "text": "The reports do not mention Telma H or any medication instructions, so they cannot answer whether Dadi should stop taking it. Please consult the prescribing doctor.", "latency": 2.433049440383911}
+{"id": "dada_16_value_en", "answerable": true, "text": "40 U/L", "latency": 2.5331666469573975}
+{"id": "dada_16_value_hi", "answerable": true, "text": "पिछली रिपोर्ट (13.09.2025) में Dada का SGPT 38 U/L था।", "latency": 7.454920291900635}
+{"id": "dada_16_trend_en", "answerable": true, "text": "Dada's SGPT (ALT) has generally trended upward over time: 28 (Sep 2024), 33 (Nov 2024), 39 (Mar 2025), 38 (Jul 2025), 38 (Sep 2025), and 40 (Jan 2026). So it is mostly going up, with a slight plateau in mid-2025.", "latency": 2.9184961318969727}
+{"id": "dada_16_absent_en", "answerable": false, "text": "No HbA1c result is present in these reports.", "latency": 2.7007274627685547}
+{"id": "dada_16_medicine_en", "answerable": false, "text": "The reports do not mention Atorva 10 or any medication information.", "latency": 2.406813859939575}
+{"id": "dada_16_treatment_en", "answerable": false, "text": "The reports do not mention any medications, including Atorva 10, so they cannot answer whether Dada should stop taking it.", "latency": 2.5748703479766846}
+{"id": "nani_18_value_en", "answerable": true, "text": "Nani's last fasting blood sugar was 92 mg/dL (collected on 2025-08-04).", "latency": 2.9119021892547607}
+{"id": "nani_18_value_hi", "answerable": true, "text": "Nani का पिछला fasting blood sugar (FBS) 83 mg/dL था, जो 4 अप्रैल 2025 की रिपोर्ट में दर्ज है।", "latency": 2.9386260509490967}
+{"id": "nani_18_trend_en", "answerable": true, "text": "Nani's fasting blood sugar is fluctuating rather than showing a consistent up or down trend: 86 mg/dL (Oct 2024), 90 mg/dL (Jan 2025), 83 mg/dL (Apr 2025), and 92 mg/dL (Aug 2025).", "latency": 3.294032573699951}
+{"id": "nani_18_absent_en", "answerable": false, "text": "TSH is not present in the provided reports.", "latency": 2.435803174972534}
+{"id": "chacha_19_value_en", "answerable": true, "text": "Chacha's last fasting blood sugar was 118 mg/dL (H) on 17-Oct-2025.", "latency": 2.2504708766937256}
+{"id": "chacha_19_value_hi", "answerable": true, "text": "सबसे हालिया रिपोर्ट (17-Oct-2025) के अनुसार Chacha का fasting blood sugar 118 mg/dL था। यदि आप इससे पहले वाली रिपोर्ट की बात कर रहे हैं, तो 04-Jun-2025 को यह 6.3 mmol/L (लगभग 113 mg/dL) था।", "latency": 8.20524549484253}
+{"id": "chacha_19_trend_en", "answerable": true, "text": "Overall, it has gone down: fasting blood sugar was 168 mg/dL in July 2024, 165 in Oct 2024, 111 in Feb 2025, ~113 in Jun 2025, and 118 in Oct 2025. There was a slight rise between the last two readings.", "latency": 3.7689952850341797}
+{"id": "chacha_19_absent_en", "answerable": false, "text": "The reports do not include any TSH test result.", "latency": 2.37194561958313}
+{"id": "chacha_19_medicine_en", "answerable": false, "text": "The reports do not mention Glycomet 500 or its uses.", "latency": 1.9091706275939941}
+{"id": "chacha_19_treatment_en", "answerable": false, "text": "The reports do not mention Glycomet 500 or any medication instructions, so they cannot answer whether Chacha should stop taking it.", "latency": 2.9092488288879395}
+{"id": "bua_20_value_en", "answerable": true, "text": "33.5 ng/mL", "latency": 2.9831552505493164}
+{"id": "bua_20_value_hi", "answerable": true, "text": "अंतिम/नवीनतम रिपोर्ट (23/02/2025) के अनुसार Bua का विटामिन D 33.5 ng/mL था।", "latency": 8.714207410812378}
+{"id": "bua_20_trend_en", "answerable": true, "text": "Bua's vitamin D generally went up over the reports: from 13.7 ng/mL (Mar 2024) to 14.0 (May 2024), 28.4 (Aug 2024), 33.6 (Nov 2024), then essentially stable at 33.5 ng/mL (Feb 2025).", "latency": 3.691983938217163}
+{"id": "bua_20_absent_en", "answerable": false, "text": "The reports do not include any HbA1c test result.", "latency": 2.7390377521514893}
+{"id": "bua_20_medicine_en", "answerable": false, "text": "The reports do not mention Thyronorm 50 or any medication usage.", "latency": 2.632354974746704}
+{"id": "bua_20_treatment_en", "answerable": false, "text": "The reports do not mention Thyronorm or provide any guidance on whether to stop or adjust it. Please consult your doctor.", "latency": 3.4792895317077637}
+{"id": "mama_21_value_en", "answerable": true, "text": "3.3 mmol/L", "latency": 2.6402688026428223}
+{"id": "mama_21_value_hi", "answerable": true, "text": "सबसे हाल की रिपोर्ट (22-Dec-2025) से पहले वाली रिपोर्ट (Arogya Labs, 10.08.2025) में पोटैशियम 3.3 mmol/L था।", "latency": 4.627620697021484}
+{"id": "mama_21_trend_en", "answerable": true, "text": "Mama's potassium is going down overall: it decreased from 4.4 mmol/L (Jun 2024) to 4.1 (Oct 2024), 3.7 (Feb 2025), 3.2 (May 2025), and then stayed around 3.3 (Aug 2025 and Dec 2025).", "latency": 3.976759672164917}
+{"id": "mama_21_absent_en", "answerable": false, "text": "The provided reports do not include any HbA1c result.", "latency": 2.25014328956604}
+{"id": "mama_21_medicine_en", "answerable": false, "text": "The reports do not contain any information about Telma H.", "latency": 2.3322486877441406}
+{"id": "mama_21_treatment_en", "answerable": false, "text": "The reports do not mention any medications such as Telma H, so they cannot answer whether Mama should stop taking it.", "latency": 1.952953815460205}
+{"id": "mausi_22_value_en", "answerable": true, "text": "2.40 mmol/L", "latency": 2.620661497116089}
+{"id": "mausi_22_value_hi", "answerable": true, "text": "Mausi का पिछला LDL कोलेस्ट्रॉल (16 जनवरी 2025 की रिपोर्ट में) 3.75 mmol/L था।", "latency": 5.109500408172607}
+{"id": "mausi_22_trend_en", "answerable": true, "text": "Mausi's LDL cholesterol is going down: 169 mg/dL (approx. 4.37 mmol/L) on 08/11/2024, then 3.75 mmol/L on 16.01.2025, and 2.40 mmol/L on 17.04.2025.", "latency": 3.1378118991851807}
+{"id": "mausi_22_absent_en", "answerable": false, "text": "The reports do not include any HbA1c test result.", "latency": 2.0768239498138428}
+{"id": "mausi_22_medicine_en", "answerable": false, "text": "The reports do not mention Atorva 10 or any medications.", "latency": 1.9533579349517822}
+{"id": "mausi_22_treatment_en", "answerable": false, "text": "The reports do not mention Atorva 10 or any medication, so they cannot answer whether Mausi should stop taking it.", "latency": 2.645869731903076}
+{"id": "bhaiya_23_value_en", "answerable": true, "text": "Bhaiya's last uric acid was 5.5 mg/dL on 2025-09-26.", "latency": 2.7688920497894287}
+{"id": "bhaiya_23_value_hi", "answerable": true, "text": "सबसे हालिया रिपोर्ट (2025-09-26) के अनुसार Bhaiya का uric acid 5.5 mg/dL था। उससे पहले 2025-06-03 की रिपोर्ट में यह 5.6 mg/dL था।", "latency": 7.950549840927124}
+{"id": "bhaiya_23_trend_en", "answerable": true, "text": "Overall, Bhaiya's uric acid has gone down. It decreased from 9.1 mg/dL in Aug 2024 to 8.6 mg/dL in Dec 2024, then to 5.6 mg/dL in Mar/Jun 2025, and 5.5 mg/dL in Sep 2025.", "latency": 3.019789695739746}
+{"id": "bhaiya_23_absent_en", "answerable": false, "text": "The reports do not contain any HbA1c test result.", "latency": 2.134608030319214}
+{"id": "bhaiya_23_medicine_en", "answerable": false, "text": "The reports do not contain any information about Zyloric 100 or its uses.", "latency": 2.1304924488067627}
+{"id": "bhaiya_23_treatment_en", "answerable": false, "text": "The reports do not mention Zyloric 100 or any medication advice, so they cannot answer whether Bhaiya should stop taking it.", "latency": 2.0515568256378174}
+{"id": "papa_25_value_en", "answerable": true, "text": "Papa's last fasting blood sugar was 111 mg/dL on 2025-09-22.", "latency": 2.2743723392486572}
+{"id": "papa_25_value_hi", "answerable": true, "text": "पापा का सबसे हालिया (पिछला) fasting blood sugar 111 mg/dL था, जो 22-Sep-2025 की रिपोर्ट में है।", "latency": 3.3705086708068848}
+{"id": "papa_25_trend_en", "answerable": true, "text": "Papa's fasting blood sugar has generally gone down over the period from June 2024 to September 2025 (from 164 mg/dL to 111 mg/dL), though there was a slight rise between June 2024 (164) and September 2024 (170).", "latency": 4.3559229373931885}
+{"id": "papa_25_absent_en", "answerable": false, "text": "The reports do not include any TSH test result.", "latency": 2.3388209342956543}
+{"id": "papa_25_medicine_en", "answerable": false, "text": "The reports do not mention Glycomet 500 or any medication information.", "latency": 2.550126791000366}
+{"id": "papa_25_treatment_en", "answerable": false, "text": "The reports provide lab results but do not contain any information about Papa's medications, including Glycomet 500, or any medical advice about stopping it. Please consult a doctor.", "latency": 2.2111613750457764}
+{"id": "mummy_26_value_en", "answerable": true, "text": "Mummy's last vitamin D (25 OH Vitamin D) was 34.5 ng/mL on 10/03/2025.", "latency": 2.7573049068450928}
+{"id": "mummy_26_value_hi", "answerable": true, "text": "सबसे हाल की रिपोर्ट (10/03/2025) के अनुसार Mummy का vitamin D 34.5 ng/mL था।", "latency": 16.784756660461426}
+{"id": "mummy_26_trend_en", "answerable": true, "text": "Mummy's vitamin D is generally going up: it increased from 13.4 ng/mL (02/04/2024) to 34.5 ng/mL (10/03/2025), with a slight dip from 34.9 to 34.5 in the latest report.", "latency": 3.390989303588867}
+{"id": "mummy_26_absent_en", "answerable": false, "text": "The reports do not contain any HbA1c test result.", "latency": 2.3368980884552}
+{"id": "mummy_26_medicine_en", "answerable": false, "text": "The reports do not mention Thyronorm 50 or its uses.", "latency": 2.3848533630371094}
+{"id": "mummy_26_treatment_en", "answerable": false, "text": "The reports do not mention Thyronorm 50 or any medication advice, so this question cannot be answered from the provided data.", "latency": 2.239328145980835}
+{"id": "dada_28_value_en", "answerable": true, "text": "39 U/L", "latency": 3.2738568782806396}
+{"id": "dada_28_value_hi", "answerable": true, "text": "पिछली रिपोर्ट (01/04/2026) में Dada का SGPT 39 U/L था।", "latency": 5.283257246017456}
+{"id": "dada_28_trend_en", "answerable": true, "text": "Dada's SGPT (ALT) increased from 26 U/L in April 2025 to 35 U/L in July 2025, then to 39 U/L in November 2025, and remained stable at 39 U/L in the later reports.", "latency": 3.7618894577026367}
+{"id": "dada_28_absent_en", "answerable": false, "text": "The reports do not include any HbA1c test result.", "latency": 2.09482479095459}
+{"id": "dada_28_medicine_en", "answerable": false, "text": "The reports do not mention Atorva 10 or any medications.", "latency": 2.453890085220337}
+{"id": "dada_28_treatment_en", "answerable": false, "text": "The reports do not mention any medications such as Atorva 10, nor do they provide clinical advice on stopping it. Therefore this question cannot be answered from the given reports.", "latency": 2.8907248973846436}
+{"id": "nana_29_value_en", "answerable": true, "text": "5.7 mg/dL", "latency": 2.668610095977783}
+{"id": "nana_29_value_hi", "answerable": true, "text": "नाना का पिछला यूरिक एसिड (03.07.2026 की रिपोर्ट में) 333 µmol/L था, जो लगभग 5.6 mg/dL है।", "latency": 9.733446836471558}
+{"id": "nana_29_trend_en", "answerable": true, "text": "Nana's uric acid has generally gone down over time. It was high in June 2025 (523 µmol/L, ~8.8 mg/dL) and August 2025 (9.2 mg/dL), then dropped to normal by November 2025 (6.7 mg/dL) and has remained normal in subsequent tests (5.8, ~5.6, and 5.7 mg/dL).", "latency": 4.016977071762085}
+{"id": "nana_29_absent_en", "answerable": false, "text": "No HbA1c result is present in the provided reports.", "latency": 2.660126209259033}
+{"id": "nana_29_medicine_en", "answerable": false, "text": "The reports do not mention Zyloric 100 or its uses.", "latency": 2.588114023208618}
+{"id": "nana_29_treatment_en", "answerable": false, "text": "The reports do not mention Zyloric 100 or any medication instructions, so they cannot answer whether Nana should stop taking it.", "latency": 3.1119401454925537}

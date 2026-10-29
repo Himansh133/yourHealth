@@ -1,0 +1,46 @@
+{"id": "mummy_02_value_en", "answerable": true, "text": "33.9 ng/mL", "latency": 3.8567311763763428}
+{"id": "mummy_02_value_hi", "answerable": true, "text": "मेदी-स्कैन लैब की रिपोर्ट (17 जून 2025) के अनुसार पिछला विटामिन D स्तर 18.9 ng/mL था।", "latency": 9.704367876052856}
+{"id": "mummy_02_trend_en", "answerable": true, "text": "Mummy's vitamin D is going up: it was about 13.5 ng/mL (33.7 nmol/L) in March 2025, then 18.9 ng/mL in June 2025, and 33.9 ng/mL in October 2025.", "latency": 4.948845863342285}
+{"id": "mummy_02_absent_en", "answerable": false, "text": "HbA1c is not mentioned in any of the provided reports.", "latency": 3.926703691482544}
+{"id": "mummy_02_medicine_en", "answerable": false, "text": "The reports do not mention Thyronorm 50 or any medications.", "latency": 2.006174087524414}
+{"id": "mummy_02_treatment_en", "answerable": false, "text": "The reports do not mention Thyronorm 50 or any current medication instructions. They show TSH and thyroid hormone levels over time, with the most recent TSH and FT4 in the normal range, but stopping or changing thyroid medication should only be decided by a doctor. Please consult the treating physician.", "latency": 3.4737138748168945}
+{"id": "nani_06_value_en", "answerable": true, "text": "Nani's last fasting blood sugar was 87 mg/dL (on 27/10/2025).", "latency": 2.609036445617676}
+{"id": "nani_06_value_hi", "answerable": true, "text": "नवीनतम रिपोर्ट (27/10/2025) के अनुसार पिछला fasting blood sugar 87 mg/dL था।", "latency": 4.904895305633545}
+{"id": "nani_06_trend_en", "answerable": true, "text": "Nani's fasting blood sugar has generally gone down slightly, from 91 mg/dL in Dec 2024 to 87 mg/dL by Oct 2025.", "latency": 3.6292014122009277}
+{"id": "nani_06_absent_en", "answerable": false, "text": "The reports do not include any TSH (thyroid-stimulating hormone) test result.", "latency": 3.0174813270568848}
+{"id": "bua_08_value_en", "answerable": true, "text": "35.1 ng/mL", "latency": 2.795584201812744}
+{"id": "bua_08_value_hi", "answerable": true, "text": "पिछली रिपोर्ट (08/10/2025) में Vitamin D 35.1 ng/mL था।", "latency": 8.944443464279175}
+{"id": "bua_08_trend_en", "answerable": true, "text": "Bua's vitamin D is going up overall. It was 13.5 in July 2024, 13.3 in September 2024, then rose to 30.0 in January 2025, 33.3 in April 2025, 33.7 in July 2025, and 35.1 in August 2025.", "latency": 2.799133539199829}
+{"id": "bua_08_absent_en", "answerable": false, "text": "HbA1c is not present in the provided reports.", "latency": 2.5918924808502197}
+{"id": "bua_08_medicine_en", "answerable": false, "text": "The reports do not mention Thyronorm or its uses.", "latency": 2.795391798019409}
+{"id": "bua_08_treatment_en", "answerable": false, "text": "The reports do not mention Thyronorm 50 or any medication, so they cannot answer whether Bua should stop taking it.", "latency": 2.8993616104125977}
+{"id": "bhaiya_11_value_en", "answerable": true, "text": "Bhaiya's last uric acid was 333 µmol/L.", "latency": 3.3493359088897705}
+{"id": "bhaiya_11_value_hi", "answerable": true, "text": "रिपोर्ट के अनुसार, भैया का सबसे हालिया (पिछला) यूरिक एसिड 25.08.2024 की रिपोर्ट में 333 µmol/L है। इससे पहले 12.04.2024 को 9.2 mg/dL और 10.02.2024 को 8.9 mg/dL था।", "latency": 9.40536618232727}
+{"id": "bhaiya_11_trend_en", "answerable": true, "text": "Uric acid went up slightly from 8.9 mg/dL (Feb 2024) to 9.2 mg/dL (Apr 2024), then went down to 333 µmol/L (~5.6 mg/dL) in Aug 2024.", "latency": 3.9709279537200928}
+{"id": "bhaiya_11_absent_en", "answerable": false, "text": "The provided reports do not include any HbA1c test result.", "latency": 2.6070852279663086}
+{"id": "bhaiya_11_medicine_en", "answerable": false, "text": "The reports do not mention Zyloric 100 or its uses.", "latency": 2.7659361362457275}
+{"id": "bhaiya_11_treatment_en", "answerable": false, "text": "The reports do not mention any medications such as Zyloric 100 or provide any advice about stopping it. Please consult a doctor.", "latency": 3.0889840126037598}
+{"id": "didi_12_value_en", "answerable": true, "text": "Didi's last haemoglobin was 13.6 g/dL on the 20-Jun-2025 report.", "latency": 2.945345401763916}
+{"id": "didi_12_value_hi", "answerable": true, "text": "20 जून 2025 की रिपोर्ट से पहले वाली रिपोर्ट (10 मार्च 2025) में हीमोग्लोबिन 143 g/L यानी 14.3 g/dL था।", "latency": 14.078357696533203}
+{"id": "didi_12_trend_en", "answerable": true, "text": "Didi's haemoglobin has fluctuated but overall decreased slightly from 14.4 g/dL in April 2024 to 13.6 g/dL in June 2025, with an intermediate rise to 14.3 g/dL in March 2025.", "latency": 3.2969446182250977}
+{"id": "didi_12_absent_en", "answerable": false, "text": "The reports do not contain any TSH test result.", "latency": 2.606771469116211}
+{"id": "nana_17_value_en", "answerable": true, "text": "5.6 mg/dL", "latency": 2.5406739711761475}
+{"id": "nana_17_value_hi", "answerable": true, "text": "नाना का पिछला uric acid (16-Jun-2025 की रिपोर्ट के अनुसार) 5.6 mg/dL था।", "latency": 9.54155683517456}
+{"id": "nana_17_trend_en", "answerable": true, "text": "Nana's uric acid is going down. It was 8.9 mg/dL in July and October 2024, then dropped to about 5.5 mg/dL in February 2025 and remained around 5.6 mg/dL in June and September 2025.", "latency": 3.7139971256256104}
+{"id": "nana_17_absent_en", "answerable": false, "text": "The reports do not include any HbA1c test result.", "latency": 2.088876247406006}
+{"id": "nana_17_medicine_en", "answerable": false, "text": "The reports do not provide information about Zyloric 100 or its uses.", "latency": 3.3491861820220947}
+{"id": "nana_17_treatment_en", "answerable": false, "text": "The reports do not mention any medications such as Zyloric 100, so they cannot answer whether Nana should stop taking it.", "latency": 2.1004462242126465}
+{"id": "didi_24_value_en", "answerable": true, "text": "82 mg/dL", "latency": 2.147839069366455}
+{"id": "didi_24_value_hi", "answerable": true, "text": "दीदी का पिछला (सबसे हालिया) LDL cholesterol 29-Dec-2025 की रिपोर्ट में 82 mg/dL है।", "latency": 16.744868993759155}
+{"id": "didi_24_trend_en", "answerable": true, "text": "Didi's LDL cholesterol is going down (from 87 mg/dL in February to 82 mg/dL in December).", "latency": 2.873183488845825}
+{"id": "didi_24_absent_en", "answerable": false, "text": "The reports do not contain any TSH (thyroid stimulating hormone) test result.", "latency": 2.69830322265625}
+{"id": "dadi_27_value_en", "answerable": true, "text": "Dadi's last potassium was 3.7 mmol/L (on 04-Jul-2025).", "latency": 2.0344507694244385}
+{"id": "dadi_27_value_hi", "answerable": true, "text": "सबसे हाल की रिपोर्ट (04-Jul-2025) के अनुसार Dadi का पोटैशियम 3.7 mmol/L था।", "latency": 8.122852802276611}
+{"id": "dadi_27_trend_en", "answerable": true, "text": "Dadi's potassium is going down: 4.5 (Oct 2024), 4.3 (Jan 2025), 4.1 (Apr 2025), 3.7 (Jul 2025).", "latency": 3.015326499938965}
+{"id": "dadi_27_absent_en", "answerable": false, "text": "HbA1c is not present in the provided reports.", "latency": 2.9342446327209473}
+{"id": "dadi_27_medicine_en", "answerable": false, "text": "The provided reports contain laboratory results only and do not mention Telma H or any medication information.", "latency": 2.076655149459839}
+{"id": "dadi_27_treatment_en", "answerable": false, "text": "The reports do not contain any information about Telma H or medication instructions.", "latency": 2.527592182159424}
+{"id": "nani_30_value_en", "answerable": true, "text": "1.40 mmol/L", "latency": 2.293703317642212}
+{"id": "nani_30_value_hi", "answerable": true, "text": "Nani का पिछला (नवीनतम) HDL कोलेस्ट्रॉल 30.06.2025 की रिपोर्ट में 1.40 mmol/L था।", "latency": 10.279245853424072}
+{"id": "nani_30_trend_en", "answerable": true, "text": "Nani's HDL cholesterol has remained essentially stable with minor fluctuations: about 51 mg/dL in Jan 2024, near 51-53 mg/dL through 2024, 52 mg/dL in Mar 2025, and approximately 54 mg/dL in Jun 2025. Overall, it is not clearly going up or down; if anything, it is slightly higher at the last measurement.", "latency": 4.775924921035767}
+{"id": "nani_30_absent_en", "answerable": false, "text": "The reports do not include any TSH (thyroid-stimulating hormone) test result.", "latency": 2.3372042179107666}

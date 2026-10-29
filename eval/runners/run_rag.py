@@ -61,7 +61,6 @@ def baseline(system: str, q: dict, pid: uuid.UUID) -> dict:
         else:
             ids = _dense_ids(db, pid, get_embedder().embed([q["question"]])[0])[:6]
             context = "\n\n".join(db.scalars(select(Chunk.text).where(Chunk.id.in_(ids))))
-        record = record_text(db, pid)
     start = time.time()
     try:
         raw = get_llm().complete_json(BASELINE_SYSTEM.format(lang=LANG[q["lang"]]),
@@ -70,7 +69,7 @@ def baseline(system: str, q: dict, pid: uuid.UUID) -> dict:
         answerable, text = bool(out.get("answerable", True)), str(out.get("answer", ""))
     except (LLMError, ValueError) as e:
         answerable, text = True, f"[error: {type(e).__name__}]"
-    return {"answerable": answerable, "text": text, "record": record, "latency": time.time() - start}
+    return {"answerable": answerable, "text": text, "latency": time.time() - start}
 
 
 def ours(client, q: dict, pid: uuid.UUID) -> dict:
@@ -81,8 +80,7 @@ def ours(client, q: dict, pid: uuid.UUID) -> dict:
                      body["doctor_note"]])
     with SessionLocal() as db:
         leaks = sum(_owner(db, s) not in (None, pid) for s in body["sources"])
-        record = record_text(db, pid)
-    return {"answerable": body["answerable"], "text": text, "record": record, "latency": latency, "leaks": leaks,
+    return {"answerable": body["answerable"], "text": text, "latency": latency, "leaks": leaks,
             "route": body["route"], "fallback": body["fallback"]}
 
 
