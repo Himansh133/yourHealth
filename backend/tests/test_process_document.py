@@ -293,3 +293,28 @@ def test_rerun_keeps_confirmed_and_replaces_unconfirmed(db_session):
     meds = meds_of(db_session, doc)
     assert len([m for m in meds if m.confirmed_by_user]) == 1
     assert len([m for m in meds if not m.confirmed_by_user]) == 2
+
+
+def test_processed_document_is_indexed_for_search(db_session):
+    from app.db.models import Chunk
+    storage = MemoryStorage()
+    doc = add_document(db_session, storage, make_pdf([["Discharge summary", "Advice on Discharge:", "Low salt diet"]]))
+    run(db_session, storage, doc.id)
+    run(db_session, storage, doc.id)  # rerun replaces, doesn't duplicate
+    chunks = db_session.query(Chunk).filter_by(document_id=doc.id).all()
+    assert [c.page_start for c in chunks if c.chunk_type == "page_text"] == [1]
+    assert "Low salt diet" in chunks[0].text
+    assert chunks[0].profile_id == doc.profile_id
+
+
+def test_reindex_rebuilds_chunks_from_stored_pages(db_session):
+    from app.db.models import Chunk
+    from app.workers.reindex import reindex_all
+    storage = MemoryStorage()
+    doc = add_document(db_session, storage, make_pdf([["Advice: walk daily"]]))
+    run(db_session, storage, doc.id)
+    db_session.query(Chunk).delete()
+    db_session.commit()
+
+    assert reindex_all(db_session) == 1
+    assert "walk daily" in db_session.query(Chunk).filter_by(document_id=doc.id).one().text

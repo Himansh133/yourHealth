@@ -1,4 +1,4 @@
-"""RQ job: uploaded file -> page text -> lab results (plan 7.1). Indexing comes in a later slice."""
+"""RQ job: uploaded file -> page text -> lab results and medicines -> search chunks (plan 7.1)."""
 import logging
 import uuid
 from collections.abc import Callable
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import Document, DocumentPage, DrugBrand, DrugBrandIngredient, LabResult, ProfileMedicine
 from app.db.session import SessionLocal
+from app.services.chat.doc_search import index_document
 from app.services.extraction.classify import classify_document, find_lab_name, find_report_date
 from app.services.extraction.ocr import group_rows, rapid_ocr
 from app.services.extraction.text_layer import PageText, extract_text_layer, needs_ocr
@@ -65,6 +66,7 @@ def run(db: Session, storage: Storage, document_id: uuid.UUID, ocr: OcrEngine | 
         )
         doc.status = "parsing"
         _store_lab_results(db, doc, pages, get_lab_dictionary())
+        index_document(db, doc, [(p.page_no, p.text) for p in pages])
         db.commit()
     except Exception as e:
         db.rollback()

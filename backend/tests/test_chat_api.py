@@ -108,14 +108,38 @@ def test_treatment_question_gets_safety_answer_without_the_llm(make_user_client,
     assert llm.prompts == []
 
 
-def test_unsupported_question_says_so(make_user_client, use_llm):
+def test_document_question_searches_their_documents(make_user_client, db_session, use_llm):
+    from app.services.chat.doc_search import index_document
     a = make_user_client("a@example.com")
     pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
-    use_llm(FakeLLM([]))
+    doc = Document(profile_id=pid, source_channel="web", storage_key="docs/d", mime_type="application/pdf",
+                   size_bytes=1, sha256="d", doc_type="discharge", status="done", lab_name="City Hospital")
+    db_session.add(doc)
+    db_session.flush()
+    index_document(db_session, doc, [(1, "Diagnosis: diabetes"), (2, "Advice on Discharge: low sugar diet")])
+    db_session.commit()
+    answer = json.dumps({"answerable": True, "summary": "The discharge advice was a low sugar diet.",
+                         "claims": [{"text": "Advised a low sugar diet", "evidence_ids": ["E1"]}],
+                         "missing_info": [], "doctor_note": ""})
+    llm = use_llm(FakeLLM([answer]))
+
+    body = a.post(f"/api/v1/profiles/{pid}/chat",
+                  json={"question": "What did the discharge summary say about diet?"}).json()
+
+    assert body["route"] == ["document"]
+    assert "document | Discharge summary, City Hospital, p.2 | Advice on Discharge: low sugar diet" in llm.prompts[0][1]
+    assert body["sources"][0] == {"id": "E1", "kind": "document", "document_id": str(doc.id), "page_no": 2}
+
+
+def test_document_question_with_nothing_found_abstains(make_user_client, use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    llm = use_llm(FakeLLM([]))
     body = a.post(f"/api/v1/profiles/{pid}/chat",
                   json={"question": "What did the discharge summary say about diet?"}).json()
     assert body["answerable"] is False
-    assert body["route"] == []
+    assert body["summary"] == "I couldn't find this in Papa's reports."
+    assert llm.prompts == []
 
 
 def test_unconfigured_llm_falls_back_to_facts(make_user_client, db_session, test_ids, monkeypatch):

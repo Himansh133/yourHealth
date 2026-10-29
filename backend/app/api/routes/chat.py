@@ -10,9 +10,10 @@ from app.core.permissions import require_profile_access
 from app.db.models import Profile, User
 from app.db.session import get_db
 from app.services.chat.answer import ChatAnswer, answer_question
+from app.services.chat.doc_search import search_chunks
 from app.services.chat.lab_tool import LabFact, lab_lookup
-from app.services.chat.medicine_tool import MedicineFact, medicine_facts, medicine_vocabulary
 from app.services.chat.llm import LLM, LLMError, get_llm
+from app.services.chat.medicine_tool import MedicineFact, medicine_facts, medicine_vocabulary
 from app.services.chat.router import route
 from app.services.chat.validator import Claim, Evidence
 from app.services.labs.dictionary import get_lab_dictionary
@@ -23,7 +24,6 @@ router = APIRouter()
 SAFETY_SUMMARY = ("Choosing or changing a medicine depends on things this app can't see, like other conditions, "
                   "allergies, kidney function or pregnancy, so it is your doctor's call.")
 SAFETY_NOTE = "Want me to make a doctor visit sheet with this value flagged?"
-NOT_YET = "I can answer questions about test values, trends and medicines for now. Other questions are coming soon."
 
 
 class _Unconfigured:
@@ -53,7 +53,7 @@ class ChatIn(BaseModel):
 
 class Source(BaseModel):
     id: str
-    kind: Literal["lab_result", "medicine", "drug_label"]
+    kind: Literal["lab_result", "medicine", "drug_label", "document"]
     lab_result_id: uuid.UUID | None = None
     document_id: uuid.UUID | None = None
     page_no: int | None = None
@@ -83,7 +83,8 @@ def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(current_user), db: S
     name = db.get(Profile, pid).display_name
     vocab = medicine_vocabulary(db)
     r = route(body.question, get_lab_dictionary(), set(vocab))
-    label = r.labels[0] if r.labels else None
+    labels = r.labels or ["document"]  # rules couldn't place it: look in their documents
+    label = labels[0]
     asked_ingredients = {i for m in r.medicines for i in vocab[m]}
     loinc_codes = {t.loinc_code for t in r.tests}
 
@@ -101,6 +102,9 @@ def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(current_user), db: S
         linked = {e.ingredient_id for e, t in effects_for(db, taken) if t.loinc_code in loinc_codes}
         facts = medicine_facts(db, pid, linked | asked_ingredients)
         found += [(f.text, _medicine_source(f)) for f in facts if f.kind == "medicine"]
+    if label == "document":
+        found += [(h.evidence_text(), {"kind": "document", "document_id": h.document_id, "page_no": h.page_start})
+                  for h in search_chunks(db, pid, body.question)]
 
     evidence = [Evidence(id=f"E{i}", text=text) for i, (text, _) in enumerate(found, 1)]
     sources = [Source(id=e.id, **fields) for e, (_, fields) in zip(evidence, found)]
@@ -108,8 +112,6 @@ def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(current_user), db: S
     if label == "treatment":
         answer = ChatAnswer(answerable=True, summary=SAFETY_SUMMARY, missing_info=[], doctor_note=SAFETY_NOTE,
                             claims=[Claim(text=e.text, evidence_ids=[e.id]) for e in evidence])
-    elif label:
-        answer = answer_question(llm, body.question, name, evidence, body.lang)
     else:
-        answer = ChatAnswer(answerable=False, summary=NOT_YET, claims=[], missing_info=[], doctor_note="")
-    return ChatOut(**answer.model_dump(), route=r.labels, sources=sources)
+        answer = answer_question(llm, body.question, name, evidence, body.lang)
+    return ChatOut(**answer.model_dump(), route=labels, sources=sources)

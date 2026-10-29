@@ -6,6 +6,7 @@ from decimal import Decimal
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
+    Computed,
     Date,
     Float,
     ForeignKey,
@@ -15,7 +16,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import CITEXT, JSONB, UUID
+from sqlalchemy.dialects.postgresql import CITEXT, JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
@@ -235,3 +236,28 @@ class ProfileMedicineIngredient(Base):
     ingredient_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("drug_ingredients.id"), primary_key=True
     )
+
+
+# --- RAG (plan 6.6) ------------------------------------------------------------------------------------------
+
+class Chunk(TimestampMixin, Base):
+    """Searchable piece of a patient document. Keyword search only for now; the plan's embedding column comes
+    with the embedding model."""
+
+    __tablename__ = "chunks"
+    __table_args__ = (Index("chunks_tsv_idx", "tsv", postgresql_using="gin"),)
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    profile_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    chunk_type: Mapped[str] = mapped_column(Text, nullable=False)  # page_text | section
+    page_start: Mapped[int] = mapped_column(Integer, nullable=False)
+    page_end: Mapped[int] = mapped_column(Integer, nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    # 'simple': no stemming, works the same for English, Hinglish and test names like "TSH"
+    tsv = mapped_column(TSVECTOR, Computed("to_tsvector('simple', text)", persisted=True))
+    chunker_version: Mapped[str] = mapped_column(Text, nullable=False)
