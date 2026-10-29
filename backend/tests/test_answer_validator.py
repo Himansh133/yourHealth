@@ -87,3 +87,16 @@ def test_unanswerable_answer_with_no_claims_passes():
     parsed, errors = validate_answer(raw, EVIDENCE)
     assert errors == []
     assert parsed.answerable is False
+
+
+def test_digits_inside_test_names_are_not_numbers():
+    evidence = [Evidence(id="E1", text="drug_effect | metformin and Vitamin B12: lowers it (worth checking)")]
+    claims = [{"text": "Metformin can lower vitamin B12, and is used to bring HbA1c and T4 levels into range",
+               "evidence_ids": ["E1"]}]
+    _, errors = validate_answer(answer(summary="It affects HbA1c.", claims=claims), evidence)
+    assert errors == []
+
+
+def test_numbers_with_units_attached_are_still_checked():
+    _, errors = validate_answer(answer(claims=[{"text": "Dose is 850mg", "evidence_ids": ["E1"]}]), EVIDENCE)
+    assert errors == ["claim 1 states 850, which is not in its evidence"]

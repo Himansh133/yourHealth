@@ -9,7 +9,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ValidationError
 
-NUMBER = re.compile(r"\d+(?:\.\d+)?")
+# Digits right after a letter are part of a name (HbA1c, B12, T4), not a value; "850mg" is still a value.
+NUMBER = re.compile(r"(?<![A-Za-z\d.])\d+(?:\.\d+)?")
 
 # Advice or diagnosis the assistant must never give, in English and Hinglish.
 BANNED = re.compile(
