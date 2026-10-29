@@ -9,10 +9,12 @@ from rq import Queue
 from app.core.config import settings
 
 DOCUMENT_TIMEOUT_SECONDS = 180  # plan 7.2: 3-minute limit per document
+WHATSAPP_TIMEOUT_SECONDS = 120
 
 
 class DocumentQueue(Protocol):
     def enqueue_document(self, document_id: uuid.UUID) -> None: ...
+    def enqueue_whatsapp(self, message: dict) -> None: ...
 
 
 class RQDocumentQueue:
@@ -26,6 +28,11 @@ class RQDocumentQueue:
             str(document_id),
             job_timeout=DOCUMENT_TIMEOUT_SECONDS,
         )
+
+    def enqueue_whatsapp(self, message: dict) -> None:
+        """One incoming WhatsApp message: Meta needs the webhook to answer fast, so the work happens here."""
+        self._queue.enqueue("app.workers.whatsapp.handle_whatsapp_message", message,
+                            job_timeout=WHATSAPP_TIMEOUT_SECONDS)
 
 
 @lru_cache

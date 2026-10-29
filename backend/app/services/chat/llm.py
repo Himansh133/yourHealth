@@ -56,3 +56,16 @@ def get_llm() -> LLM:
     if not (settings.llm_api_key and settings.llm_model):
         raise LLMError("LLM is not configured: set LLM_API_KEY and LLM_MODEL")
     return OpenAICompatibleLLM(settings.llm_base_url, settings.llm_api_key, settings.llm_model)
+
+
+class _Unavailable:
+    def complete_json(self, system: str, user: str) -> str:
+        raise LLMError("LLM is not configured")
+
+
+def get_llm_or_unavailable() -> LLM:
+    """Without a configured LLM, answers fall back to the table of retrieved facts."""
+    try:
+        return get_llm()
+    except LLMError:
+        return _Unavailable()

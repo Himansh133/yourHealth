@@ -9,23 +9,14 @@ from app.api.deps import current_user
 from app.core.permissions import require_profile_access
 from app.db.models import User
 from app.db.session import get_db
-from app.services.chat.llm import LLM, LLMError, get_llm
+from app.services.chat.llm import LLM, get_llm_or_unavailable
 from app.services.chat.service import ChatOut, answer_chat
 
 router = APIRouter()
 
 
-class _Unconfigured:
-    def complete_json(self, system: str, user: str) -> str:
-        raise LLMError("LLM is not configured")
-
-
 def chat_llm() -> LLM:
-    """Without a configured LLM, answers fall back to the table of retrieved facts."""
-    try:
-        return get_llm()
-    except LLMError:
-        return _Unconfigured()
+    return get_llm_or_unavailable()
 
 
 class ChatIn(BaseModel):

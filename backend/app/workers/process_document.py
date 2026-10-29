@@ -22,6 +22,8 @@ from app.services.medicines.brands import BrandIndex
 from app.services.medicines.prescription import parse_prescription_line
 from app.services.medicines.store import set_ingredients
 from app.services.storage import Storage, get_storage
+from app.services.whatsapp.client import get_whatsapp
+from app.services.whatsapp.handler import notify_report_done
 
 log = logging.getLogger(__name__)
 
@@ -42,6 +44,10 @@ def process_document(document_id: str) -> None:
     """Entry point called by the RQ worker."""
     with SessionLocal() as db:
         run(db, get_storage(), uuid.UUID(document_id), ocr=rapid_ocr)
+        try:
+            notify_report_done(db, get_whatsapp(), uuid.UUID(document_id))
+        except Exception:  # the report is processed either way; a failed reply mustn't fail the job
+            log.exception("WhatsApp reply for document %s failed", document_id)
 
 
 def run(db: Session, storage: Storage, document_id: uuid.UUID, ocr: OcrEngine | None = None) -> None:

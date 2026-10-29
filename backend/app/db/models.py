@@ -305,3 +305,60 @@ class AuditEvent(Base):
     resource_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), index=True)
     outcome: Mapped[str] = mapped_column(Text, nullable=False)  # ok | denied | error
     meta: Mapped[dict | None] = mapped_column(JSONB)  # minimal, never medical text
+
+
+# --- WhatsApp (plan 6.2) -------------------------------------------------------------------------------------
+
+class WhatsAppLink(Base):
+    __tablename__ = "whatsapp_links"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    phone_e164: Mapped[str] = mapped_column(Text, unique=True, nullable=False)  # "+9198xxxxxxxx"
+    linked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    # the profile the last question was about: "Answering for Papa. Reply 'switch' to change"
+    last_profile_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="SET NULL")
+    )
+
+
+class WhatsAppLinkCode(Base):
+    __tablename__ = "whatsapp_link_codes"
+
+    code_hash: Mapped[str] = mapped_column(Text, primary_key=True)  # sha256 of the 6-digit code
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class WhatsAppMessage(Base):
+    """Metadata only, never message text: for idempotency (Meta retries) and debugging."""
+
+    __tablename__ = "whatsapp_messages"
+
+    wa_message_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    phone_e164: Mapped[str] = mapped_column(Text, nullable=False)
+    direction: Mapped[str] = mapped_column(Text, nullable=False)  # in | out
+    kind: Mapped[str] = mapped_column(Text, nullable=False)  # text | document | image | interactive | ...
+    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    status: Mapped[str] = mapped_column(Text, nullable=False)  # received | processed | failed
+
+
+class WhatsAppPendingUpload(Base):
+    """A file sent to the bot, waiting for the answer to "Whose report is this?"."""
+
+    __tablename__ = "whatsapp_pending_uploads"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    phone_e164: Mapped[str] = mapped_column(Text, nullable=False)
+    media_id: Mapped[str] = mapped_column(Text, nullable=False)
+    mime_type: Mapped[str | None] = mapped_column(Text)
+    filename: Mapped[str | None] = mapped_column(Text)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

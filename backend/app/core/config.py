@@ -40,6 +40,14 @@ class Settings(BaseSettings):
     reranker_model: str = "bge-reranker-v2-m3/onnx/model_int8.onnx"
     reranker_tokenizer: str = "bge-reranker-v2-m3/tokenizer.json"
 
+    # WhatsApp Cloud API (plan 7.4). Empty token: the bot replies nowhere (logs only).
+    wa_token: str = ""
+    wa_phone_number_id: str = ""
+    wa_app_secret: str = ""
+    wa_verify_token: str = ""
+    wa_graph_version: str = "v23.0"  # check Meta's docs for the current version
+    wa_display_number: str = ""  # the bot's number, shown on the Connect WhatsApp screen
+
     refdata_dir: Path = Path(__file__).resolve().parents[3] / "refdata" / "seed"
 
 
