@@ -111,4 +111,34 @@ describe("ChatPanel", () => {
     renderAt("/profiles/p1/ask", routes);
     expect(await screen.findByRole("button", { name: "Ask" })).toBeDisabled();
   });
+
+  it("links each kind of source to where it came from", async () => {
+    mockApi({
+      "GET /me": ME,
+      "POST /profiles/p1/chat": answer({
+        claims: [
+          { text: "He takes Glycomet 500 twice a day", evidence_ids: ["E1"] },
+          { text: "Metformin is used to lower blood sugar", evidence_ids: ["E2"] },
+          { text: "The discharge advice was a low sugar diet", evidence_ids: ["E3"] },
+        ],
+        sources: [
+          { id: "E1", kind: "medicine", medicine_id: "m1" },
+          { id: "E2", kind: "drug_label", url: "https://dailymed.nlm.nih.gov/x" },
+          { id: "E3", kind: "document", document_id: "d9", page_no: 2 },
+        ],
+      }),
+    });
+    const user = renderAt("/profiles/p1/ask", routes);
+    await user.type(await screen.findByRole("textbox", { name: /ask about papa's reports/i }), "glycomet?");
+    await user.click(screen.getByRole("button", { name: "Ask" }));
+
+    const reply = await screen.findByRole("article", { name: "Answer" });
+    expect(within(reply).getByRole("link", { name: "Medicine list" })).toHaveAttribute("href", "/profiles/p1/medicines");
+    const label = within(reply).getByRole("link", { name: /medicine label/i });
+    expect(label).toHaveAttribute("href", "https://dailymed.nlm.nih.gov/x");
+    expect(label).toHaveAttribute("target", "_blank");
+    const doc = within(reply).getByRole("link", { name: /document, page 2/i });
+    expect(doc).toHaveAttribute("href", "/api/v1/documents/d9/file");
+    expect(doc).toHaveAttribute("target", "_blank");
+  });
 });

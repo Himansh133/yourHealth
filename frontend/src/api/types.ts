@@ -136,7 +136,11 @@ export type MedicineMarker = {
   effect_type: "therapeutic" | "monitor";
 };
 
-export type ChatSource = { id: string; kind: "lab_result"; lab_result_id: string; document_id: string; page_no: number | null };
+export type ChatSource =
+  | { id: string; kind: "lab_result"; lab_result_id: string; document_id: string; page_no?: number }
+  | { id: string; kind: "document"; document_id: string; page_no?: number }
+  | { id: string; kind: "medicine"; medicine_id: string }
+  | { id: string; kind: "drug_label"; url?: string };
 
 export type ChatAnswer = {
   answerable: boolean;
