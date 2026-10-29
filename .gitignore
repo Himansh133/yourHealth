@@ -7,3 +7,4 @@ dist/
 .pytest_cache/
 yourhealth-implementation-plan.md
 backend/models/
+eval/data/
