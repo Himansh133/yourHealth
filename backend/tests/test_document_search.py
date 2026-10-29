@@ -72,3 +72,75 @@ def test_deleting_the_document_deletes_its_chunks(db_session, pid):
     db_session.delete(doc)
     db_session.commit()
     assert db_session.query(Chunk).count() == 0
+
+
+# --- meaning-based search and reranking (plan 10.5) -----------------------------------------------------------
+
+class StubEmbedder:
+    """Vectors chosen by the test: texts mentioning a topic word point the same way."""
+    name = "stub"
+    dim = 1024
+    TOPICS = {"diet": 0, "food": 0, "eat": 0, "insulin": 1, "foot": 2}
+
+    def embed(self, texts):
+        out = []
+        for t in texts:
+            v = [0.0] * self.dim
+            for word, axis in self.TOPICS.items():
+                if word in t.lower():
+                    v[axis] = 1.0
+            v[1023] = 0.01  # never all zeros
+            out.append(v)
+        return out
+
+
+class StubReranker:
+    def __init__(self, keep_word):
+        self.keep_word = keep_word
+
+    def score(self, query, passages):
+        return [0.9 if self.keep_word in p.lower() else 0.01 for p in passages]
+
+
+def add_doc_with_models(db, pid, pages, embedder):
+    doc = Document(profile_id=pid, source_channel="web", storage_key="docs/m", mime_type="application/pdf",
+                   size_bytes=1, sha256="m", doc_type="discharge", status="done", lab_name="City Hospital")
+    db.add(doc)
+    db.flush()
+    index_document(db, doc, pages, embedder=embedder)
+    db.commit()
+    return doc
+
+
+def test_chunks_are_embedded_when_a_model_is_available(db_session, pid):
+    doc = add_doc_with_models(db_session, pid, DISCHARGE, StubEmbedder())
+    chunks = db_session.query(Chunk).filter_by(document_id=doc.id).all()
+    assert all(c.embedding is not None and len(c.embedding) == 1024 for c in chunks)
+    assert {c.embed_model for c in chunks} == {"stub"}
+
+
+def test_meaning_finds_what_keywords_miss(db_session, pid):
+    add_doc_with_models(db_session, pid, DISCHARGE, StubEmbedder())
+    # "food" is not in the document; "diet" is
+    assert search_chunks(db_session, pid, "what food is allowed?") == []
+    hits = search_chunks(db_session, pid, "what food is allowed?", embedder=StubEmbedder())
+    assert hits and "Low sugar diet" in hits[0].text
+
+
+def test_reranker_orders_and_drops_unrelated_chunks(db_session, pid):
+    add_doc_with_models(db_session, pid, DISCHARGE, StubEmbedder())
+    hits = search_chunks(db_session, pid, "what food is allowed?", embedder=StubEmbedder(),
+                         reranker=StubReranker("walk daily"))
+    assert hits and all("walk daily" in h.text for h in hits)
+
+
+def test_reranker_can_say_nothing_matches(db_session, pid):
+    add_doc_with_models(db_session, pid, DISCHARGE, StubEmbedder())
+    assert search_chunks(db_session, pid, "knee x-ray?", embedder=StubEmbedder(),
+                         reranker=StubReranker("no such text")) == []
+
+
+def test_dense_search_never_crosses_profiles(db_session, pid, make_user_client):
+    other = make_user_client("b@example.com").post("/api/v1/profiles", json=PAPA).json()["id"]
+    add_doc_with_models(db_session, other, DISCHARGE, StubEmbedder())
+    assert search_chunks(db_session, pid, "food", embedder=StubEmbedder()) == []

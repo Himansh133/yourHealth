@@ -22,6 +22,9 @@ dependencies = [
   "onnxruntime",
   "httpx",
   "qrcode",
+  "pgvector",
+  "tokenizers",
+  "huggingface_hub",
 ]
 
 [project.optional-dependencies]

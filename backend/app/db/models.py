@@ -19,10 +19,14 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
+from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import CITEXT, JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
+
+
+EMBEDDING_DIM = 1024  # bge-m3
 
 
 def _uuid_pk() -> Mapped[uuid.UUID]:
@@ -244,8 +248,7 @@ class ProfileMedicineIngredient(Base):
 # --- RAG (plan 6.6) ------------------------------------------------------------------------------------------
 
 class Chunk(TimestampMixin, Base):
-    """Searchable piece of a patient document. Keyword search only for now; the plan's embedding column comes
-    with the embedding model."""
+    """Searchable piece of a patient document: keyword (tsv) and meaning (embedding) search."""
 
     __tablename__ = "chunks"
     __table_args__ = (Index("chunks_tsv_idx", "tsv", postgresql_using="gin"),)
@@ -264,6 +267,9 @@ class Chunk(TimestampMixin, Base):
     # 'simple': no stemming, works the same for English, Hinglish and test names like "TSH"
     tsv = mapped_column(TSVECTOR, Computed("to_tsvector('simple', text)", persisted=True))
     chunker_version: Mapped[str] = mapped_column(Text, nullable=False)
+    # bge-m3 dense vector; null when indexed without the model (keyword search still works)
+    embedding = mapped_column(Vector(EMBEDDING_DIM))
+    embed_model: Mapped[str | None] = mapped_column(Text)
 
 
 # --- sharing and audit (plan 6.7) ------------------------------------------------------------------------------

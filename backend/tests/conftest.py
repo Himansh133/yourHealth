@@ -21,6 +21,7 @@ def engine():
     engine = create_engine(TEST_DATABASE_URL)
     with engine.begin() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS citext"))
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     yield engine
