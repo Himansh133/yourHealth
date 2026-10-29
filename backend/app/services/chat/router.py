@@ -15,7 +15,7 @@ TREND_WORDS = {"trend", "improving", "improved", "better", "worse", "worsening",
 # Chat only, not used for parsing reports: a row printed as "Sugar" could be urine sugar.
 EVERYDAY_TERMS = {
     "sugar": ["4548-4", "1558-6"], "shugar": ["4548-4", "1558-6"], "glucose": ["4548-4", "1558-6"],
-    "diabetes": ["4548-4", "1558-6"], "thyroid": ["3016-3", "3024-7"], "kidney": ["2160-0", "3084-1"],
+    "diabetes": ["4548-4", "1558-6"], "thyroid": ["3016-3", "3024-7"], "kidney": ["2160-0", "3084-1"], "kidneys": ["2160-0", "3084-1"],
     "liver": ["1742-6", "1920-8"], "lipid": ["2093-3", "13457-7", "2085-9", "2571-8"],
 }
 VALUE_WORDS = {"last", "latest", "recent", "current", "value", "result", "level", "kitna", "kitni"}
@@ -32,7 +32,7 @@ def route(question: str, d: LabDictionary, medicine_names: set[str]) -> Route:
     """medicine_names: lowercase brand and generic names to look for."""
     lower = question.lower()
     words = set(re.findall(r"[a-z0-9]+", lower))
-    tests = _find_tests(question, d)
+    tests = find_tests(question, d)
     meds = sorted(m for m in medicine_names if re.search(rf"\b{re.escape(m)}\b", lower))
 
     if TREATMENT.search(lower):
@@ -46,9 +46,9 @@ def route(question: str, d: LabDictionary, medicine_names: set[str]) -> Route:
     return Route([], tests)
 
 
-def _find_tests(question: str, d: LabDictionary) -> list[LabTest]:
-    """The longest test alias in the question, or else the tests an everyday word stands for."""
-    text = " " + " ".join(p for p in normalize_name(question) if p) + " "
+def find_tests(text: str, d: LabDictionary) -> list[LabTest]:
+    """The longest test alias in the text, or else the tests an everyday word stands for."""
+    text = " " + " ".join(p for p in normalize_name(text) if p) + " "
     found = [alias for alias in d.aliases if f" {alias} " in text]
     if found:
         return [d.aliases[max(found, key=len)]]
@@ -59,13 +59,21 @@ def _find_tests(question: str, d: LabDictionary) -> list[LabTest]:
 LABELS = ["value", "trend", "document", "medicine", "treatment", "out_of_scope"]
 CLASSIFIER_SYSTEM = """You sort questions that people ask about a family member's own medical reports.
 Labels:
-- value: the latest or a past value of a lab test
+- value: the latest or a past value of a lab test, or how a body system is doing (sugar, kidneys, thyroid)
 - trend: how a lab test changed over time
-- document: what a report, prescription or discharge summary says
+- document: what a report, prescription or discharge summary says: diagnosis, treatment given in hospital,
+  advice, diet, follow-up date
 - medicine: what a medicine is for, or how it relates to a test
-- treatment: which medicine to take, or starting, stopping or changing one
-- out_of_scope: anything else, including asking for a diagnosis
-A question can have more than one label. If it is about a lab test, give the test's usual name, else null.
+- treatment: choosing which medicine to take, or starting, stopping or changing one
+- out_of_scope: not about this person's reports or medicines, or asking whether they have a disease
+A question can have more than one label. If it is about a lab test or a body system, give the lab test's usual
+name (e.g. "creatinine", "HbA1c"), else null.
+Examples:
+"papa ko hospital mein kya treatment mila tha?" -> {"labels": ["document"], "test": null}
+"When is his follow-up?" -> {"labels": ["document"], "test": null}
+"Should she stop her thyroid tablet?" -> {"labels": ["treatment"], "test": null}
+"How are his kidneys?" -> {"labels": ["value"], "test": "creatinine"}
+"Do I have cancer?" -> {"labels": ["out_of_scope"], "test": null}
 Reply with JSON only: {"labels": [...], "test": "..." or null}"""
 
 

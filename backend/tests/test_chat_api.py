@@ -265,3 +265,13 @@ def test_out_of_scope_question_is_declined_without_answering(make_user_client, u
     assert body["answerable"] is False
     assert "doctor" in body["summary"]
     assert len(llm.prompts) == 1  # only the classifier
+
+
+def test_classifier_test_name_can_be_an_everyday_word(make_user_client, db_session, test_ids, use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    add_hba1c(db_session, pid, test_ids, "7.2", date(2026, 6, 14))
+    llm = use_llm(FakeLLM([json.dumps({"labels": ["value"], "test": "blood sugar control"}), good_answer()]))
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "How well controlled is he?"}).json()
+    assert body["route"] == ["value"]
+    assert "HbA1c 7.2 %" in llm.prompts[1][1]

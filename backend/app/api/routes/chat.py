@@ -14,7 +14,7 @@ from app.services.chat.doc_search import search_chunks
 from app.services.chat.lab_tool import LabFact, lab_lookup
 from app.services.chat.llm import LLM, LLMError, get_llm
 from app.services.chat.medicine_tool import MedicineFact, medicine_facts, medicine_vocabulary
-from app.services.chat.router import classify, route
+from app.services.chat.router import classify, find_tests, route
 from app.services.chat.validator import Claim, Evidence
 from app.services.labs.dictionary import get_lab_dictionary
 from app.services.medicines.store import effects_for, medicine_ingredients
@@ -89,8 +89,7 @@ def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(current_user), db: S
     if not labels:
         c = classify(llm, body.question)
         labels = c.labels
-        match = get_lab_dictionary().match(c.test) if c.test else None
-        tests = [match.test] if match else tests
+        tests = find_tests(c.test, get_lab_dictionary()) if c.test else tests
     label = labels[0]
     if (label in ("value", "trend") and not tests) or (label == "medicine" and not r.medicines):
         label, labels = "document", ["document"]  # nothing specific to look up: their documents may mention it

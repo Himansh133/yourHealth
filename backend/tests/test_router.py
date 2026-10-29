@@ -112,3 +112,14 @@ def test_classifier_failure_means_search_documents():
     assert classify(Down(), "q").labels == ["document"]
     assert classify(FakeLLM(["not json"]), "q").labels == ["document"]
     assert classify(FakeLLM([json.dumps({"labels": []})]), "q").labels == ["document"]
+
+
+def test_plural_everyday_word():
+    d = r("How are papa's kidneys doing?")
+    assert {t.canonical_name for t in d.tests} == {"Creatinine", "Uric acid"}
+
+
+def test_classifier_prompt_separates_treatment_given_from_treatment_choice():
+    from app.services.chat.router import CLASSIFIER_SYSTEM
+    assert "treatment given" in CLASSIFIER_SYSTEM
+    assert "follow-up" in CLASSIFIER_SYSTEM
