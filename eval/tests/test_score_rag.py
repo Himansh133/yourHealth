@@ -34,3 +34,16 @@ def test_score_answer_by_type():
     assert good["correct"] and not bad["correct"]
     q_med = {"type": "medicine", "answerable": True, "gold": {"generic": "metformin"}}
     assert score_answer(q_med, {"answerable": True, "text": "Glycomet contains Metformin, used for diabetes."})["correct"]
+
+
+def test_dates_in_any_format_are_not_counted_as_made_up_numbers():
+    record = "Collected on: 04.07.2025\nPotassium 3.7 mmol/L 3.5 - 5.1\nSample Collected: 25-Aug-2024"
+    assert unsupported_numbers("Potassium was 3.7 mmol/L on 2025-07-04, and in July 2025.", record) == []
+    assert unsupported_numbers("25 अगस्त 2024 को पोटैशियम 3.7 था", record) == []
+    assert unsupported_numbers("Potassium was 3.9 on 2025-07-04", record) == ["3.9"]
+
+
+def test_trend_uses_the_judged_direction_when_present():
+    q = {"type": "trend", "answerable": True, "gold": {"direction": "up"}}
+    a = {"answerable": True, "text": "It fell, then rose. Overall it went up.", "direction": "up"}
+    assert score_answer(q, a)["correct"]

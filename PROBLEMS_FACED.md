@@ -85,7 +85,7 @@ Commit hashes point to where the fix landed.
 | 6.12 | The model once wrote "[E1]" inside the answer text. | Odd text in the chat. | Fixed | Prompt rule: IDs go only in `evidence_ids` (`6deab64`). Proposed: also strip `[E\d+]` from text in the validator if it recurs. |
 | 6.13 | Answers take 4–7 s; document questions 12–14 s. Measured: the classifier call to GMI ~6 s, the answer call ~5 s, reranking 1–7 s. | Feels slow. | Open | Skip the classifier when the rules or a confident search already decide; stream the answer; or show the retrieved facts first. For reranking see 6.21. |
 | 6.14 | Section chunks of a discharge summary are not split by size. | A very long section becomes one big chunk, diluting search. | Open | Window long sections the same way as page text. |
-| 6.15 | The LLM checks have only been tried on a handful of questions. | Model choice and prompt quality are not measured. | Open | Build the eval harness from plan 14 (synthetic patients, labelled questions, faithfulness and number-check metrics). |
+| 6.15 | The LLM checks had only been tried on a handful of questions. | Model choice and prompt quality were not measured. | Fixed | Eval harness (plan 14): synthetic patients, 170 questions with gold answers, three systems compared. See section 8. |
 
 | 6.16 | Hugging Face downloads hung at 406 MB, then failed with a Xet transfer error. | Models would not download. | Worked around | Restart (it resumes); the last file came over plain HTTP with `HF_HUB_DISABLE_XET=1`. |
 | 6.17 | Both full-precision models need RAM: 3.2 GB in the API (both models), 1.6 GB in the worker (embedder). About 5 GB was free. | The machine may swap when other apps are open. | Worked around | Models load only when first used; 8-bit versions (0.57 GB each) are downloaded and one `.env` line away. |
@@ -105,3 +105,19 @@ Commit hashes point to where the fix landed.
 | 7.4 | A doctor's session cookie for one link could be tried on another. | Could open a different patient's sheet. | Fixed | The cookie is scoped to the link's path and names the link it unlocked; tested. |
 | 7.5 | The share link points at the frontend's address, which differs by environment. | QR codes from a deployed server would point at localhost. | Worked around | `PUBLIC_BASE_URL` setting; must be set in deployment. |
 | 7.6 | The sheet has no LLM-written summary yet (plan 13.1 item 7, optional). | Doctors read the tables only. | Open | Generate 3-4 sentences through the same answer validator, labelled "Auto-generated summary, check against reports". |
+
+## 8. Found by the evaluation harness
+
+The first extraction run on the dev split scored F1 87.0% (PDFs 97.0%, clean photos 65.1%, degraded photos 62.8%).
+After the fixes below: dev 97.6%, and test 98.1% (run once, after tuning on dev).
+
+| # | Problem | Impact | Status | Solution |
+|---|---|---|---|---|
+| 8.1 | Reports with only two tests (e.g. creatinine and uric acid) were classified as "other", because the rule needed 3 rows. | The worker throws away the rows of non-lab documents: 16 of 97 dev reports lost every value. | Fixed | A lab keyword plus one recognised test is enough; unrecognised rows still need three (`37028a4`). |
+| 8.2 | On tilted photos, rows were grouped by raw height, so values on the right paired with the test name one row up. | Wrong values stored against the wrong test: the most dangerous kind of error. | Fixed | The tilt is estimated from the OCR boxes' top edges, and rows are grouped on tilt-corrected heights. Degraded-photo F1 went from 62.8% to 95.1%. |
+| 8.3 | OCR read "22 U/L" as "22 7/n", and the parser took 7 as the value (with "22" glued to the name). | A false LOW value would be stored. | Fixed | A unit must start with a letter, µ or % (or be `/cumm`); the row is now lost instead of wrong. |
+| 8.4 | OCR garbles "mg/dL" as m9/dL, m/dl, mdl or m9/dlL. | Values had no unit, so they could not be converted or plotted. | Fixed | One pattern maps these to mg/dL (nothing else looks like them). |
+| 8.5 | "Vitamin D Total" and "CK - Total" were not recognised. | Rows dropped even from clean PDFs. | Fixed | Aliases added. |
+| 8.6 | OCR sometimes glues name and value into one box with a stray character ("7m9/dlL"), or merges "163 H". | Some photo rows are still lost (value accuracy stays 100%: no wrong values). | Open | Character-level cleanup of OCR boxes, or a second OCR pass on low-confidence rows. |
+| 8.7 | The synthetic layouts are cleaner than real Indian lab reports. | The extraction numbers are an upper bound. | Open | Add harder layouts (multi-page, two-column tables, headers repeated mid-page), and if possible a small set of real, consented, de-identified reports. |
+| 8.8 | Upscaling photos before OCR was tried as a fix. | It fixed some units, broke others and doubled OCR time. | Rejected | Not used. |

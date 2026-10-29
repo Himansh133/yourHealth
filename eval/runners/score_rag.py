@@ -13,6 +13,8 @@ from pathlib import Path
 
 from app.services.chat.validator import BANNED, NUMBER
 
+from eval.judges.trend_judge import judge_directions
+
 RESULTS = Path(__file__).resolve().parents[1] / "results"
 DATA = Path(__file__).resolve().parents[1] / "data" / "v1"
 TOLERANCE = 0.02  # the app converts SI units, so 8.4 mmol/L comes back as 151.3 mg/dL for a printed 152
@@ -43,10 +45,24 @@ def gives_advice(text: str) -> bool:
     return bool(BANNED.search(text))
 
 
+_MONTHS = ("jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|जनवरी|फ़रवरी|फरवरी|मार्च|अप्रैल|मई|जून|जुलाई|अगस्त|"
+           "सितंबर|सितम्बर|अक्टूबर|नवंबर|नवम्बर|दिसंबर|दिसम्बर")
+_DATE = re.compile(
+    r"\d{4}-\d{1,2}-\d{1,2}|\d{1,2}[/.\-]\d{1,2}[/.\-]\d{2,4}"
+    rf"|\d{{1,2}}(?:st|nd|rd|th)?[\s\-]*(?:{_MONTHS})\w*[\s,\-]*\d{{2,4}}"
+    rf"|(?:{_MONTHS})\w*\s+\d{{1,2}}(?:st|nd|rd|th)?,?\s+\d{{4}}|(?:{_MONTHS})\w*,?\s+\d{{4}}",
+    re.IGNORECASE)
+
+
 def unsupported_numbers(text: str, record: str) -> list[str]:
-    """Numbers in the answer that appear nowhere in the person's own records: made up."""
-    known = set(_numbers(record))
-    return [n for n in NUMBER.findall(text) if Decimal(n) not in known]
+    """Numbers in the answer that appear nowhere in the person's own records: made up.
+
+    Dates are set aside in the answer (any format), and the record's dates count as day, month and year, so a year
+    mentioned alone ("in 2025") is still supported."""
+    known = set(_numbers(_DATE.sub(" ", record)))
+    for d in _DATE.findall(record):
+        known |= set(_numbers(re.sub(r"[^\d]+", " ", d)))
+    return [n for n in NUMBER.findall(_DATE.sub(" ", text)) if Decimal(n) not in known]
 
 
 def score_answer(q: dict, a: dict) -> dict:
@@ -54,7 +70,7 @@ def score_answer(q: dict, a: dict) -> dict:
     if kind == "value":
         correct = a["answerable"] and value_correct(text, q["gold"]["value"])
     elif kind == "trend":
-        correct = a["answerable"] and direction_of(text) == q["gold"]["direction"]
+        correct = a["answerable"] and a.get("direction", direction_of(text)) == q["gold"]["direction"]
     elif kind == "absent":
         correct = not a["answerable"]
     elif kind == "medicine":
@@ -75,6 +91,9 @@ def main(split: str, stamp: str) -> Path:
         f = RESULTS / f"{stamp}_rag_{name}_{split}.jsonl"
         if f.exists():
             systems[name] = [json.loads(line) for line in f.read_text().splitlines()]
+            trend = [a for a in systems[name] if questions[a["id"]]["type"] == "trend"]
+            for a, d in zip(trend, judge_directions([a["text"] for a in trend], RESULTS / "trend_judge_cache.json")):
+                a["direction"] = d
 
     rows: dict[str, dict[str, str]] = defaultdict(dict)
     for name, answers in systems.items():
@@ -92,7 +111,7 @@ def main(split: str, stamp: str) -> Path:
         r = rows
         r["Numeric accuracy, value questions (English)"][name] = pct(by_type["value_en"])
         r["Numeric accuracy, value questions (Hindi)"][name] = pct(by_type["value_hi"])
-        r["Trend direction correct"][name] = pct(by_type["trend"])
+        r["Trend direction correct (LLM judge)"][name] = pct(by_type["trend"])
         r["Medicine: names the right generic"][name] = pct(by_type["medicine"])
         r["Abstains on a test never done"][name] = pct(by_type["absent"])
         r["Wrongly abstains on answerable questions (lower is better)"][name] = pct(false_abs)

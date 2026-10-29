@@ -19,10 +19,11 @@ from pathlib import Path
 from sqlalchemy import select
 
 from app.core.config import settings
-from app.db.models import Chunk, Document, DocumentPage, LabResult, ProfileMedicine
+from app.db.models import Chunk, Document, DocumentPage, LabResult, LabTestRecord, ProfileMedicine
 from app.db.session import SessionLocal
 from app.services.chat.doc_search import _dense_ids
 from app.services.chat.embeddings import get_embedder
+from app.services.chat.lab_tool import lab_lookup
 from app.services.chat.llm import LLMError, get_llm
 from app.services.chat.medicine_tool import medicine_facts
 from app.services.medicines.store import medicine_ingredients
@@ -36,18 +37,27 @@ Write the answer in {lang}."""
 LANG = {"en": "English", "hi": "Hindi"}
 
 
-def record_text(db, pid: uuid.UUID) -> str:
-    """Everything the app knows about this person: report text plus what it knows about their medicines."""
+def report_text(db, pid: uuid.UUID) -> str:
+    """All of the profile's report text, oldest first: what B0 gets."""
     pages = db.execute(select(DocumentPage.text).join(Document, Document.id == DocumentPage.document_id)
                        .where(Document.profile_id == pid).order_by(Document.report_date, DocumentPage.page_no))
+    return "\n".join(t for (t,) in pages)
+
+
+def record_text(db, pid: uuid.UUID) -> str:
+    """Everything the app knows about this person, to tell made-up numbers from real ones: report text, the lab
+    values it stored (including converted ones) and what it knows about their medicines."""
+    codes = db.scalars(select(LabTestRecord.loinc_code).join(LabResult, LabResult.lab_test_id == LabTestRecord.id)
+                       .where(LabResult.profile_id == pid).distinct())
+    labs = [f.evidence_text() for code in codes for f in lab_lookup(db, pid, code, "trend")]
     ingredients = {mi.ingredient.id for mi in medicine_ingredients(db, pid)}
-    return "\n".join([t for (t,) in pages] + [f.text for f in medicine_facts(db, pid, ingredients)])
+    return "\n".join([report_text(db, pid), *labs, *(f.text for f in medicine_facts(db, pid, ingredients))])
 
 
 def baseline(system: str, q: dict, pid: uuid.UUID) -> dict:
     with SessionLocal() as db:
         if system == "b0":
-            context = record_text(db, pid)
+            context = report_text(db, pid)
         else:
             ids = _dense_ids(db, pid, get_embedder().embed([q["question"]])[0])[:6]
             context = "\n\n".join(db.scalars(select(Chunk.text).where(Chunk.id.in_(ids))))
