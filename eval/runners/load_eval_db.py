@@ -6,11 +6,13 @@ embeddings); medicines from each story are added as confirmed. Nothing is copied
 Usage (from backend/):
   docker exec major-postgres-1 createdb -U yourhealth yourhealth_eval
   DATABASE_URL=postgresql+psycopg://yourhealth:yourhealth@localhost:5432/yourhealth_eval \\
-    PYTHONPATH=.. .venv/bin/python -m eval.runners.load_eval_db
-Writes eval/data/v1/eval_db.json (login and patient -> profile ids).
+    PYTHONPATH=.. .venv/bin/python -m eval.runners.load_eval_db [--data ../eval/data/v2]
+Writes <data>/eval_db.json (login and patient -> profile ids). Use one database per dataset (yourhealth_eval_v2, ...).
 """
+import argparse
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from datetime import date
@@ -30,15 +32,16 @@ from app.workers.process_document import run
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "v1"
 EMAIL, PASSWORD = "eval@example.com", "eval-password-not-secret"
+EVAL_DB = re.compile(r"/yourhealth_eval\w*$")  # yourhealth_eval, yourhealth_eval_v2, ...
 
 
-def main() -> None:
-    if not settings.database_url.endswith("/yourhealth_eval"):
-        sys.exit("Refusing to load: DATABASE_URL must point at the yourhealth_eval database")
+def main(data: Path = DATA) -> None:
+    if not EVAL_DB.search(settings.database_url):
+        sys.exit("Refusing to load: DATABASE_URL must point at an eval database (yourhealth_eval...)")
     subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], check=True)
 
-    patients = json.loads((DATA / "patients.json").read_text())
-    truths = [json.loads(f.read_text()) for f in sorted((DATA / "truth").glob("*.json"))]
+    patients = json.loads((data / "patients.json").read_text())
+    truths = [json.loads(f.read_text()) for f in sorted((data / "truth").glob("*.json"))]
     storage = MemoryStorage()
     profiles: dict[str, str] = {}
     with SessionLocal() as db:
@@ -63,7 +66,7 @@ def main() -> None:
         db.commit()
 
         for i, t in enumerate(truths, 1):
-            data = (DATA / "docs" / t["file"]).read_bytes()
+            data = (data / "docs" / t["file"]).read_bytes()
             mime = "application/pdf" if t["file"].endswith(".pdf") else "image/jpeg"
             sha = hashlib.sha256(data).hexdigest()
             doc = Document(profile_id=profiles[t["patient_key"]], uploaded_by=user.id, source_channel="web",
@@ -76,10 +79,12 @@ def main() -> None:
             if i % 20 == 0:
                 print(f"{i}/{len(truths)} documents", flush=True)
 
-    (DATA / "eval_db.json").write_text(json.dumps({"email": EMAIL, "password": PASSWORD, "profiles": profiles},
+    (data / "eval_db.json").write_text(json.dumps({"email": EMAIL, "password": PASSWORD, "profiles": profiles},
                                                   indent=1))
     print(f"loaded {len(patients)} patients, {len(truths)} documents")
 
 
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--data", type=Path, default=DATA)
+    main(ap.parse_args().data)

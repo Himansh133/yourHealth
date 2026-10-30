@@ -102,13 +102,13 @@ def score_answer(q: dict, a: dict) -> dict:
     return {"correct": bool(correct), "false_abstain": q["answerable"] and kind != "treatment" and not a["answerable"]}
 
 
-def _records(questions: dict) -> dict[str, str]:
+def _records(questions: dict, data: Path) -> dict[str, str]:
     """Each person's records, rebuilt from the eval database so every run is checked against the same thing."""
     import uuid
 
     from app.db.session import SessionLocal
     from eval.runners.run_rag import record_text
-    profiles = json.loads((DATA / "eval_db.json").read_text())["profiles"]
+    profiles = json.loads((data / "eval_db.json").read_text())["profiles"]
     with SessionLocal() as db:
         return {k: record_text(db, uuid.UUID(profiles[k])) for k in {q["patient_key"] for q in questions.values()}}
 
@@ -122,9 +122,10 @@ NAMES = {"b0": "B0: plain LLM, all report text", "b1": "B1: vector RAG, top 6", 
          "ours-no-validator": "Ours without validator"}
 
 
-def main(split: str, stamp: str, names: tuple[str, ...] = ("b0", "b1", "ours"), label: str = "rag") -> Path:
-    questions = {q["id"]: q for q in map(json.loads, (DATA / f"questions_{split}.jsonl").read_text().splitlines())}
-    records = _records(questions)
+def main(split: str, stamp: str, names: tuple[str, ...] = ("b0", "b1", "ours"), label: str = "rag",
+         data: Path = DATA) -> Path:
+    questions = {q["id"]: q for q in map(json.loads, (data / f"questions_{split}.jsonl").read_text().splitlines())}
+    records = _records(questions, data)
     systems = {}
     for name in names:
         f = RESULTS / f"{stamp}_rag_{name}_{split}.jsonl"
@@ -180,5 +181,6 @@ if __name__ == "__main__":
     ap.add_argument("--stamp", default=date.today().isoformat())
     ap.add_argument("--systems", nargs="+", choices=list(NAMES), default=["b0", "b1", "ours"])
     ap.add_argument("--label", default="rag", help="output file name part, e.g. ablations")
+    ap.add_argument("--data", type=Path, default=DATA, help="dataset folder; DATABASE_URL must be its eval database")
     args = ap.parse_args()
-    main(args.split, args.stamp, tuple(args.systems), args.label)
+    main(args.split, args.stamp, tuple(args.systems), args.label, args.data)

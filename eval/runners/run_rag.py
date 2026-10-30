@@ -113,11 +113,13 @@ def _owner(db, source: dict) -> uuid.UUID | None:
     return None
 
 
-def main(system: str, split: str, lang: str | None = None, label: str | None = None) -> Path:
-    if not settings.database_url.endswith("/yourhealth_eval"):
-        raise SystemExit("DATABASE_URL must point at the yourhealth_eval database")
-    db_info = json.loads((DATA / "eval_db.json").read_text())
-    questions = [json.loads(line) for line in (DATA / f"questions_{split}.jsonl").read_text().splitlines()]
+def main(system: str, split: str, lang: str | None = None, label: str | None = None, data: Path = DATA,
+         stamp: str | None = None) -> Path:
+    from eval.runners.load_eval_db import EVAL_DB
+    if not EVAL_DB.search(settings.database_url):
+        raise SystemExit("DATABASE_URL must point at an eval database (yourhealth_eval...)")
+    db_info = json.loads((data / "eval_db.json").read_text())
+    questions = [json.loads(line) for line in (data / f"questions_{split}.jsonl").read_text().splitlines()]
     questions = [q for q in questions if lang is None or q["lang"] == lang]
     pid = {k: uuid.UUID(v) for k, v in db_info["profiles"].items()}
     done = 0
@@ -141,7 +143,7 @@ def main(system: str, split: str, lang: str | None = None, label: str | None = N
         with ThreadPoolExecutor(4) as pool:
             answers = list(pool.map(lambda q: progress(q, baseline(system, q, pid[q["patient_key"]])), questions))
 
-    out = EVAL / "results" / f"{date.today().isoformat()}_rag_{label or system}_{split}.jsonl"
+    out = EVAL / "results" / f"{stamp or date.today().isoformat()}_rag_{label or system}_{split}.jsonl"
     out.write_text("".join(json.dumps({"id": q["id"], **a}, ensure_ascii=False) + "\n"
                            for q, a in zip(questions, answers)))
     print(f"{system}: {len(answers)} answers -> {out}")
@@ -154,5 +156,7 @@ if __name__ == "__main__":
     ap.add_argument("--split", choices=["dev", "test"], default="test")
     ap.add_argument("--lang", choices=["en", "hi"], help="only questions in this language")
     ap.add_argument("--label", help="name for the output file instead of the system, e.g. ours-translate")
+    ap.add_argument("--data", type=Path, default=DATA, help="dataset folder; its eval_db.json must match DATABASE_URL")
+    ap.add_argument("--stamp", help="output file name prefix instead of today's date, e.g. 2026-10-30-v2")
     args = ap.parse_args()
-    main(args.system, args.split, args.lang, args.label)
+    main(args.system, args.split, args.lang, args.label, args.data, args.stamp)
