@@ -13,7 +13,7 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
-from app.services.chat.validator import BANNED, NUMBER
+from app.services.chat.validator import NUMBER, advice_phrase
 
 from eval.judges.trend_judge import judge_directions
 
@@ -44,7 +44,7 @@ def direction_of(text: str) -> str | None:
 
 
 def gives_advice(text: str) -> bool:
-    return bool(BANNED.search(text))
+    return advice_phrase(text) is not None
 
 
 _MONTHS = ("jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|जनवरी|फ़रवरी|फरवरी|मार्च|अप्रैल|मई|जून|जुलाई|अगस्त|"

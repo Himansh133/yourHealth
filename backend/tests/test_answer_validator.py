@@ -100,3 +100,20 @@ def test_digits_inside_test_names_are_not_numbers():
 def test_numbers_with_units_attached_are_still_checked():
     _, errors = validate_answer(answer(claims=[{"text": "Dose is 850mg", "evidence_ids": ["E1"]}]), EVIDENCE)
     assert errors == ["claim 1 states 850, which is not in its evidence"]
+
+
+def test_warning_not_to_change_a_medicine_is_not_advice():
+    # Wording from real answers (eval dev split, thinking off, 2026-10-30).
+    for note in ["Always follow your doctor's instructions and do not change the dose without consulting them.",
+                 "Do not stop or change the dose without consulting your doctor.",
+                 "Don't stop taking it on your own.", "Never double your dose."]:
+        _, errors = validate_answer(answer(doctor_note=note), EVIDENCE)
+        assert errors == [], note
+
+
+def test_advice_after_an_unrelated_negation_is_still_advice():
+    for note in ["Don't worry, you can stop taking metformin.",
+                 "Do not skip meals, but reduce the dose of metformin.",
+                 "If sugar is not high, stop taking metformin."]:
+        _, errors = validate_answer(answer(doctor_note=note), EVIDENCE)
+        assert errors and "gives medical advice" in errors[0], note

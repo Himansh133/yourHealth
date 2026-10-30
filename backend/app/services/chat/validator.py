@@ -20,6 +20,17 @@ BANNED = re.compile(
     r"|you have (?:diabetes|cancer|hypothyroidism|hyperthyroidism|anaemia|anemia|kidney disease|liver disease)",
     re.IGNORECASE,
 )
+# A warning against changing a medicine ("do not stop or change the dose") is not advice. English only: Hindi
+# negation comes after the verb, so Hindi phrases are always caught.
+NEGATED = re.compile(r"\b(?:do not|don't|never|should not|shouldn't|must not|not to)\s+(?:\w+\s+){0,2}$", re.IGNORECASE)
+
+
+def advice_phrase(text: str) -> str | None:
+    """The first banned phrase in text that isn't a warning against it."""
+    for m in BANNED.finditer(text):
+        if not NEGATED.search(text[:m.start()]):
+            return m.group(0)
+    return None
 
 
 @dataclass(frozen=True)
@@ -78,7 +89,7 @@ def validate_answer(raw: str, evidence: list[Evidence]) -> tuple[Answer | None, 
         errors += [f"claim {i} states {n}, which is not in its evidence" for n in _unsupported(claim.text, cited)]
 
     for field, text in free_text + [(f"claim {i}", c.text) for i, c in enumerate(answer.claims, 1)]:
-        if m := BANNED.search(text):
-            errors.append(f"{field} gives medical advice ('{m.group(0).lower()}')")
+        if phrase := advice_phrase(text):
+            errors.append(f"{field} gives medical advice ('{phrase.lower()}')")
 
     return answer, errors

@@ -12,7 +12,7 @@ from functools import lru_cache
 
 from app.core.config import settings
 from app.services.chat.llm import LLM, LLMError
-from app.services.chat.validator import BANNED, NUMBER, Answer, Claim
+from app.services.chat.validator import NUMBER, Answer, Claim, advice_phrase
 
 DEVANAGARI_DIGIT = re.compile(r"[०-९]")
 
@@ -54,7 +54,7 @@ def _problems(en: Answer, out: dict) -> list[str]:
             problems.append(f"use digits 0-9: {hindi!r}")
         elif not numbers_match(english, hindi):
             problems.append(f"numbers changed: {english!r} -> {hindi!r}")
-        if BANNED.search(hindi):
+        if advice_phrase(hindi):
             problems.append(f"added advice: {hindi!r}")
     return problems
 
