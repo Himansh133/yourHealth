@@ -105,6 +105,7 @@ Commit hashes point to where the fix landed.
 | 7.4 | A doctor's session cookie for one link could be tried on another. | Could open a different patient's sheet. | Fixed | The cookie is scoped to the link's path and names the link it unlocked; tested. |
 | 7.5 | The share link points at the frontend's address, which differs by environment. | QR codes from a deployed server would point at localhost. | Worked around | `PUBLIC_BASE_URL` setting; must be set in deployment. |
 | 7.6 | The sheet has no LLM-written summary yet (plan 13.1 item 7, optional). | Doctors read the tables only. | Open | Generate 3-4 sentences through the same answer validator, labelled "Auto-generated summary, check against reports". |
+| 7.7 | The medicine card compared the value before starting with the first value after the onset window (plan 9.5). | On a real sheet, sodium was flagged low at 131 in the table while the card below said "142 to 140" from a value 9 months older. | Fixed | Compare with the latest value while on the medicine; found in the browser check. |
 
 ## 8. Found by the evaluation harness
 

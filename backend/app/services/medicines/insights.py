@@ -1,7 +1,8 @@
 """'Is this medicine doing its job?' (plan 9.5). Shows data around a medicine's start date; never claims cause.
 
-Compares the last value before the start date with the first value after start + onset window (e.g. HbA1c
-needs about 3 months), ignoring anything after the medicine was stopped.
+Compares the last value before the start date with the latest value after start + onset window (e.g. HbA1c
+needs about 3 months), ignoring anything after the medicine was stopped. The plan (9.5) said "first after"; the
+latest is used so the card agrees with the doctor sheet's flagged values (PROBLEMS_FACED 7.7).
 """
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -79,7 +80,7 @@ def _insight(med: Medicine, eff: Effect, series: list[Reading]) -> Insight:
 
     window_start = med.started_on + timedelta(days=eff.onset_days)
     before = next((r for r in reversed(series) if r.observed_on < med.started_on), None)
-    after = next((r for r in series if r.observed_on >= window_start
+    after = next((r for r in reversed(series) if r.observed_on >= window_start
                   and (med.stopped_on is None or r.observed_on <= med.stopped_on)), None)
     if before is None or after is None:
         return make("not_enough_data",

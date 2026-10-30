@@ -97,3 +97,18 @@ def test_wording_never_claims_cause_or_gives_advice():
     for ins in compute_insights([METFORMIN], effects, readings):
         assert not re.search(r"caused|because of|is working|isn't working|stop taking|switch|increase the dose",
                              ins.message, re.IGNORECASE), ins.message
+
+
+def test_the_latest_value_while_on_the_medicine_is_compared():
+    # Found on a doctor sheet: sodium flagged low at 131 in the table, while this card said "142 to 140" from a value
+    # 9 months older, because it took the first value after the onset window.
+    hctz = Medicine(id="m2", name="Telma H", ingredient="hydrochlorothiazide", started_on=date(2025, 8, 16),
+                    stopped_on=None)
+    sodium = Effect(ingredient="hydrochlorothiazide", loinc_code="2951-2", test_name="Sodium", unit="mmol/L",
+                    direction="decrease", effect_type="monitor", onset_days=14, note="", source_url="",
+                    source_section="")
+    readings = [r("2951-2", date(2025, 5, 27), "142", "may25"), r("2951-2", date(2025, 9, 3), "140", "sep25"),
+                r("2951-2", date(2026, 3, 28), "131", "mar26"), r("2951-2", date(2026, 6, 18), "131", "jun26")]
+    [ins] = compute_insights([hctz], [sodium], readings)
+    assert (ins.before.id, ins.after.id) == ("may25", "jun26")
+    assert "Sodium went from 142 mmol/L (27 May 2025) to 131 mmol/L (18 Jun 2026)" in ins.message
