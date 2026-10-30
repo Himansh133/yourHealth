@@ -98,3 +98,16 @@ def test_direct_mode_writes_hindi_in_one_call():
 def test_not_found_message_in_hindi():
     out = answer_question(FakeLLM([]), "q", "Papa", [], "hi")
     assert out.summary == "Papa की रिपोर्ट में यह नहीं मिला।" and out.lang == "hi"
+
+
+def test_without_the_validator_the_first_answer_is_shown_as_written():
+    llm = FakeLLM([MADE_UP])
+    out = answer_question(llm, "q", "Papa", EVIDENCE, "en", validate=False)
+    assert out.fallback is False
+    assert out.summary == "HbA1c was 6.1%."
+    assert len(llm.prompts) == 1
+
+
+def test_without_the_validator_a_reply_that_is_not_json_still_falls_back():
+    out = answer_question(FakeLLM(["not json", "not json"]), "q", "Papa", EVIDENCE, "en", validate=False)
+    assert out.fallback is True

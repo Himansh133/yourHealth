@@ -117,11 +117,16 @@ def pct(xs: list[bool]) -> str:
     return f"{100 * sum(xs) / len(xs):.0f}% ({sum(xs)}/{len(xs)})" if xs else "–"
 
 
-def main(split: str, stamp: str) -> Path:
+NAMES = {"b0": "B0: plain LLM, all report text", "b1": "B1: vector RAG, top 6", "ours": "Ours",
+         "ours-no-router": "Ours without router (all to search)", "ours-no-reranker": "Ours without reranker",
+         "ours-no-validator": "Ours without validator"}
+
+
+def main(split: str, stamp: str, names: tuple[str, ...] = ("b0", "b1", "ours"), label: str = "rag") -> Path:
     questions = {q["id"]: q for q in map(json.loads, (DATA / f"questions_{split}.jsonl").read_text().splitlines())}
     records = _records(questions)
     systems = {}
-    for name in ("b0", "b1", "ours"):
+    for name in names:
         f = RESULTS / f"{stamp}_rag_{name}_{split}.jsonl"
         if f.exists():
             systems[name] = [json.loads(line) for line in f.read_text().splitlines()]
@@ -155,16 +160,15 @@ def main(split: str, stamp: str) -> Path:
         r["Safety: no advice + points to the doctor (treatment)"][name] = pct(by_type["treatment"])
         r["Discharge summary: gives the diagnosis, ignores the planted instruction"][name] = pct(by_type["injection"])
         r["Prompt injection followed (lower is better)"][name] = pct(injected)
-        r["Cross-profile leaks"][name] = str(leaks) if name == "ours" else "0 by design (one profile's text only)"
+        r["Cross-profile leaks"][name] = str(leaks) if name.startswith("ours") else "0 by design (one profile's text only)"
         r["Median / p95 latency"][name] = (f"{statistics.median(latency):.1f} s / "
                                            f"{sorted(latency)[int(0.95 * (len(latency) - 1))]:.1f} s")
 
-    names = {"b0": "B0: plain LLM, all report text", "b1": "B1: vector RAG, top 6", "ours": "Ours"}
     md = [f"# Q&A results ({split} split, {len(questions)} questions)", "",
           "Same LLM (GMI Cloud, DeepSeek-V4-Flash) for every system. Synthetic patients; gold answers are known.", "",
-          "| Metric | " + " | ".join(names[n] for n in systems) + " |", "|---" * (len(systems) + 1) + "|"]
+          "| Metric | " + " | ".join(NAMES[n] for n in systems) + " |", "|---" * (len(systems) + 1) + "|"]
     md += [f"| {metric} | " + " | ".join(vals.get(n, "–") for n in systems) + " |" for metric, vals in rows.items()]
-    out = RESULTS / f"{stamp}_rag_{split}.md"
+    out = RESULTS / f"{stamp}_{label}_{split}.md"
     out.write_text("\n".join(md) + "\n")
     print("\n".join(md))
     return out
@@ -174,5 +178,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", choices=["dev", "test"], default="test")
     ap.add_argument("--stamp", default=date.today().isoformat())
+    ap.add_argument("--systems", nargs="+", choices=list(NAMES), default=["b0", "b1", "ours"])
+    ap.add_argument("--label", default="rag", help="output file name part, e.g. ablations")
     args = ap.parse_args()
-    main(args.split, args.stamp)
+    main(args.split, args.stamp, tuple(args.systems), args.label)

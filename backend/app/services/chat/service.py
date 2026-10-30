@@ -67,12 +67,17 @@ def _medicine_source(f: MedicineFact) -> dict:
     return {"kind": "drug_label", "url": f.url}
 
 
-def answer_chat(db: Session, pid: uuid.UUID, question: str, lang: str, llm: LLM) -> ChatOut:
-    """The caller has already checked that the asker may view this profile."""
+def answer_chat(db: Session, pid: uuid.UUID, question: str, lang: str, llm: LLM,
+                ablate: frozenset[str] = frozenset()) -> ChatOut:
+    """The caller has already checked that the asker may view this profile.
+    ablate is for the eval only (plan 14.4): "router" sends every question to document search, "reranker" and
+    "validator" turn those off."""
     name = db.get(Profile, pid).display_name
     vocab = medicine_vocabulary(db)
     r = route(question, get_lab_dictionary(), set(vocab))
     labels, tests = r.labels, r.tests
+    if "router" in ablate:
+        labels, tests = ["document"], []
     if not labels:
         c = classify(llm, question)
         labels = c.labels
@@ -99,7 +104,8 @@ def answer_chat(db: Session, pid: uuid.UUID, question: str, lang: str, llm: LLM)
         found += [(f.text, _medicine_source(f)) for f in facts if f.kind == "medicine"]
     if label == "document":
         found += [(h.evidence_text(), {"kind": "document", "document_id": h.document_id, "page_no": h.page_start})
-                  for h in search_chunks(db, pid, question, embedder=get_embedder(), reranker=get_reranker())]
+                  for h in search_chunks(db, pid, question, embedder=get_embedder(),
+                                reranker=None if "reranker" in ablate else get_reranker())]
 
     evidence = [Evidence(id=f"E{i}", text=text) for i, (text, _) in enumerate(found, 1)]
     sources = [Source(id=e.id, **fields) for e, (_, fields) in zip(evidence, found)]
@@ -114,5 +120,6 @@ def answer_chat(db: Session, pid: uuid.UUID, question: str, lang: str, llm: LLM)
                             claims=[Claim(text=e.text, evidence_ids=[e.id]) for e in evidence])
     else:
         glossary = {t.canonical_name: t.display_name_hi for t in tests if t.display_name_hi}
-        answer = answer_question(llm, question, name, evidence, lang, note=EVIDENCE_NOTES.get(label), glossary=glossary)
+        answer = answer_question(llm, question, name, evidence, lang, note=EVIDENCE_NOTES.get(label), glossary=glossary,
+                                 validate="validator" not in ablate)
     return ChatOut(**answer.model_dump(), route=labels, sources=sources)

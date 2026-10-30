@@ -28,16 +28,17 @@ NOT_FOUND = {"en": "I couldn't find this in {name}'s reports.", "hi": "{name} �
 
 def answer_question(llm: LLM, question: str, profile_name: str, evidence: list[Evidence], lang: str,
                     note: str | None = None, glossary: dict[str, str] | None = None,
-                    hindi_mode: str | None = None) -> ChatAnswer:
+                    hindi_mode: str | None = None, validate: bool = True) -> ChatAnswer:
     """note: what the evidence is, e.g. "the most recent value", so ambiguous words like Hindi पिछला are read right.
-    Hindi (plan 11): "translate" writes and validates English, then translates; "direct" writes Hindi."""
+    Hindi (plan 11): "translate" writes and validates English, then translates; "direct" writes Hindi.
+    validate=False is for the eval's ablation only: any answer that matches the schema is shown."""
     if not evidence:
         lang_ = lang if lang in NOT_FOUND else "en"
         return ChatAnswer(answerable=False, summary=NOT_FOUND[lang_].format(name=profile_name), claims=[],
                           missing_info=[], doctor_note="", lang=lang_)
 
     translate = lang == "hi" and (hindi_mode or settings.hindi_mode) == "translate"
-    answer = _answer(llm, question, profile_name, evidence, "en" if translate else lang, note)
+    answer = _answer(llm, question, profile_name, evidence, "en" if translate else lang, note, validate)
     if not translate or answer.fallback:
         return answer
     hindi = translate_answer(llm, answer, glossary or {})
@@ -45,7 +46,7 @@ def answer_question(llm: LLM, question: str, profile_name: str, evidence: list[E
 
 
 def _answer(llm: LLM, question: str, profile_name: str, evidence: list[Evidence], lang: str,
-            note: str | None) -> ChatAnswer:
+            note: str | None, validate: bool = True) -> ChatAnswer:
     system = SYSTEM.format(lang=lang)
     user = f"Question: {question}\nProfile: {profile_name}\n" + (f"Note: {note}\n" if note else "") + "<evidence>\n"
     user += "\n".join(f"[{e.id}] {e.text}" for e in evidence) + "\n</evidence>"
@@ -56,6 +57,8 @@ def _answer(llm: LLM, question: str, profile_name: str, evidence: list[Evidence]
         except LLMError:
             break
         parsed, errors = validate_answer(raw, evidence)
+        if parsed and not validate:
+            errors = []
         if not errors:
             return ChatAnswer(**parsed.model_dump(), lang=lang)
         if attempt == 0:

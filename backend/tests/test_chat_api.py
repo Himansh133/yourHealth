@@ -283,3 +283,71 @@ def test_treatment_answer_in_hindi(make_user_client, db_session, test_ids, use_l
     use_llm(FakeLLM([]))
     body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "kaunsi dawai lu hba1c ke liye", "lang": "hi"}).json()
     assert body["route"] == ["treatment"] and "डॉक्टर" in body["summary"] and body["lang"] == "hi"
+
+
+def _discharge_with_hba1c(db, pid):
+    from app.services.chat.doc_search import index_document
+    doc = Document(profile_id=pid, source_channel="web", storage_key="docs/d", mime_type="application/pdf",
+                   size_bytes=1, sha256="d", doc_type="lab_report", status="done", lab_name="City Lab")
+    db.add(doc)
+    db.flush()
+    index_document(db, doc, [(1, "HbA1c 7.2 % (4.0-5.6)")])
+    db.commit()
+
+
+DOC_ANSWER = json.dumps({"answerable": True, "summary": "The report gives HbA1c.",
+                         "claims": [{"text": "HbA1c was 7.2%", "evidence_ids": ["E1"]}],
+                         "missing_info": [], "doctor_note": ""})
+
+
+def test_ablation_without_router_sends_every_question_to_document_search(make_user_client, db_session, test_ids):
+    from app.services.chat.service import answer_chat
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    add_hba1c(db_session, pid, test_ids, "7.2", date(2026, 6, 14))
+    _discharge_with_hba1c(db_session, pid)
+    llm = FakeLLM([DOC_ANSWER])
+
+    out = answer_chat(db_session, pid, "What was my last HbA1c?", "en", llm, ablate=frozenset({"router"}))
+
+    assert out.route == ["document"]
+    assert [s.kind for s in out.sources] == ["document"]
+    assert len(llm.prompts) == 1  # no classifier call
+
+
+def test_ablation_without_reranker_does_not_rerank(make_user_client, db_session, monkeypatch):
+    from app.services.chat import service
+    calls = []
+
+    class Recording:
+        def score(self, question, passages):
+            calls.append(question)
+            return [0.9] * len(passages)
+
+    monkeypatch.setattr(service, "get_reranker", lambda: Recording())
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    _discharge_with_hba1c(db_session, pid)
+    question = "What did the report say about HbA1c?"
+
+    service.answer_chat(db_session, pid, question, "en", FakeLLM([json.dumps({"labels": ["document"], "test": None}),
+                                                                  DOC_ANSWER]))
+    assert calls == [question]
+    service.answer_chat(db_session, pid, question, "en", FakeLLM([json.dumps({"labels": ["document"], "test": None}),
+                                                                  DOC_ANSWER]), ablate=frozenset({"reranker"}))
+    assert calls == [question]
+
+
+def test_ablation_without_validator_shows_a_made_up_number(make_user_client, db_session, test_ids):
+    from app.services.chat.service import answer_chat
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    add_hba1c(db_session, pid, test_ids, "7.2", date(2026, 6, 14))
+    made_up = json.dumps({"answerable": True, "summary": "HbA1c was 6.1%.",
+                          "claims": [{"text": "HbA1c was 6.1%", "evidence_ids": ["E1"]}],
+                          "missing_info": [], "doctor_note": ""})
+
+    out = answer_chat(db_session, pid, "What was my last HbA1c?", "en", FakeLLM([made_up]),
+                      ablate=frozenset({"validator"}))
+
+    assert out.summary == "HbA1c was 6.1%."

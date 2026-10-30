@@ -3,6 +3,7 @@
   b0    plain LLM: all of the profile's report text in the prompt, no retrieval, no validator
   b1    vector RAG: the 6 nearest chunks by meaning, no router, no SQL, no validator
   ours  the app's chat endpoint: router, SQL tool, medicine tool, hybrid search, reranker, validator
+  ours-no-router / ours-no-reranker / ours-no-validator  ablations: the same pipeline with one part turned off
 
 All use the same LLM. Usage (from backend/, after load_eval_db):
   DATABASE_URL=postgresql+psycopg://yourhealth:yourhealth@localhost:5432/yourhealth_eval COOKIE_SECURE=false \\
@@ -73,10 +74,26 @@ def baseline(system: str, q: dict, pid: uuid.UUID) -> dict:
     return {"answerable": answerable, "text": text, "latency": time.time() - start}
 
 
+ABLATIONS = {"ours-no-router": "router", "ours-no-reranker": "reranker", "ours-no-validator": "validator"}
+
+
 def ours(client, q: dict, pid: uuid.UUID) -> dict:
     start = time.time()
     body = client.post(f"/api/v1/profiles/{pid}/chat", json={"question": q["question"], "lang": q["lang"]}).json()
-    latency = time.time() - start
+    return _row(body, time.time() - start, pid)
+
+
+def ablated(part: str, q: dict, pid: uuid.UUID) -> dict:
+    """The chat pipeline called directly, since the API doesn't let anyone turn its parts off."""
+    from app.services.chat.service import answer_chat
+    with SessionLocal() as db:
+        start = time.time()
+        out = answer_chat(db, pid, q["question"], q["lang"], get_llm(), ablate=frozenset({part}))
+        latency = time.time() - start
+    return _row(out.model_dump(mode="json"), latency, pid)
+
+
+def _row(body: dict, latency: float, pid: uuid.UUID) -> dict:
     text = " ".join([body["summary"], *(c["text"] for c in body["claims"]), *body["missing_info"],
                      body["doctor_note"]])
     with SessionLocal() as db:
@@ -118,6 +135,8 @@ def main(system: str, split: str, lang: str | None = None, label: str | None = N
         client = TestClient(app)
         client.post("/api/v1/auth/login", json={"email": db_info["email"], "password": db_info["password"]})
         answers = [progress(q, ours(client, q, pid[q["patient_key"]])) for q in questions]
+    elif system in ABLATIONS:
+        answers = [progress(q, ablated(ABLATIONS[system], q, pid[q["patient_key"]])) for q in questions]
     else:
         with ThreadPoolExecutor(4) as pool:
             answers = list(pool.map(lambda q: progress(q, baseline(system, q, pid[q["patient_key"]])), questions))
@@ -131,7 +150,7 @@ def main(system: str, split: str, lang: str | None = None, label: str | None = N
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--system", choices=["b0", "b1", "ours"], required=True)
+    ap.add_argument("--system", choices=["b0", "b1", "ours", *ABLATIONS], required=True)
     ap.add_argument("--split", choices=["dev", "test"], default="test")
     ap.add_argument("--lang", choices=["en", "hi"], help="only questions in this language")
     ap.add_argument("--label", help="name for the output file instead of the system, e.g. ours-translate")
