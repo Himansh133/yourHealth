@@ -14,6 +14,7 @@ from app.db.models import (
     ProfileMedicine,
     ProfileMedicineIngredient,
 )
+from app.services.labs.display import shown
 from app.services.medicines import insights as ins
 
 
@@ -71,5 +72,5 @@ def profile_insights(db: Session, profile_id: uuid.UUID) -> list[ins.Insight]:
          for mi in mis],
         [ins.Effect(names[e.ingredient_id], t.loinc_code, t.canonical_name, t.canonical_unit, e.direction,
                     e.effect_type, e.onset_days, e.note_en, e.source_url, e.source_section) for e, t in effects],
-        [ins.Reading(str(r.id), loinc, r.observed_on, r.value_canonical) for r, loinc in readings],
+        [ins.Reading(str(r.id), loinc, r.observed_on, shown(r.value_canonical, r.value_num)) for r, loinc in readings],
     )

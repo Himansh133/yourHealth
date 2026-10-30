@@ -3,7 +3,6 @@
 The LLM never writes SQL or picks the profile: the router names a test and a mode, and we run a fixed query
 on the profile the permission check gave us. Each row carries its lab_result, document and page as citation IDs.
 """
-import math
 import uuid
 from dataclasses import dataclass
 from datetime import date
@@ -14,6 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models import Document, LabResult, LabTestRecord
+from app.services.labs.display import round3
 from app.services.labs.values import normalize_unit
 
 FLAG_TEXT = {"low": "LOW", "high": "HIGH", "normal": "within range"}
@@ -56,14 +56,6 @@ def _num(d: Decimal) -> str:
     return format(d, "f")
 
 
-def _round3(d: Decimal) -> Decimal:
-    """Three significant figures, for values we converted: 5.598396 -> 5.6, 151.3344 -> 151, 1234.5 -> 1235."""
-    if d == 0:
-        return d
-    places = max(0, 2 - math.floor(math.log10(abs(d))))
-    return d.quantize(Decimal(1).scaleb(-places)).normalize() if places else d.quantize(Decimal(1))
-
-
 def lab_lookup(db: Session, profile_id: uuid.UUID, loinc_code: str, mode: Literal["latest", "trend", "range"],
                date_from: date | None = None, date_to: date | None = None) -> list[LabFact]:
     """Rows oldest first ('latest' gives just the last one)."""
@@ -90,8 +82,8 @@ def _fact(r: LabResult, t: LabTestRecord, lab_name: str | None) -> LabFact:
     elif normalize_unit(r.raw_unit) == t.canonical_unit:
         value, unit = _num(r.value_canonical), t.canonical_unit
     else:  # converted: round away the conversion's false precision, and say what the report printed
-        value, unit, printed = _num(_round3(r.value_canonical)), t.canonical_unit, f"{r.raw_value} {r.raw_unit}"
-        low, high = (None if x is None else _round3(x) for x in (low, high))
+        value, unit, printed = _num(round3(r.value_canonical)), t.canonical_unit, f"{r.raw_value} {r.raw_unit}"
+        low, high = (None if x is None else round3(x) for x in (low, high))
     return LabFact(lab_result_id=r.id, document_id=r.document_id, page_no=r.page_no, test_name=t.canonical_name,
                    value=value, unit=unit, range_low=low, range_high=high, flag=r.flag, observed_on=r.observed_on,
                    lab_name=lab_name, printed=printed)

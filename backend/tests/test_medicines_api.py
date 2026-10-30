@@ -189,3 +189,20 @@ def test_trends_carry_start_and_stop_markers_for_linked_tests(make_user_client, 
          "effect_type": "therapeutic"},
     ]
     assert trends["TSH"]["markers"] == []  # metformin has no TSH link
+
+
+def test_insight_values_from_converted_readings_are_rounded(make_user_client, db_session, refdata):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    a.post(f"/api/v1/profiles/{pid}/medicines", json={
+        "brand_id": brand_id(db_session, "Glycomet 500"), "started_on": "2026-03-01"})
+    add_reading(db_session, pid, "4548-4", date(2026, 1, 10), "8.1")
+    add_reading(db_session, pid, "4548-4", date(2026, 6, 14), "51")
+    r = db_session.scalar(select(LabResult).where(LabResult.raw_value == "51"))
+    r.value_canonical = Decimal("6.81752")  # printed as 51 mmol/mol
+    db_session.commit()
+
+    insights = a.get(f"/api/v1/profiles/{pid}/medicine-insights").json()
+
+    hba1c = next(i for i in insights if i["test_name"] == "HbA1c")
+    assert hba1c["after"]["value"] == 6.82

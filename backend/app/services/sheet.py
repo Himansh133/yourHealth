@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import Document, LabResult, LabTestRecord, Profile, ProfileMedicine
 from app.services.chat.medicine_tool import FREQUENCY_TEXT
+from app.services.labs.display import shown
 from app.services.medicines.store import medicine_ingredients, profile_insights
 
 
@@ -112,16 +113,21 @@ def _values(db: Session, pid: uuid.UUID, date_from: date, date_to: date) -> tupl
         if latest.observed_on >= date_from and latest.flag in ("low", "high"):
             prev = series[-2] if len(series) > 1 else None
             flagged.append(FlaggedValue(
-                test_name=t.canonical_name, unit=t.canonical_unit, value=latest.value_canonical, flag=latest.flag,
-                observed_on=latest.observed_on, range_low=latest.range_low_canonical,
-                range_high=latest.range_high_canonical, lab_result_id=latest.id, document_id=latest.document_id,
-                previous=Reading(value=prev.value_canonical, observed_on=prev.observed_on) if prev else None))
+                test_name=t.canonical_name, unit=t.canonical_unit, value=shown(latest.value_canonical, latest.value_num),
+                flag=latest.flag, observed_on=latest.observed_on,
+                range_low=shown(latest.range_low_canonical, latest.range_low),
+                range_high=shown(latest.range_high_canonical, latest.range_high), lab_result_id=latest.id,
+                document_id=latest.document_id,
+                previous=Reading(value=shown(prev.value_canonical, prev.value_num), observed_on=prev.observed_on)
+                if prev else None))
         in_period = [r for r in series if r.observed_on >= date_from]
         if len(in_period) >= 2:
             trends.append(TrendLine(
-                test_name=t.canonical_name, unit=t.canonical_unit, range_low=latest.range_low_canonical,
-                range_high=latest.range_high_canonical,
-                points=[Reading(value=r.value_canonical, observed_on=r.observed_on) for r in in_period]))
+                test_name=t.canonical_name, unit=t.canonical_unit,
+                range_low=shown(latest.range_low_canonical, latest.range_low),
+                range_high=shown(latest.range_high_canonical, latest.range_high),
+                points=[Reading(value=shown(r.value_canonical, r.value_num), observed_on=r.observed_on)
+                        for r in in_period]))
     return flagged, trends
 
 

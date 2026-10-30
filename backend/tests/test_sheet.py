@@ -124,3 +124,20 @@ def test_sheet_api_previews_for_members_only(make_user_client, papa):
     assert resp.status_code == 200
     assert resp.json()["profile"]["display_name"] == "Papa"
     assert make_user_client("b@example.com").get(f"/api/v1/profiles/{pid}/sheet").status_code == 404
+
+
+def test_converted_values_on_the_sheet_are_rounded(db_session, papa):
+    _, pid = papa
+    jan, jun = add_doc(db_session, pid, date(2026, 5, 10)), add_doc(db_session, pid, date(2026, 6, 14), "Thyrocare")
+    add(db_session, jan, "2132-9", "472", "normal", "200", "900")
+    b12 = add(db_session, jun, "2132-9", "272", "low", "300", "900")
+    b12.value_num, b12.value_canonical = Decimal("200.6"), Decimal("271.8130")  # printed in pmol/L
+    db_session.commit()
+
+    sheet = build_sheet(db_session, pid, date(2026, 5, 1), TODAY, True, today=TODAY)
+
+    [f] = sheet.flagged
+    assert f.value == Decimal("272")
+    assert f.previous.value == Decimal("472")
+    [trend] = [t for t in sheet.trends if t.test_name == "Vitamin B12"]
+    assert [p.value for p in trend.points] == [Decimal("472"), Decimal("272")]

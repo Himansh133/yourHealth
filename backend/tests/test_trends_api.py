@@ -113,3 +113,19 @@ def test_trends_never_mix_profiles(make_user_client, db_session, test_ids):
     add_point(db_session, papa, test_ids, "4548-4", "7.2", date(2026, 6, 14))
     add_point(db_session, mummy, test_ids, "4548-4", "5.1", date(2026, 1, 10))
     assert a.get(f"/api/v1/profiles/{papa}/trends").json() == []
+
+
+def test_converted_values_are_rounded_and_printed_ones_kept(make_user_client, db_session, test_ids):
+    # Found in the browser: "118.9056 mg/dL" for a glucose printed as 6.6 mmol/L.
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    converted = add_point(db_session, pid, test_ids, "1558-6", "6.6", date(2026, 1, 10), low="70.2624", high="99.0880")
+    converted.value_canonical, converted.range_low, converted.range_high = Decimal("118.9056"), Decimal("3.9"), Decimal("5.5")
+    add_point(db_session, pid, test_ids, "1558-6", "104.25", date(2026, 6, 14), low="70", high="100")
+    db_session.commit()
+
+    [trend] = a.get(f"/api/v1/profiles/{pid}/trends").json()
+
+    first, last = trend["points"]
+    assert (first["value"], first["range_low"], first["range_high"]) == (119, 70.3, 99.1)
+    assert (last["value"], last["range_low"], last["range_high"]) == (104.25, 70, 100)  # as printed: not rounded

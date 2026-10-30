@@ -12,6 +12,7 @@ from app.core.permissions import require_profile_access
 from app.db.models import Document, LabResult, LabTestRecord, User
 from app.db.session import get_db
 from app.services.labs.dictionary import get_lab_dictionary
+from app.services.labs.display import shown
 from app.services.labs.normalize import REVIEW_BELOW, normalize_row
 from app.services.labs.row_parser import RawRow
 from app.services.labs.store import lab_test_ids, normalized_fields, refresh_review_status
@@ -185,10 +186,10 @@ def trends(pid: uuid.UUID, user: User = Depends(current_user), db: Session = Dep
             document_id=r.document_id,
             page_no=r.page_no,
             observed_on=r.observed_on,
-            value=r.value_canonical,
+            value=shown(r.value_canonical, r.value_num),
             qualifier=r.qualifier,
-            range_low=r.range_low_canonical,
-            range_high=r.range_high_canonical,
+            range_low=shown(r.range_low_canonical, r.range_low),
+            range_high=shown(r.range_high_canonical, r.range_high),
             flag=r.flag,
             low_confidence=not r.verified_by_user and (r.extraction_confidence or 0) < REVIEW_BELOW,
         )
