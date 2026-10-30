@@ -69,3 +69,20 @@ def test_a_number_inside_our_own_glossary_meaning_is_not_a_changed_number():
 def test_a_changed_number_next_to_the_glossary_meaning_is_still_caught():
     wrong = hindi(claim="14 जून 2026 को HbA1c (पिछले 3 महीने की औसत शुगर) 7.5% था, जो 4.0-5.6 की सीमा से ज़्यादा है")
     assert translate_answer(FakeLLM([wrong, wrong]), EN, glossary={"HbA1c": "पिछले 3 महीने की औसत शुगर"}) is None
+
+
+def test_digits_in_a_glossary_test_name_are_not_a_changed_number():
+    # From the eval: Hindi answers wrote out "Vitamin D, 25-OH total" and the 25 failed the check half the time.
+    en = Answer(answerable=True, summary="Mummy's latest vitamin D was 34.5 ng/mL.", claims=[], missing_info=[],
+                doctor_note="")
+    named = json.dumps({"summary": "मम्मी का Vitamin D, 25-OH total (विटामिन D) 34.5 ng/mL था।", "claims": [],
+                        "missing_info": [], "doctor_note": ""}, ensure_ascii=False)
+    assert translate_answer(FakeLLM([named]), en, glossary={"Vitamin D, 25-OH total": "विटामिन D"}) is not None
+
+
+def test_glossary_name_in_the_english_is_set_aside_too():
+    en = Answer(answerable=True, summary="Vitamin D, 25-OH total was 34.5 ng/mL.", claims=[], missing_info=[],
+                doctor_note="")
+    hindi_ = json.dumps({"summary": "विटामिन D 34.5 ng/mL था।", "claims": [], "missing_info": [], "doctor_note": ""},
+                        ensure_ascii=False)
+    assert translate_answer(FakeLLM([hindi_]), en, glossary={"Vitamin D, 25-OH total": "विटामिन D"}) is not None

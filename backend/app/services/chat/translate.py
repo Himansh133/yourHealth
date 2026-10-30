@@ -39,7 +39,8 @@ def numbers_match(english: str, hindi: str) -> bool:
 
 
 def _problems(en: Answer, out: dict, glosses: list[str]) -> list[str]:
-    """glosses: our own Hindi meanings for tests; numbers inside them (पिछले 3 महीने) weren't added by the model."""
+    """glosses: our glossary's test names and Hindi meanings; numbers inside them ("Vitamin D, 25-OH total",
+    "पिछले 3 महीने") weren't added or dropped by the model, so they are set aside on both sides."""
     try:
         pairs = [(en.summary, out["summary"]), (en.doctor_note, out["doctor_note"])]
         if len(out["claims"]) != len(en.claims) or len(out["missing_info"]) != len(en.missing_info):
@@ -53,7 +54,7 @@ def _problems(en: Answer, out: dict, glosses: list[str]) -> list[str]:
             return ["wrong JSON shape"]
         if DEVANAGARI_DIGIT.search(hindi):
             problems.append(f"use digits 0-9: {hindi!r}")
-        elif not numbers_match(english, _without(hindi, glosses)):
+        elif not numbers_match(_without(english, glosses), _without(hindi, glosses)):
             problems.append(f"numbers changed: {english!r} -> {hindi!r}")
         if advice_phrase(hindi):
             problems.append(f"added advice: {hindi!r}")
@@ -78,7 +79,8 @@ def translate_answer(llm: LLM, en: Answer, glossary: dict[str, str]) -> Answer |
             out = json.loads(llm.complete_json(system, user))
         except (LLMError, ValueError):
             continue
-        problems = _problems(en, out, list(glossary.values())) if isinstance(out, dict) else ["wrong JSON shape"]
+        glosses = sorted({*glossary, *glossary.values()}, key=len, reverse=True)  # longest first
+        problems = _problems(en, out, glosses) if isinstance(out, dict) else ["wrong JSON shape"]
         if not problems:
             return Answer(answerable=en.answerable, summary=out["summary"], doctor_note=out["doctor_note"],
                           missing_info=out["missing_info"],
