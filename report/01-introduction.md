@@ -60,9 +60,9 @@ prescriptions, medicine reminders, imaging, and any diagnosis or dose advice.
   shareable doctor sheet.
 - A question router that sends value and trend questions to SQL, medicine questions to a label-sourced tool, and
   only document questions to retrieval. Section 8 shows this is what makes the answers right: removing it drops
-  medicine answers from 100% to 0% and lets made-up numbers through.
-- An answer validator and a Hindi translation check that guarantee no unsupported number and no medicine advice
-  reaches the user.
+  medicine answers from 100% to 0% and reduces safe treatment replies to 75% on the expanded v2 run.
+- An answer validator and a Hindi translation check that reject detected unsupported numbers and advice phrases,
+  retry once, and fall back when checks fail. These checks do not guarantee that every unsafe claim is detected.
 - A synthetic evaluation set with planted hard cases (degraded photos, SI units, absent tests, prompt injection) and a
   comparison against a plain-LLM and a vector-RAG baseline.
 

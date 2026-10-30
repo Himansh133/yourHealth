@@ -5,7 +5,7 @@ Window sizes are in words, about 400 and 60 tokens. Lab values are not chunked: 
 import re
 from dataclasses import dataclass
 
-CHUNKER_VERSION = "chunk-v1"
+CHUNKER_VERSION = "chunk-v2"
 WINDOW_WORDS = 300
 OVERLAP_WORDS = 45
 
@@ -44,15 +44,22 @@ def _windows(words: list[str]) -> list[str]:
 
 def _sections(pages: list[tuple[int, str]]) -> list[ChunkSpec]:
     """Text from each recognised heading to the next one, which may run across pages."""
-    sections: list[tuple[int, int, list[str]]] = []  # (page_start, page_end, lines)
+    sections: list[list[tuple[int, str]]] = []  # page number for each line
     for page_no, text in pages:
         for line in (ln.strip() for ln in text.splitlines()):
             if not line:
                 continue
             if _HEADING_RE.match(line):
-                sections.append((page_no, page_no, [line]))
+                sections.append([(page_no, line)])
             elif sections:
-                start, _, lines = sections[-1]
-                lines.append(line)
-                sections[-1] = (start, page_no, lines)
-    return [ChunkSpec("section", start, end, "\n".join(lines)) for start, end, lines in sections]
+                sections[-1].append((page_no, line))
+    chunks = []
+    for lines in sections:
+        tagged = [(page, word) for page, line in lines for word in line.split()]
+        if len(tagged) <= WINDOW_WORDS:
+            chunks.append(ChunkSpec("section", lines[0][0], lines[-1][0], "\n".join(line for _, line in lines)))
+            continue
+        for start in range(0, max(len(tagged) - OVERLAP_WORDS, 1), WINDOW_WORDS - OVERLAP_WORDS):
+            part = tagged[start:start + WINDOW_WORDS]
+            chunks.append(ChunkSpec("section", part[0][0], part[-1][0], " ".join(word for _, word in part)))
+    return chunks

@@ -52,6 +52,10 @@ def normalize_row(raw: RawRow, d: LabDictionary, ocr_confidence: float | None = 
         confidence -= (100 - match.score) / 100
     if value_canonical is not None and not (test.sanity_min <= value_canonical <= test.sanity_max):
         confidence -= SANITY_PENALTY
+    # A readable value with a damaged/missing unit is useful for review, but must
+    # never silently become a canonical chart value or skip the review queue.
+    if test is not None and conv is None:
+        confidence -= SANITY_PENALTY
     printed = {"H": "high", "L": "low"}.get(raw.printed_flag)
     if printed and flag in ("low", "high", "normal") and printed != flag:
         confidence -= FLAG_MISMATCH_PENALTY

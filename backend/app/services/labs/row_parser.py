@@ -69,10 +69,43 @@ def parse_line(line: str) -> RawRow | None:
     return None
 
 
+def _recover_damaged_unit(line: str) -> RawRow | None:
+    """Keep a readable result for review; never infer a unit from OCR garbage.
+
+    Require an exact dictionary name and a separate numeric result before accepting
+    a slash-containing damaged unit. This cannot turn a unit's digit into a value.
+    """
+    from app.services.labs.dictionary import get_lab_dictionary
+
+    tokens = line.split()
+    d = get_lab_dictionary()
+    for i in range(1, len(tokens)):
+        name = " ".join(tokens[:i])
+        match = d.match(name)
+        if not match or match.score != 100:
+            continue
+        tail = " ".join(tokens[i:])
+        # Both printed column orders occur. Units must remain separate from values.
+        for pattern in (
+            rf"(?P<value>{_NUM})(?:\s*(?P<flag>H|L))?\s+(?P<unit>\S+/\S+)\s+(?P<range>{_RANGE})",
+            rf"(?P<value>{_NUM})(?:\s*(?P<flag>H|L))?\s+(?P<range>{_RANGE})\s+(?P<unit>\S+/\S+)",
+        ):
+            m = re.fullmatch(pattern, tail, re.IGNORECASE)
+            if m and d.conversion(match.test.loinc_code, m["unit"]) is None:
+                return RawRow(name, m["value"], m["unit"], m["range"],
+                              m["flag"].upper() if m["flag"] else None)
+    return None
+
+
 def parse_words(words: list[dict]) -> list[RawRow]:
     rows = []
     for line_words in group_rows(words):
-        parsed = parse_line(" ".join(w["text"] for w in line_words))
+        line = " ".join(w["text"] for w in line_words)
+        parsed = parse_line(line)
+        # Recovery also replaces bogus names containing the real result followed by a
+        # digit from a damaged unit (e.g. "Serum Creatinine 1.00" -> value 7).
+        if parsed is None or parsed.raw_unit is None or any(c.isdigit() for c in parsed.raw_name):
+            parsed = _recover_damaged_unit(line) or parsed
         if parsed:
             bbox = {
                 "x0": min(w["x0"] for w in line_words), "y0": min(w["y0"] for w in line_words),

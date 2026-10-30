@@ -10,3 +10,12 @@ def test_window_sets_the_chunk_size_and_keeps_15_percent_overlap():
     assert (chunking.WINDOW_WORDS, chunking.OVERLAP_WORDS) == (300, 45)  # restored afterwards
     assert len(small[0].text.split()) == 190
     assert len(small) > len(chunking.chunk_pages([(1, text)], "lab_report"))
+
+
+def test_invalid_window_does_not_change_global_settings():
+    import pytest
+    for size in (-1, 0, 1):
+        with pytest.raises(ValueError):
+            with window(size):
+                pass
+    assert (chunking.WINDOW_WORDS, chunking.OVERLAP_WORDS) == (300, 45)

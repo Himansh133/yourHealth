@@ -40,6 +40,11 @@ Lab reports are tables, but neither a text layer nor OCR returns a table. They r
    `up to b`. A unit must start with a letter, µ or %. Without that rule, OCR junk such as "22 7/n" was read as the
    value 7 under the name "… 22".
 
+A subsequent recovery path (Chapter 8.8) retains readable values with damaged slash-containing units only when
+there is an exact dictionary name and a separate numeric value. For example, `SGOT (AST) 22 7/n 10 - 40` can be
+shown for review as value 22 with raw unit `7/n`; it is not converted or treated as a trusted chart value. Missing or
+unconvertible units lower confidence below the review threshold. The planned LLM extraction fallback remains unbuilt.
+
 ## 4.4 Classifying the document
 
 Rules decide the document type from its text:
@@ -88,6 +93,8 @@ low-confidence points are marked on charts. Corrections are stored as verified.
 ## 4.7 Search chunks
 
 Every processed document is also split into passages for document search (Chapter 6): pages in windows of 300 words
-(about 400 tokens) with a 45-word overlap, plus, for discharge summaries, one passage per recognised section
-(Diagnosis, Course in Hospital, Advice on Discharge, Follow up…). Lab values themselves are not searched as text: value
+(about 400 tokens) with a 45-word overlap, plus recognised discharge sections (Diagnosis, Course in Hospital,
+Advice on Discharge, Follow up…). Since `chunk-v2`, sections longer than the window are split with the same overlap,
+and each chunk cites only the pages contributing its words. Existing documents require reindexing; the published
+90-question test predates this change. Lab values themselves are not searched as text: value
 and trend questions go to SQL. Each passage is embedded with bge-m3 when the worker processes the document.

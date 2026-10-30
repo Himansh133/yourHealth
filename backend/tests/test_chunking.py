@@ -46,3 +46,16 @@ def test_discharge_summary_also_gets_section_chunks_across_pages():
 def test_other_documents_get_no_section_chunks():
     pages = [(1, "Diagnosis:\nSomething")]
     assert {c.chunk_type for c in chunk_pages(pages, "lab_report")} == {"page_text"}
+
+
+def test_long_sections_are_bounded_and_cite_only_pages_in_each_window():
+    pages = [(1, 'Course in Hospital\n' + words(400, 'a')), (2, words(400, 'b'))]
+    sections = [c for c in chunk_pages(pages, 'discharge') if c.chunk_type == 'section']
+    assert len(sections) > 1
+    assert all(len(c.text.split()) <= WINDOW_WORDS for c in sections)
+    assert (sections[0].page_start, sections[0].page_end) == (1, 1)
+    assert (sections[-1].page_start, sections[-1].page_end) == (2, 2)
+    for left, right in zip(sections, sections[1:]):
+        assert left.text.split()[-OVERLAP_WORDS:] == right.text.split()[:OVERLAP_WORDS]
+    combined = ' '.join(c.text for c in sections).split()
+    assert all(f'{prefix}{i}' in combined for prefix in ('a', 'b') for i in range(400))

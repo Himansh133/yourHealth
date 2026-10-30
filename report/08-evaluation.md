@@ -2,7 +2,7 @@
 
 This chapter measures two things: how well YourHealth reads lab values from reports (extraction), and how well it
 answers questions about them (question answering). Every number comes from files in `eval/results/` and can be
-reproduced with the commands in Section 7.
+traced to the saved artifacts; commands in Section 7 rerun the pipeline.
 
 ## 1. Why synthetic data
 
@@ -32,7 +32,7 @@ photos (rotation, blur, uneven shadow, heavy JPEG compression, like a forwarded 
 answers are generated from the same stories. Patients, not documents, are split 70/30 into dev and test, so no test
 patient's reports are ever seen during development.
 
-| | v1 (development) | v2 (final, clean) |
+| | v1 (development) | v2 (expanded evaluation) |
 |---|---|---|
 | Seed | 1 | 2 |
 | Patients (test) | 30 (9) | 30 (9) |
@@ -52,10 +52,13 @@ left: Hindi questions were value questions only, and too few questions used docu
 (problems 8.16 and 8.17). They were appended, so the first 57 questions are byte-identical. Their dev copies were used
 to fix the bugs they found (problems 8.19-8.21); the test copies were run once afterwards.
 
-**v1 and v2.** All development and tuning used v1. After two scorer fixes the v1 test split had been looked at, so
-it was no longer a clean test. v2 was generated with a new seed after development ended. It was loaded into its own
-database and run once for every system with the final settings, with no changes after seeing the results. Section 5
-reports the 90-question run; the first 57-question run is kept in `eval/results/2026-10-30-v2_*`.
+**v1 and v2.** Initial development used v1. After scorer fixes and inspection of its test split, v2 was generated
+with seed 2 and loaded into its own database. The original 57-question v2 test was evaluated first. Later, added
+Hindi trend and document questions were used on the v2 dev split to fix problems 8.19–8.21, before running the
+expanded 90-question test once per system at `9321fce`. Thus v2 has patient-disjoint dev/test splits, but the expanded
+run is not a wholly untouched new holdout: its first 57 questions had already been evaluated. Section 5 reports
+that expanded run; the first run is retained in `eval/results/2026-10-30-v2_*`. Subsequent development diagnostics
+must be reported separately and do not replace these frozen results.
 
 ## 3. Systems compared
 
@@ -91,7 +94,7 @@ All systems use the same LLM (DeepSeek-V4-Flash through GMI Cloud, temperature 0
 - **Extraction**: a row is correct only if test, value, unit and range all match the printed report; precision, recall
   and F1 over rows.
 
-## 5. Results (v2, clean test set)
+## 5. Results (v2, 90-question test split)
 
 Code at commit `9321fce`; tables in `eval/results/2026-10-30-v2q2_*` (90 questions). Extraction (5.3) did not
 change and is from the first v2 run.
@@ -159,12 +162,14 @@ answers. The same pattern held on v1 and on the first v2 run. Without the router
 time (15% on the first run), so that row varies between runs. The medicine loss (0% both times) and the safety drop
 (38% and 75%) appear in both.
 
-The reranker and the validator still show no measurable effect, now with 24 document questions instead of 5. The
+Document-answer accuracy does not separate the reranker or validator ablations, now with 24 document questions
+instead of 5. The validator does have an observed effect on unsupported computed dates, which the numeric metric
+excludes. The
 reranker only reorders passages, and these documents are short, so the right passage is likely among those retrieved
 either way. Measuring it needs long documents with many similar passages. The validator's only action was to reject
 the two follow-up answers with computed dates; without it, one of them was shown with "the follow-up is due around
-11/10/2024", a date no document contains. It remains a guarantee against a failure this set rarely provokes, not a
-measured gain.
+11/10/2024", a date no document contains. This is evidence of a specific safeguard working, not a guarantee that all unsupported claims are caught or a
+measured improvement in the aggregate document score.
 
 ### 5.3 Extraction
 
@@ -193,10 +198,16 @@ never the bottleneck.
 - **Synthetic layouts.** Four clean layouts don't cover multi-page reports, two-column tables or repeated headers. The
   extraction F1 is an upper bound; a small set of consented real reports is the next step.
 - **Small groups.** 9 test patients; some rows rest on 5–9 questions, so one answer moves a rate by 11–20 points. The
-  differences that matter (0% vs 100% on medicine, 25% vs 100% on safety) are far larger than that.
+  differences that matter (0% vs 100% on medicine, 0–12% vs 100% on safety) are far larger than that.
 - **One LLM.** All systems used DeepSeek-V4-Flash; a different model may change the baselines' numbers more than ours,
   whose values come from SQL.
-- **LLM judge.** Trend direction is judged by the same model family; it is cached and identical for every system.
+- **LLM judge.** Trend direction is judged by the same model family with a shared prompt and cache. The borderline
+  LDL answer illustrates disagreement between a small numerical increase and the gold "stable" label; manual
+  adjudication should be reported separately rather than silently changing the score.
+- **Baseline information access.** B0/B1 receive report text, while Ours also receives structured medicine and label
+  facts. The medicine result measures that complete system design, not retrieval quality with equal evidence.
+- **Unsupported dates.** The made-up-number metric excludes dates, so its 0% does not establish that every date is
+  grounded. The computed-date validator cases are reported separately (8.22).
 - **Templated questions.** Questions are generated from templates, so wording is less varied than real users. The
   first Hindi questions were value questions only, so a Hindi trend bug was found in the browser, not by the eval
   (problem 8.17); Hindi trend questions were added afterwards and found two more (8.19, 8.21).
@@ -230,3 +241,47 @@ PYTHONPATH=.. .venv/bin/python -m eval.runners.score_rag --split test --stamp 20
 
 The dataset is deterministic for a seed. LLM answers vary slightly between runs even at temperature 0, so a re-run
 can differ by a question or two.
+
+## 8. Subsequent development diagnostics (31 October 2026)
+
+These runs evaluate changes made after the frozen `9321fce` results above. They do not replace Section 5 or constitute
+an untouched holdout. Commands and scope are documented in `eval/README.md`.
+
+### 8.1 Recovering damaged OCR units for review
+
+On v1 dev (108 documents, 475 expected rows), exact dictionary names and separately readable values can now be
+retained even when OCR corrupts a slash-containing unit, for example `1.00 7m9/dlL`. The unit stays as read; there is
+no guessed conversion. Such rows have no canonical chart value and are marked for human review. Missing units on
+otherwise parsed rows also reduce confidence below the review threshold.
+
+| Metric | Previous v1 dev | Recovery v1 dev |
+|---|---|---|
+| Expected test identities found | 464/475 (97.7%) | 475/475 (100%) |
+| Correct values among matched rows | 100% | 100% |
+| Fully correct rows (including unit and range) | 460/475 | 460/475 |
+| Strict whole-row F1 | 97.6% | 96.8% |
+
+This improves review coverage, not automatic unit recognition. F1 falls because additional incomplete rows count as
+errors; the 15 unit problems remain. The existing v1 CI regression split passes its unchanged thresholds at 97.6%
+F1 and 100% value accuracy. Artifacts: `2026-10-31-review-recovery_extraction_dev.*` and
+`2026-10-31-regression_extraction_test.*` in `eval/results/`. No new v2 test score is claimed.
+
+### 8.2 Long-document retrieval and chunk-size probe
+
+`chunk-v2` bounds long discharge sections by the same word window and overlap as page chunks, retaining the actual
+page span of each window. Existing indexed documents need reindexing to use it.
+
+A separate in-memory development probe uses three similar synthetic discharge notes longer than 1,000 words and six
+questions about current diet and follow-up advice. A hit requires the entire gold sentence from the correct document.
+It uses the installed bge-m3 embedder and reranker, comparing dense ranking with reranking its top ten candidates.
+
+| Window (words) | Dense MRR | Reranked MRR | Dense Recall@1 | Reranked Recall@1 |
+|---|---|---|---|---|
+| 190 | 0.579 | 1.000 | 3/6 | 6/6 |
+| 300 | 0.694 | 1.000 | 3/6 | 6/6 |
+| 450 | 0.722 | 1.000 | 3/6 | 6/6 |
+
+The reranker helps put the evidence first on this challenge. It does not recover new top-ten evidence: dense
+Recall@10 is already 6/6 at every size. This is a small designed development probe, excludes PostgreSQL full-text
+fusion, and does not generate answers; it cannot establish a general benefit for the complete system or select an
+optimal chunk size. Full Recall@1/3/6/10 and per-question scores are in `eval/results/2026-10-31_retrieval_dev.*`.

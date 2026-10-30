@@ -318,3 +318,24 @@ def test_reindex_rebuilds_chunks_from_stored_pages(db_session):
 
     assert reindex_all(db_session) == 1
     assert "walk daily" in db_session.query(Chunk).filter_by(document_id=doc.id).one().text
+
+
+def test_damaged_ocr_unit_is_stored_for_review_without_a_chart_value(db_session):
+    from decimal import Decimal
+    from app.db.models import LabResult
+    storage = MemoryStorage()
+    png = pymupdf.open(stream=make_pdf([LAB_LINES]), filetype='pdf')[0].get_pixmap(dpi=72).tobytes('png')
+    doc = add_document(db_session, storage, png, mime='image/png')
+    lines = ['Lab report: Test Result Unit Reference Range', 'Collected on: 10/01/2026',
+             'Serum Creatinine 1.00 7m9/dlL 0.7-1.3']
+    words = [{'text': line, 'x0': 40, 'x1': 500, 'y0': 60 + i * 20, 'y1': 70 + i * 20}
+             for i, line in enumerate(lines)]
+    run(db_session, storage, doc.id,
+        ocr=lambda image, n: PageText(n, 'fake_ocr', '\n'.join(lines), words, 0.95))
+    db_session.refresh(doc)
+    assert doc.status == 'needs_review'
+    [result] = db_session.query(LabResult).filter_by(document_id=doc.id).all()
+    assert result.value_num == Decimal('1.00')
+    assert result.raw_unit == '7m9/dlL'
+    assert result.value_canonical is None
+    assert result.extraction_confidence < Decimal('0.6')

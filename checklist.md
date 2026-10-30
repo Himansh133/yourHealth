@@ -43,6 +43,7 @@ Related problems: 2.2–2.5, 3.1–3.3, 8.2–8.6, 8.8–8.9 (row parsing, match
 - [x] Lab test dictionary (about 40 tests) with aliases and LOINC codes
 - [x] Row parser for table layouts, including tilted phone photos (problem 8.2)
 - [x] Regex parser for text that isn't a clean table
+- [~] Damaged OCR units: recover readable values for review without guessing units; other lost rows remain (8.6)
 - [ ] Third tier: LLM parser for rows the first two miss (plan 7.3). Not built; lost rows are reported instead (8.6)
 - [x] Name matching to dictionary tests
 - [x] Unit conversion with exact factors; converted values rounded and shown with what was printed (8.9)
@@ -84,7 +85,7 @@ Related problems: 4.1–4.4, 7.2, 7.7, 8.18 (drug names, labels, shared insights
 Related problems: 6.1–6.22, 8.10, 8.14, 8.18, 8.20, 8.22 (retrieval, routing, prompts, validation and latency).
 
 - [x] Chunking of report text; discharge summaries chunked by section
-- [ ] Long discharge-summary sections split by size (problem 6.14, open)
+- [x] Long discharge-summary sections split by size with accurate page spans (problem 6.14); reindex existing documents to apply
 - [x] bge-m3 embeddings (ONNX) stored in pgvector
 - [x] Hybrid document search: full-text plus vector, then the reranker (reorder only, no cut-off: 6.19)
 - [x] Router: value, trend, document, medicine, medicine-lab, treatment, out of scope; rules first, LLM classifier
@@ -149,14 +150,14 @@ Related problems: 6.11, 6.15, 6.22, 8.1–8.22 (evaluation findings, test isolat
 - [x] Question generator with gold labels (value, trend, absent, medicine, treatment, injection, Hindi, document)
 - [x] Baselines: B0 plain LLM with all report text, B1 vector RAG top 6
 - [x] Ablations: without router, reranker, validator; thinking on/off (dev)
-- [~] Chunk-size ablation (190 / 300 / 450 words): re-chunking tool built, not run yet
+- [~] Chunk-size ablation (190 / 300 / 450 words): 190/300/450-word long-document dense retrieval probe run; full hybrid/answer ablation remains
 - [x] LLM judge for trend direction
 - [x] Clean test set v2 (seed 2) run once per system
 - [x] v2 test with the added Hindi trend and document questions (90 questions), every system run once
 - [~] CI: harness tests and an extraction regression check on every push; the Q&A smoke subset from plan 14.6
       is not in CI (needs the LLM)
 - [ ] Harder layouts and real, consented, de-identified reports (8.7, open)
-- [ ] Long documents with similar passages to measure reranker benefit (8.16, open)
+- [~] Long documents with similar passages: six-question development probe run, Recall@1 3/6 dense vs 6/6 reranked (8.16); broader held-out evaluation remains
 - [x] Computed follow-up dates rejected by the validator; facts-table fallback retained (8.22, working as intended)
 
 ## Chunk 11: Report and viva
@@ -169,5 +170,5 @@ Related problems: 5.1–5.7, 8.7, 8.12, 8.16, 8.22, 9.1–9.2 (demo checks, evid
 - [x] Viva demo script (`DEMO.md`)
 - [ ] Final checks from plan 19: LOINC codes on loinc.org, Meta API details (9.2), college deadline dates
 - [ ] Review reference data with a pharmacist/clinician and Hindi glosses with a native speaker (report 9.3)
-- [ ] Reconcile chapter 9 with the 90-question results in chapter 8: baseline safety/numbers and the validator finding (8.16, 8.22)
+- [x] Reconcile chapters 1, 8 and 9 with the 90-question results, date-metric limits, baseline evidence access and v2 test reuse (8.16, 8.22)
 - [ ] Add report citations, verify product comparisons, add screenshots and complete college front matter/formatting (`report/README.md`)

@@ -106,8 +106,9 @@ Every answer is checked before it is shown:
    and Hindi forms fail, unless they are a warning ("do not change the dose without your doctor").
 
 On failure the model gets one retry with the errors listed. If the retry fails too, the user sees the retrieved facts
-as a table with their sources: "I couldn't write a reliable summary; here are the values from your reports." A wrong
-answer is never shown; at worst a less readable one is.
+as a table with their sources: "I couldn't write a reliable summary; here are the values from your reports." This
+blocks detected violations, not every possible wrong answer: numeric presence does not prove semantic correctness,
+and phrase checks cannot cover every form of advice.
 
 Two of the validator's rules came from false positives found later. Safe warnings were being rejected as advice
 (problem 8.14), and brand strengths were being rejected as made-up numbers (8.18).

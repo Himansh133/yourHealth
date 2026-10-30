@@ -84,3 +84,29 @@ def test_ocr_garbage_after_the_value_is_not_read_as_a_unit():
 
 def test_count_units_starting_with_a_slash_still_parse():
     assert parse_line("Platelets 2.5 /cumm 1.5 - 4.5").raw_unit == "/cumm"
+
+
+@pytest.mark.parametrize('line,name,value,unit', [
+    ('Serum Creatinine 1.00 7m9/dlL 0.7-1.3', 'Serum Creatinine', '1.00', '7m9/dlL'),
+    ('Serum Triglycerides 163 H 7m9/dlL Up to 150', 'Serum Triglycerides', '163', '7m9/dlL'),
+    ('Free Thyroxine (FT4) 1.24 0.8 - 1.8 7p/6u', 'Free Thyroxine (FT4)', '1.24', '7p/6u'),
+    ('SGOT (AST) 22 7/n 10 - 40', 'SGOT (AST)', '22', '7/n'),
+])
+def test_damaged_unit_preserves_value_for_review_without_guessing(line, name, value, unit):
+    from app.services.labs.dictionary import get_lab_dictionary
+    from app.services.labs.normalize import normalize_row, REVIEW_BELOW
+    [raw] = parse_words([w(line, 40, 120)])
+    assert (raw.raw_name, raw.raw_value, raw.raw_unit) == (name, value, unit)
+    normalized = normalize_row(raw, get_lab_dictionary())
+    assert normalized.test is not None
+    assert normalized.value_canonical is None
+    assert normalized.confidence < REVIEW_BELOW
+
+
+@pytest.mark.parametrize('line', [
+    'Age 58 7/n 10 - 40', 'Unknown Test 22 7/n 10 - 40',
+    'SGOT (AST) 227/n 10 - 40',
+])
+def test_damaged_unit_recovery_requires_known_name_and_separate_value(line):
+    from app.services.labs.row_parser import _recover_damaged_unit
+    assert _recover_damaged_unit(line) is None

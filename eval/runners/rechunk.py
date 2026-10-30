@@ -17,6 +17,8 @@ OVERLAP_SHARE = 0.15  # 45 of 300 words, as in the app
 
 @contextmanager
 def window(words: int):
+    if words < 2:
+        raise ValueError("Window must contain at least two words")
     saved = chunking.WINDOW_WORDS, chunking.OVERLAP_WORDS
     chunking.WINDOW_WORDS, chunking.OVERLAP_WORDS = words, round(words * OVERLAP_SHARE)
     try:
