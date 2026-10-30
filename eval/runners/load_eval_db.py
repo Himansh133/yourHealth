@@ -66,15 +66,15 @@ def main(data: Path = DATA) -> None:
         db.commit()
 
         for i, t in enumerate(truths, 1):
-            data = (data / "docs" / t["file"]).read_bytes()
+            content = (data / "docs" / t["file"]).read_bytes()
             mime = "application/pdf" if t["file"].endswith(".pdf") else "image/jpeg"
-            sha = hashlib.sha256(data).hexdigest()
+            sha = hashlib.sha256(content).hexdigest()
             doc = Document(profile_id=profiles[t["patient_key"]], uploaded_by=user.id, source_channel="web",
                            storage_key=f"eval/{sha}", original_filename=t["file"], mime_type=mime,
-                           size_bytes=len(data), sha256=sha)
+                           size_bytes=len(content), sha256=sha)
             db.add(doc)
             db.commit()
-            storage.put(doc.storage_key, data, mime)
+            storage.put(doc.storage_key, content, mime)
             run(db, storage, doc.id, ocr=rapid_ocr)
             if i % 20 == 0:
                 print(f"{i}/{len(truths)} documents", flush=True)
