@@ -31,8 +31,9 @@ class FakeLLM:
 
 class OpenAICompatibleLLM:
     def __init__(self, base_url: str, api_key: str, model: str, timeout: float = 60,
-                 transport: httpx.BaseTransport | None = None):
+                 transport: httpx.BaseTransport | None = None, thinking: bool = True):
         self.model = model
+        self.thinking = thinking
         self._client = httpx.Client(base_url=base_url.rstrip("/") + "/", timeout=timeout, transport=transport,
                                     headers={"Authorization": f"Bearer {api_key}"})
 
@@ -43,6 +44,8 @@ class OpenAICompatibleLLM:
             "response_format": {"type": "json_object"},
             "temperature": 0,
         }
+        if not self.thinking:
+            body["thinking"] = {"type": "disabled"}  # DeepSeek's switch; other providers may need a different one
         try:
             resp = self._client.post("chat/completions", json=body)
         except httpx.HTTPError as e:
@@ -55,7 +58,8 @@ class OpenAICompatibleLLM:
 def get_llm() -> LLM:
     if not (settings.llm_api_key and settings.llm_model):
         raise LLMError("LLM is not configured: set LLM_API_KEY and LLM_MODEL")
-    return OpenAICompatibleLLM(settings.llm_base_url, settings.llm_api_key, settings.llm_model)
+    return OpenAICompatibleLLM(settings.llm_base_url, settings.llm_api_key, settings.llm_model,
+                               thinking=settings.llm_thinking)
 
 
 class _Unavailable:
