@@ -28,9 +28,10 @@ NOT_FOUND = {"en": "I couldn't find this in {name}'s reports.", "hi": "{name} �
 
 def answer_question(llm: LLM, question: str, profile_name: str, evidence: list[Evidence], lang: str,
                     note: str | None = None, glossary: dict[str, str] | None = None,
-                    hindi_mode: str | None = None, validate: bool = True) -> ChatAnswer:
+                    hindi_mode: str | None = None, validate: bool = True, names: list[str] = ()) -> ChatAnswer:
     """note: what the evidence is, e.g. "the most recent value", so ambiguous words like Hindi पिछला are read right.
     Hindi (plan 11): "translate" writes and validates English, then translates; "direct" writes Hindi.
+    names: the person's medicine names, passed to the validator.
     validate=False is for the eval's ablation only: any answer that matches the schema is shown."""
     if not evidence:
         lang_ = lang if lang in NOT_FOUND else "en"
@@ -38,7 +39,7 @@ def answer_question(llm: LLM, question: str, profile_name: str, evidence: list[E
                           missing_info=[], doctor_note="", lang=lang_)
 
     translate = lang == "hi" and (hindi_mode or settings.hindi_mode) == "translate"
-    answer = _answer(llm, question, profile_name, evidence, "en" if translate else lang, note, validate)
+    answer = _answer(llm, question, profile_name, evidence, "en" if translate else lang, note, validate, names)
     if not translate or answer.fallback:
         return answer
     hindi = translate_answer(llm, answer, glossary or {})
@@ -46,7 +47,7 @@ def answer_question(llm: LLM, question: str, profile_name: str, evidence: list[E
 
 
 def _answer(llm: LLM, question: str, profile_name: str, evidence: list[Evidence], lang: str,
-            note: str | None, validate: bool = True) -> ChatAnswer:
+            note: str | None, validate: bool = True, names: list[str] = ()) -> ChatAnswer:
     system = SYSTEM.format(lang=lang)
     user = f"Question: {question}\nProfile: {profile_name}\n" + (f"Note: {note}\n" if note else "") + "<evidence>\n"
     user += "\n".join(f"[{e.id}] {e.text}" for e in evidence) + "\n</evidence>"
@@ -56,7 +57,7 @@ def _answer(llm: LLM, question: str, profile_name: str, evidence: list[Evidence]
             raw = llm.complete_json(system, user)
         except LLMError:
             break
-        parsed, errors = validate_answer(raw, evidence)
+        parsed, errors = validate_answer(raw, evidence, names)
         if parsed and not validate:
             errors = []
         if not errors:

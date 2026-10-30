@@ -117,3 +117,18 @@ def test_advice_after_an_unrelated_negation_is_still_advice():
                  "If sugar is not high, stop taking metformin."]:
         _, errors = validate_answer(answer(doctor_note=note), EVIDENCE)
         assert errors and "gives medical advice" in errors[0], note
+
+
+def test_strength_in_a_medicine_name_is_part_of_the_name():
+    # Found in the browser: "Glycomet 500 contains metformin" citing only the label was rejected for "500".
+    label = [Evidence(id="E1", text="drug_info | metformin (biguanide) is used for: type 2 diabetes | openFDA label")]
+    raw = answer(summary="Glycomet 500 is metformin.",
+                 claims=[{"text": "Glycomet 500 contains metformin, used for type 2 diabetes", "evidence_ids": ["E1"]}])
+    assert validate_answer(raw, label, names=["Glycomet 500"])[1] == []
+    assert validate_answer(raw, label)[1] != []  # without the name it is still an unknown number
+
+
+def test_a_value_next_to_a_medicine_name_is_still_checked():
+    label = [Evidence(id="E1", text="drug_info | metformin (biguanide) is used for: type 2 diabetes | openFDA label")]
+    raw = answer(summary="Glycomet 500 lowers HbA1c by 1.5%.", claims=[])
+    assert validate_answer(raw, label, names=["Glycomet 500"])[1] == ["summary states 1.5, which is not in the evidence"]

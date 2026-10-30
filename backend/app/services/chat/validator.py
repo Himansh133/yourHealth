@@ -61,8 +61,15 @@ def _unsupported(text: str, evidence_text: str) -> list[Decimal]:
     return [n for n in map(Decimal, NUMBER.findall(text)) if n not in allowed]
 
 
-def validate_answer(raw: str, evidence: list[Evidence]) -> tuple[Answer | None, list[str]]:
-    """Returns the parsed answer and a list of errors; an empty list means it passed."""
+def _without_names(text: str, names: list[str]) -> str:
+    for name in names:
+        text = re.sub(re.escape(name), " ", text, flags=re.IGNORECASE)
+    return text
+
+
+def validate_answer(raw: str, evidence: list[Evidence], names: list[str] = ()) -> tuple[Answer | None, list[str]]:
+    """Returns the parsed answer and a list of errors; an empty list means it passed.
+    names: the person's medicine names, whose strengths ("Glycomet 500") are part of the name, not values."""
     try:
         answer = Answer.model_validate_json(raw)
     except ValidationError as e:
@@ -75,7 +82,8 @@ def validate_answer(raw: str, evidence: list[Evidence]) -> tuple[Answer | None, 
     free_text = [("summary", answer.summary), ("doctor_note", answer.doctor_note)]
     free_text += [(f"missing_info {i}", t) for i, t in enumerate(answer.missing_info, 1)]
     for field, text in free_text:
-        errors += [f"{field} states {n}, which is not in the evidence" for n in _unsupported(text, everything)]
+        errors += [f"{field} states {n}, which is not in the evidence"
+                   for n in _unsupported(_without_names(text, names), everything)]
 
     for i, claim in enumerate(answer.claims, 1):
         if not claim.evidence_ids:
@@ -86,7 +94,8 @@ def validate_answer(raw: str, evidence: list[Evidence]) -> tuple[Answer | None, 
             errors += [f"claim {i} cites unknown evidence {eid}" for eid in unknown]
             continue
         cited = "\n".join(by_id[eid] for eid in claim.evidence_ids)
-        errors += [f"claim {i} states {n}, which is not in its evidence" for n in _unsupported(claim.text, cited)]
+        errors += [f"claim {i} states {n}, which is not in its evidence"
+                   for n in _unsupported(_without_names(claim.text, names), cited)]
 
     for field, text in free_text + [(f"claim {i}", c.text) for i, c in enumerate(answer.claims, 1)]:
         if phrase := advice_phrase(text):

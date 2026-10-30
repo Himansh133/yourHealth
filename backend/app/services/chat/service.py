@@ -120,6 +120,7 @@ def answer_chat(db: Session, pid: uuid.UUID, question: str, lang: str, llm: LLM,
                             claims=[Claim(text=e.text, evidence_ids=[e.id]) for e in evidence])
     else:
         glossary = {t.canonical_name: t.display_name_hi for t in tests if t.display_name_hi}
+        medicine_names = sorted({mi.name for mi in medicine_ingredients(db, pid)})
         answer = answer_question(llm, question, name, evidence, lang, note=EVIDENCE_NOTES.get(label), glossary=glossary,
-                                 validate="validator" not in ablate)
+                                 validate="validator" not in ablate, names=medicine_names)
     return ChatOut(**answer.model_dump(), route=labels, sources=sources)

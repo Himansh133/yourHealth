@@ -351,3 +351,19 @@ def test_ablation_without_validator_shows_a_made_up_number(make_user_client, db_
                       ablate=frozenset({"validator"}))
 
     assert out.summary == "HbA1c was 6.1%."
+
+
+def test_their_medicine_strength_cited_from_the_label_is_not_a_made_up_number(make_user_client, db_session, refdata,
+                                                                             use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    add_glycomet(db_session, a, pid)
+    label_only = json.dumps({"answerable": True, "summary": "Glycomet 500 is metformin.",
+                             "claims": [{"text": "Glycomet 500 contains metformin", "evidence_ids": ["E2"]}],
+                             "missing_info": [], "doctor_note": ""})
+    use_llm(FakeLLM([label_only]))
+
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "What is Glycomet 500 used for?"}).json()
+
+    assert body["fallback"] is False
+    assert body["claims"][0]["text"] == "Glycomet 500 contains metformin"
