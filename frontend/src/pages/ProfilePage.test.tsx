@@ -115,3 +115,15 @@ describe("ProfilePage reports", () => {
     expect(await screen.findByText("Medicines tab")).toBeInTheDocument();
   });
 });
+
+describe("ProfilePage tabs", () => {
+  it("names every section, with the short sheet label still read as Doctor sheet", async () => {
+    mockApi({ "GET /me": ME, "GET /profiles": [PAPA], "GET /profiles/p1/documents": [] });
+    renderAt("/profiles/p1", routes);
+
+    const nav = await screen.findByRole("navigation", { name: "Profile sections" });
+    const names = within(nav).getAllByRole("link").map((a) => a.getAttribute("aria-label") ?? a.textContent);
+    expect(names).toEqual(["Reports", "Trends", "Medicines", "Ask", "Doctor sheet"]);
+    expect(within(nav).getByRole("link", { name: "Doctor sheet" })).toHaveAttribute("href", "/profiles/p1/sheet");
+  });
+});

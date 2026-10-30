@@ -43,7 +43,7 @@ export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: 
   if (profile === null) return <p>Profile not found. <Link to="/" className="text-teal-700 underline">Back to family</Link></p>;
 
   const tabClass = ({ isActive }: { isActive: boolean }) =>
-    `border-b-2 px-1 pb-2 font-medium ${isActive ? "border-teal-700 text-teal-800" : "border-transparent text-slate-500 hover:text-slate-800"}`;
+    `shrink-0 whitespace-nowrap border-b-2 px-1 pb-2 text-sm font-medium sm:text-base ${isActive ? "border-teal-700 text-teal-800" : "border-transparent text-slate-500 hover:text-slate-800"}`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,12 +51,16 @@ export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: 
         <Link to="/" className="text-sm text-teal-700 hover:underline">← Family</Link>
         <h1 className="mt-1 text-2xl font-semibold">{profile.display_name}</h1>
       </div>
-      <nav className="flex gap-6 overflow-x-auto border-b border-slate-200 print:hidden" aria-label="Profile sections">
+      <nav className="flex gap-4 overflow-x-auto sm:gap-6 border-b border-slate-200 print:hidden" aria-label="Profile sections">
         <NavLink to={`/profiles/${pid}`} end className={tabClass}>Reports</NavLink>
         <NavLink to={`/profiles/${pid}/trends`} className={tabClass}>Trends</NavLink>
         <NavLink to={`/profiles/${pid}/medicines`} className={tabClass}>Medicines</NavLink>
         <NavLink to={`/profiles/${pid}/ask`} className={tabClass}>Ask</NavLink>
-        <NavLink to={`/profiles/${pid}/sheet`} className={tabClass}>Doctor sheet</NavLink>
+        {/* "Sheet" on phones so all five tabs fit at 360 px; the accessible name stays the same */}
+        <NavLink to={`/profiles/${pid}/sheet`} className={tabClass} aria-label="Doctor sheet">
+          <span className="sm:hidden">Sheet</span>
+          <span className="hidden sm:inline">Doctor sheet</span>
+        </NavLink>
       </nav>
       {tab === "reports" && <ReportsPanel profile={profile} pollMs={pollMs} />}
       {tab === "trends" && <TrendsPanel profileId={pid} />}

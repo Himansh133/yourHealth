@@ -8,7 +8,7 @@ import { AuthProvider } from "../auth";
 export function renderAt(path: string, routes: Record<string, ReactElement>) {
   const user = userEvent.setup();
   render(
-    <MemoryRouter initialEntries={[path]}>
+    <MemoryRouter initialEntries={[path]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <Routes>
           {Object.entries(routes).map(([p, el]) => (
