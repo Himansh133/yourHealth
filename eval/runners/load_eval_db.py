@@ -8,6 +8,8 @@ Usage (from backend/):
   DATABASE_URL=postgresql+psycopg://yourhealth:yourhealth@localhost:5432/yourhealth_eval \\
     PYTHONPATH=.. .venv/bin/python -m eval.runners.load_eval_db [--data ../eval/data/v2]
 Writes <data>/eval_db.json (login and patient -> profile ids). Use one database per dataset (yourhealth_eval_v2, ...).
+Report files go to the S3 store, so the app can open them (needs the s3 container). For a database loaded before
+that: --files-only uploads the files without touching the database.
 """
 import argparse
 import hashlib
@@ -27,7 +29,7 @@ from app.db.session import SessionLocal
 from app.refdata.load import load_reference_data
 from app.services.extraction.ocr import rapid_ocr
 from app.services.medicines.store import set_ingredients
-from app.services.storage import MemoryStorage
+from app.services.storage import get_storage
 from app.workers.process_document import run
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "v1"
@@ -42,7 +44,7 @@ def main(data: Path = DATA) -> None:
 
     patients = json.loads((data / "patients.json").read_text())
     truths = [json.loads(f.read_text()) for f in sorted((data / "truth").glob("*.json"))]
-    storage = MemoryStorage()
+    storage = get_storage()
     profiles: dict[str, str] = {}
     with SessionLocal() as db:
         load_reference_data(db)
@@ -84,7 +86,20 @@ def main(data: Path = DATA) -> None:
     print(f"loaded {len(patients)} patients, {len(truths)} documents")
 
 
+def upload_files(data: Path = DATA) -> None:
+    """Put every report file where the loader would have, under its content hash."""
+    storage = get_storage()
+    for f in sorted((data / "truth").glob("*.json")):
+        name = json.loads(f.read_text())["file"]
+        content = (data / "docs" / name).read_bytes()
+        mime = "application/pdf" if name.endswith(".pdf") else "image/jpeg"
+        storage.put(f"eval/{hashlib.sha256(content).hexdigest()}", content, mime)
+    print(f"uploaded files from {data}")
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", type=Path, default=DATA)
-    main(ap.parse_args().data)
+    ap.add_argument("--files-only", action="store_true", help="upload report files for an already loaded database")
+    args = ap.parse_args()
+    upload_files(args.data) if args.files_only else main(args.data)

@@ -136,6 +136,18 @@ def test_other_user_cannot_upload_to_my_profile(make_user_client, storage):
     assert storage.objects == {}
 
 
+def test_missing_stored_file_is_not_found_not_a_server_error(make_user_client, storage):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    did = upload(a, pid, make_pdf()).json()["id"]
+    storage.objects.clear()
+
+    resp = a.get(f"/api/v1/documents/{did}/file")
+
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "The original file is missing"
+
+
 def test_other_user_cannot_list_read_download_or_delete(make_user_client, storage):
     a = make_user_client("a@example.com")
     b = make_user_client("b@example.com")
