@@ -1,4 +1,4 @@
-# Evaluation
+# 8. Evaluation
 
 This chapter measures two things: how well YourHealth reads lab values from reports (extraction), and how well it
 answers questions about them (question answering). Every number comes from files in `eval/results/` and can be
