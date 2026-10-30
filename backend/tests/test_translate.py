@@ -57,3 +57,15 @@ def test_wrong_shape_or_provider_error_gives_up():
 def test_numbers_match_compares_as_multisets_and_ignores_digits_in_names():
     assert numbers_match("HbA1c 7.2 and 7.2", "HbA1c 7.2 और 7.2")
     assert not numbers_match("7.2 and 7.2", "7.2")
+
+
+def test_a_number_inside_our_own_glossary_meaning_is_not_a_changed_number():
+    # Found in the browser: every Hindi answer about HbA1c fell back to English because of the "3" in the gloss.
+    glossed = hindi(claim="14 जून 2026 को HbA1c (पिछले 3 महीने की औसत शुगर) 7.2% था, जो 4.0-5.6 की सीमा से ज़्यादा है")
+    out = translate_answer(FakeLLM([glossed]), EN, glossary={"HbA1c": "पिछले 3 महीने की औसत शुगर"})
+    assert out is not None and "पिछले 3 महीने" in out.claims[0].text
+
+
+def test_a_changed_number_next_to_the_glossary_meaning_is_still_caught():
+    wrong = hindi(claim="14 जून 2026 को HbA1c (पिछले 3 महीने की औसत शुगर) 7.5% था, जो 4.0-5.6 की सीमा से ज़्यादा है")
+    assert translate_answer(FakeLLM([wrong, wrong]), EN, glossary={"HbA1c": "पिछले 3 महीने की औसत शुगर"}) is None

@@ -38,7 +38,8 @@ def numbers_match(english: str, hindi: str) -> bool:
     return Counter(map(Decimal, NUMBER.findall(english))) == Counter(map(Decimal, NUMBER.findall(hindi)))
 
 
-def _problems(en: Answer, out: dict) -> list[str]:
+def _problems(en: Answer, out: dict, glosses: list[str]) -> list[str]:
+    """glosses: our own Hindi meanings for tests; numbers inside them (पिछले 3 महीने) weren't added by the model."""
     try:
         pairs = [(en.summary, out["summary"]), (en.doctor_note, out["doctor_note"])]
         if len(out["claims"]) != len(en.claims) or len(out["missing_info"]) != len(en.missing_info):
@@ -52,11 +53,17 @@ def _problems(en: Answer, out: dict) -> list[str]:
             return ["wrong JSON shape"]
         if DEVANAGARI_DIGIT.search(hindi):
             problems.append(f"use digits 0-9: {hindi!r}")
-        elif not numbers_match(english, hindi):
+        elif not numbers_match(english, _without(hindi, glosses)):
             problems.append(f"numbers changed: {english!r} -> {hindi!r}")
         if advice_phrase(hindi):
             problems.append(f"added advice: {hindi!r}")
     return problems
+
+
+def _without(text: str, glosses: list[str]) -> str:
+    for g in glosses:
+        text = text.replace(g, "")
+    return text
 
 
 def translate_answer(llm: LLM, en: Answer, glossary: dict[str, str]) -> Answer | None:
@@ -71,7 +78,7 @@ def translate_answer(llm: LLM, en: Answer, glossary: dict[str, str]) -> Answer |
             out = json.loads(llm.complete_json(system, user))
         except (LLMError, ValueError):
             continue
-        problems = _problems(en, out) if isinstance(out, dict) else ["wrong JSON shape"]
+        problems = _problems(en, out, list(glossary.values())) if isinstance(out, dict) else ["wrong JSON shape"]
         if not problems:
             return Answer(answerable=en.answerable, summary=out["summary"], doctor_note=out["doctor_note"],
                           missing_info=out["missing_info"],
