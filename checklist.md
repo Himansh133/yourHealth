@@ -1,11 +1,15 @@
 # YourHealth: build checklist
 
 Every step of the project in build order, chunk by chunk, with what each chunk delivers. Ticked items exist in
-the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.1) refer to `PROBLEMS_FACED.md`.
+the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.1) refer to [the problems list](PROBLEMS_FACED.md).
+Each chunk lists related problems, including fixed issues and workarounds; those references do not mean every issue
+is still open. Items without a matching problem number keep their plan reference.
 
 `[x]` done · `[~]` done differently from the plan, or partly · `[ ]` not done
 
 ## Chunk 1: Foundation (plan 5, 6.1, 12)
+
+Related problems: 1.1–1.9, 1.11 (infrastructure, setup and test maintenance).
 
 - [x] Docker Compose: Postgres with pgvector, Redis, S3-compatible storage
 - [x] Database schema with Alembic migrations; CI checks migrations match the models
@@ -16,8 +20,12 @@ the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.
 - [x] Audit log for sensitive actions
 - [ ] Inviting a family member to share a profile (plan 12.2, stretch goal, on the cut list)
 - [x] Frontend: login page, family page
+- [ ] Follow up the TestClient deprecation warning (problem 1.11)
+- [ ] Add a test-service preflight check and ignore build metadata (proposed in 1.6 and 1.8)
 
 ## Chunk 2: Uploading reports (plan 3.2, 7.1-7.2)
+
+Related problems: 2.1, 2.6–2.9, 8.1 (OCR coordinates, document detection and dates).
 
 - [x] Upload PDF or photo per profile; original stored in S3
 - [x] Job queue (Redis) and a worker that processes each document
@@ -29,6 +37,8 @@ the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.
 - [x] Frontend: upload and status screen
 
 ## Chunk 3: Reading lab values (plan 7.3, 8)
+
+Related problems: 2.2–2.5, 3.1–3.3, 8.2–8.6, 8.8–8.9 (row parsing, matching, units and lost rows).
 
 - [x] Lab test dictionary (about 40 tests) with aliases and LOINC codes
 - [x] Row parser for table layouts, including tilted phone photos (problem 8.2)
@@ -43,6 +53,8 @@ the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.
 
 ## Chunk 4: Trend graphs (plan 3.4)
 
+Related problems: 1.10, 5.2, 5.5, 7.7, 8.9 (chart loading, markers, numeric display and medicine comparisons).
+
 - [x] `GET /trends`: tests with 2 or more points, canonical units, ranges
 - [x] Chart per test with out-of-range points marked
 - [x] Medicine start/stop markers drawn on the charts (plan 9.5 overlay)
@@ -50,6 +62,8 @@ the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.
 - [ ] Load the charts library only when the tab opens (problem 1.10, open)
 
 ## Chunk 5: Medicines and reference data (plan 4.2, 9)
+
+Related problems: 4.1–4.4, 7.2, 7.7, 8.18 (drug names, labels, shared insights and medicine-name validation).
 
 - [x] Indian brand dataset loaded; composition parser (brand to ingredients and strengths)
 - [x] India to US name map (paracetamol / acetaminophen)
@@ -63,8 +77,11 @@ the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.
 - [x] "Is this medicine doing its job?": value before starting against the latest value on the medicine (7.7)
 - [x] Declines to recommend a medicine and offers a doctor visit sheet instead (plan 9.6)
 - [x] Frontend: medicines tab
+- [ ] Support short brand names when followed by an exact strength (proposed in 4.4)
 
 ## Chunk 6: Q&A assistant (plan 3.6, 10)
+
+Related problems: 6.1–6.22, 8.10, 8.14, 8.18, 8.20, 8.22 (retrieval, routing, prompts, validation and latency).
 
 - [x] Chunking of report text; discharge summaries chunked by section
 - [ ] Long discharge-summary sections split by size (problem 6.14, open)
@@ -85,6 +102,8 @@ the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.
 
 ## Chunk 7: Hindi (plan 3.7, 11)
 
+Related problems: 6.20, 8.10, 8.17, 8.19–8.21 (Hindi/Hinglish routing, drafting and translation checks).
+
 - [x] Answers written in English first, then translated with a Hindi glossary
 - [x] Number check after translation; glossary text set aside (8.17, 8.21)
 - [x] Falls back to English with a note when the Hindi fails the checks
@@ -92,8 +111,11 @@ the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.
 - [x] Language picker in the chat
 - [ ] Whole interface in Hindi (planned `i18n/` folder): only the chat is bilingual
 - [ ] Hindi text to speech (on the cut list)
+- [ ] Translate Hinglish document queries before retrieval (proposed in 6.20; plan 11.4)
 
 ## Chunk 8: WhatsApp bot (plan 3.3, 7.4)
+
+Related problems: 9.1–9.7 (Meta integration, profile selection, delivery handling and link security).
 
 - [x] Link a phone with a 6-digit code; codes expire, are single use, and lock after 5 wrong tries (9.6)
 - [x] Webhook verification and signed message posts
@@ -102,9 +124,12 @@ the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.
 - [x] Duplicate deliveries ignored (9.4); webhook only records and queues (9.5)
 - [x] Frontend: WhatsApp settings page
 - [~] Tested against a local stand-in for Meta's API, not real WhatsApp (9.1)
+- [ ] Run the full flow against real WhatsApp and verify the configured Graph API version (9.1–9.2)
 - [ ] Message template for replies outside the 24-hour window (9.7, open)
 
 ## Chunk 9: Doctor visit sheet and QR sharing (plan 3.8, 13)
+
+Related problems: 5.6, 7.1–7.7 (sheet data, PDF export, sharing, deployment URL and summary).
 
 - [x] Sheet: recent values with flags, trends, medicines, medicine cards, documents
 - [x] Share link with QR code and 4-digit PIN; only hashes stored; lock after 5 wrong PINs
@@ -115,6 +140,8 @@ the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.
 - [x] Frontend: doctor sheet tab and public share page
 
 ## Chunk 10: Evaluation (plan 14)
+
+Related problems: 6.11, 6.15, 6.22, 8.1–8.22 (evaluation findings, test isolation and coverage gaps).
 
 - [x] Synthetic patient generator with known answers
 - [x] Report renderer (4 layouts) and photo degrader
@@ -129,11 +156,18 @@ the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.
 - [~] CI: harness tests and an extraction regression check on every push; the Q&A smoke subset from plan 14.6
       is not in CI (needs the LLM)
 - [ ] Harder layouts and real, consented, de-identified reports (8.7, open)
+- [ ] Long documents with similar passages to measure reranker benefit (8.16, open)
+- [x] Computed follow-up dates rejected by the validator; facts-table fallback retained (8.22, working as intended)
 
 ## Chunk 11: Report and viva
+
+Related problems: 5.1–5.7, 8.7, 8.12, 8.16, 8.22, 9.1–9.2 (demo checks, evidence limits and final reporting).
 
 - [x] Report chapters 1-9 in `report/`
 - [x] Chapter 8 updated with the 90-question test numbers
 - [x] Problems list (`PROBLEMS_FACED.md`)
 - [x] Viva demo script (`DEMO.md`)
-- [ ] Final checks from plan 19: LOINC codes on loinc.org, Meta API details, college deadline dates
+- [ ] Final checks from plan 19: LOINC codes on loinc.org, Meta API details (9.2), college deadline dates
+- [ ] Review reference data with a pharmacist/clinician and Hindi glosses with a native speaker (report 9.3)
+- [ ] Reconcile chapter 9 with the 90-question results in chapter 8: baseline safety/numbers and the validator finding (8.16, 8.22)
+- [ ] Add report citations, verify product comparisons, add screenshots and complete college front matter/formatting (`report/README.md`)
