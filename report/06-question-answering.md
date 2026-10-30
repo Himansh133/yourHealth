@@ -30,7 +30,7 @@ The caller has already checked that the user may view this profile, and every to
 |---|---|
 | "should I stop/start/take", "which medicine", "change the dose", Hinglish "dawai band", "dose badha" | treatment |
 | names a medicine the app knows (brand or generic) | medicine, or medicine + test if a test is named too |
-| names a test and a trend word (trend, improving, up, down, badha, ghata…) | trend |
+| names a test and a trend word (trend, improving, up, down; Hinglish badh, ghat; Hindi बढ़, घट, कम हो) | trend |
 | names a test and a value word (last, latest, result, kitna…) | value |
 
 Tests are found by their aliases, and also by everyday words in chat only: "sugar" means HbA1c and fasting glucose,
@@ -114,13 +114,15 @@ Two of the validator's rules came from false positives found later. Safe warning
 
 ## 6.6 Hindi
 
-The answer is written and validated **in English**, then translated:
+The answer is written and validated **in English** (the prompt says so explicitly; asked in Hindi, the model otherwise
+sometimes drafts in Hindi), then translated:
 
 1. The translation prompt keeps test names, medicine names and units in English letters, adds the Hindi meaning of each
    test the first time it appears (from our glossary: HbA1c → "पिछले 3 महीने की औसत शुगर"), uses a word list for
    common terms, and keeps every number with the digits 0–9.
-2. The translation is accepted only if every field has exactly the same numbers as the English (the glossary text
-   itself is set aside), no Devanagari digits, and no advice phrase.
+2. The translation is accepted only if every field has exactly the same numbers as the English, no Devanagari digits,
+   and no advice phrase. Glossary text is set aside first: "पिछले 3 महीने" and "Vitamin D, 25-OH total" contain
+   digits that are not values (problems 8.17, 8.21).
 3. One retry; otherwise the English answer is shown with a note that the translation didn't pass the checks.
 
 Validating in English is more reliable because the advice-phrase list is strongest there. The glossary keeps
