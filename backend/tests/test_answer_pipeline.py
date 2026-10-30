@@ -111,3 +111,12 @@ def test_without_the_validator_the_first_answer_is_shown_as_written():
 def test_without_the_validator_a_reply_that_is_not_json_still_falls_back():
     out = answer_question(FakeLLM(["not json", "not json"]), "q", "Papa", EVIDENCE, "en", validate=False)
     assert out.fallback is True
+
+
+def test_a_hindi_question_is_still_answered_in_english_before_translation():
+    # From the eval: asked in Hindi, the model wrote Hindi despite "Language: en"; the translation then failed and the
+    # user saw Hindi text labelled as the English fallback.
+    llm = FakeLLM([GOOD, json.dumps({"summary": "हिंदी", "claims": ["HbA1c 14 जून 2026 को 7.2% था"],
+                                     "missing_info": [], "doctor_note": "डॉक्टर से बात करें।"}, ensure_ascii=False)])
+    answer_question(llm, "पापा का पिछला HbA1c कितना था?", "Papa", EVIDENCE, "hi", hindi_mode="translate")
+    assert "Write in English even if the question is in Hindi" in llm.prompts[0][0]

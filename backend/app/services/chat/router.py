@@ -11,7 +11,9 @@ TREATMENT = re.compile(
     r"|kaunsi dawai|kaun si dawai|dawai band|dose badha|dose kam|change (?:the |my )?dose)\b"
 )
 TREND_WORDS = {"trend", "improving", "improved", "better", "worse", "worsening", "change", "changed", "over",
-               "badha", "badhi", "ghata", "ghati", "down", "up", "history"}
+               "badha", "badhi", "badh", "ghata", "ghati", "ghat", "down", "up", "history"}
+# Devanagari isn't in the word list above (it only holds a-z words): बढ़ / घट / कम हो / सुधर / बिगड़.
+TREND_HI = re.compile(r"बढ|घट|कम हो|सुधर|बिगड")
 # Chat only, not used for parsing reports: a row printed as "Sugar" could be urine sugar.
 EVERYDAY_TERMS = {
     "sugar": ["4548-4", "1558-6"], "shugar": ["4548-4", "1558-6"], "glucose": ["4548-4", "1558-6"],
@@ -39,7 +41,7 @@ def route(question: str, d: LabDictionary, medicine_names: set[str]) -> Route:
         return Route(["treatment"], tests, meds)
     if meds:
         return Route(["medicine_lab" if tests else "medicine"], tests, meds)
-    if tests and words & TREND_WORDS:
+    if tests and (words & TREND_WORDS or TREND_HI.search(question)):
         return Route(["trend"], tests)
     if tests and words & (VALUE_WORDS | EVERYDAY_TERMS.keys()):
         return Route(["value"], tests)

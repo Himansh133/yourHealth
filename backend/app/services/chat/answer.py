@@ -49,6 +49,8 @@ def answer_question(llm: LLM, question: str, profile_name: str, evidence: list[E
 def _answer(llm: LLM, question: str, profile_name: str, evidence: list[Evidence], lang: str,
             note: str | None, validate: bool = True, names: list[str] = ()) -> ChatAnswer:
     system = SYSTEM.format(lang=lang)
+    if lang == "en":  # also the first step for Hindi: without this the model answers a Hindi question in Hindi
+        system += "\nWrite in English even if the question is in Hindi or Hinglish."
     user = f"Question: {question}\nProfile: {profile_name}\n" + (f"Note: {note}\n" if note else "") + "<evidence>\n"
     user += "\n".join(f"[{e.id}] {e.text}" for e in evidence) + "\n</evidence>"
 

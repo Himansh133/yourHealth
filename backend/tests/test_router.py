@@ -123,3 +123,14 @@ def test_classifier_prompt_separates_treatment_given_from_treatment_choice():
     from app.services.chat.router import CLASSIFIER_SYSTEM
     assert "treatment given" in CLASSIFIER_SYSTEM
     assert "follow-up" in CLASSIFIER_SYSTEM
+
+
+def test_hindi_trend_words_win_over_the_everyday_word_sugar():
+    # From the eval: "sugar" counted as a value word, and बढ़ / घट weren't seen, so only the latest value was looked up.
+    for q in ["पापा का fasting blood sugar बढ़ रहा है या घट रहा है?", "Papa ki sugar badh rahi hai ya ghat rahi hai?",
+              "Mummy का HbA1c कम हो रहा है क्या?"]:
+        assert r(q).labels == ["trend"], q
+
+
+def test_hindi_value_question_with_sugar_stays_a_value():
+    assert r("पापा की पिछली sugar कितनी थी?").labels == ["value"]

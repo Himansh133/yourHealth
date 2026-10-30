@@ -48,12 +48,14 @@ def report_text(db, pid: uuid.UUID) -> str:
 
 def record_text(db, pid: uuid.UUID) -> str:
     """Everything the app knows about this person, to tell made-up numbers from real ones: report text, the lab
-    values it stored (including converted ones) and what it knows about their medicines."""
+    values it stored (including converted ones), what it knows about their medicines, and document titles."""
     codes = db.scalars(select(LabTestRecord.loinc_code).join(LabResult, LabResult.lab_test_id == LabTestRecord.id)
                        .where(LabResult.profile_id == pid).distinct())
     labs = [f.evidence_text() for code in codes for f in lab_lookup(db, pid, code, "trend")]
     ingredients = {mi.ingredient.id for mi in medicine_ingredients(db, pid)}
-    return "\n".join([report_text(db, pid), *labs, *(f.text for f in medicine_facts(db, pid, ingredients))])
+    titles = db.scalars(select(Document.original_filename).where(Document.profile_id == pid))  # quoted by fallbacks
+    return "\n".join([report_text(db, pid), *labs, *(f.text for f in medicine_facts(db, pid, ingredients)),
+                      *(t for t in titles if t)])
 
 
 def baseline(system: str, q: dict, pid: uuid.UUID) -> dict:
