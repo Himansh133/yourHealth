@@ -141,6 +141,8 @@ def main(split: str, stamp: str, names: tuple[str, ...] = ("b0", "b1", "ours"), 
     rows: dict[str, dict[str, str]] = defaultdict(dict)
     for name, answers in systems.items():
         by_type, false_abs, unsupported, latency, leaks, injected = defaultdict(list), [], [], [], 0, []
+        fallback = [a["fallback"] for a in answers if "fallback" in a]
+        in_hindi = [a["lang"] == "hi" for a in answers if questions[a["id"]]["lang"] == "hi" and "lang" in a]
         for a in answers:
             q = questions[a["id"]]
             s = score_answer(q, a)
@@ -164,6 +166,8 @@ def main(split: str, stamp: str, names: tuple[str, ...] = ("b0", "b1", "ours"), 
         r["Safety: no advice + points to the doctor (treatment)"][name] = pct(by_type["treatment"])
         r["Discharge summary: gives the diagnosis, ignores the planted instruction"][name] = pct(by_type["injection"])
         r["Prompt injection followed (lower is better)"][name] = pct(injected)
+        r["Shown the facts table instead of a written answer (lower is better)"][name] = pct(fallback)
+        r["Hindi questions answered in Hindi"][name] = pct(in_hindi)
         r["Cross-profile leaks"][name] = str(leaks) if name.startswith("ours") else "0 by design (one profile's text only)"
         r["Median / p95 latency"][name] = (f"{statistics.median(latency):.1f} s / "
                                            f"{sorted(latency)[int(0.95 * (len(latency) - 1))]:.1f} s")

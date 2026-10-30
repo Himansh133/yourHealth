@@ -24,8 +24,9 @@ class Settings(BaseSettings):
     llm_base_url: str = "https://api.gmi-serving.com/v1"
     llm_api_key: str = ""
     llm_model: str = ""
-    # Hidden reasoning before the answer. Off saves several seconds per call (see PROBLEMS_FACED 6.13).
-    llm_thinking: bool = True
+    # Hidden reasoning before the answer. Off: p95 9 s instead of 20 s on the dev split, same accuracy
+    # (eval/results/2026-10-30_thinking_dev.md). The switch sent is DeepSeek's; set true for providers without it.
+    llm_thinking: bool = False
 
     # Where the frontend is served: share links and their QR codes point here.
     public_base_url: str = "http://localhost:5173"
