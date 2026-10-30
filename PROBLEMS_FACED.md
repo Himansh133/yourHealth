@@ -61,7 +61,7 @@ Commit hashes point to where the fix landed.
 | 5.1 | Browser locale data writes "Sept" for en-GB. | Dates read differently across browsers and did not match the backend. | Fixed | Fixed month names in `format.ts` (`2477b44`). |
 | 5.2 | Chrome drew the arrow marker on charts as an emoji. | Medicine markers looked wrong. | Fixed | Plain text glyphs (`e9710f1`). |
 | 5.3 | The test fake backend treated any object with a `status` field as a reply wrapper. | Document objects (which have `status`) broke tests. | Fixed | Only `{status, body}` objects are wrappers (`d7a0895`). |
-| 5.4 | The chat and doctor sheet screens have not been checked visually in a real browser. | Layout problems could go unnoticed (tests check behaviour, not looks). | Open | Check the Ask and Doctor sheet tabs in a browser at phone and desktop widths, and the printed sheet. |
+| 5.4 | The chat and doctor sheet screens had not been checked visually in a real browser. | Layout problems could go unnoticed (tests check behaviour, not looks). | Fixed | Checked in Chrome (Playwright) at 1280, 390 and 360 px on the eval data: every tab, chat in English and Hindi, sharing and the doctor's PIN page. It found the Hindi gloss bug (8.17), medicine-name rejections (8.18), unrounded converted values on trends and the sheet, the sheet's medicine card contradicting its own table (7.7), and profile tabs running off a phone screen; all fixed. |
 
 | 5.5 | The API sends Decimal values as JSON strings ("7.2"). | Treating them as numbers would silently mis-type. | Fixed | Frontend types say `string`; the sparkline converts with `Number()` only for drawing. |
 | 5.6 | The test fake backend dropped query strings. | Could not test which period the sheet asked for. | Fixed | The fake records the full URL too. |
@@ -130,6 +130,8 @@ After the fixes below: dev 97.6%, and test 98.1% (run once, after tuning on dev)
 | 8.14 | The validator rejected warnings such as "do not stop or change the dose without your doctor" as medical advice. | With thinking off, 4 of 135 dev answers fell back to the facts table. | Fixed | A banned phrase right after "do not / don't / never / should not" is a warning; the translation check and the scorer use the same function (`f8b47e7`). |
 | 8.15 | The scorer didn't count answers that fell back to the facts table or Hindi answers that came back in English. | A worse configuration could look equal. | Fixed | Both are rows in the results table now. |
 | 8.16 | Ablations: the reranker and the validator changed no outcome on the v1 test set. | They can't be justified from these numbers alone. | Open | Only 5 test questions use document search; a larger document-question set is needed to measure the reranker and chunk size. The validator acts when evidence is noisy (4 rejections without the router). |
+| 8.17 | Our Hindi gloss for HbA1c ("पिछले 3 महीने की औसत शुगर") contains a 3, so the translation number check rejected every Hindi answer that explained HbA1c. | Hindi trend answers about HbA1c always came back in English. The eval missed it: its Hindi questions are only value questions. | Fixed | Glossary text is set aside before comparing numbers (`e00d1d2`). Hindi trend questions should be added to the next dataset. |
+| 8.18 | "Glycomet 500 contains metformin", citing only the drug label, was rejected: the label has no "500". | Half of "What is Glycomet 500 used for?" answers fell back to the facts table. | Fixed | The person's own medicine names are passed to the validator and treated as names (`08324fb`). |
 
 ## 9. WhatsApp bot
 
