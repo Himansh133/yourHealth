@@ -124,7 +124,8 @@ def pct(xs: list[bool]) -> str:
 
 NAMES = {"b0": "B0: plain LLM, all report text", "b1": "B1: vector RAG, top 6", "ours": "Ours",
          "ours-no-router": "Ours without router (all to search)", "ours-no-reranker": "Ours without reranker",
-         "ours-no-validator": "Ours without validator", "ours-nothink": "Ours, LLM thinking off"}
+         "ours-no-validator": "Ours without validator", "ours-nothink": "Ours, LLM thinking off",
+         "ours-chunk190": "Ours, 190-word chunks (~250 tokens)", "ours-chunk450": "Ours, 450-word chunks (~600 tokens)"}
 
 
 def main(split: str, stamp: str, names: tuple[str, ...] = ("b0", "b1", "ours"), label: str = "rag",
