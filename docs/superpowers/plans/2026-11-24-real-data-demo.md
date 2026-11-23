@@ -8,10 +8,10 @@ Source: MIMIC-IV Clinical Database Demo 2.2, PhysioNet, https://doi.org/10.13026
 - [x] Download official public tables to ignored eval/data/internet-demo and record URLs/hashes.
 - [x] Test single-subject selection, unchanged measurement values, specimen-safe lab mapping, consistent date rebasing and absent allergy information.
 - [x] Build a reproducible importer rendering all available lab groups and prescription history for one subject. Rendered date shifts are explicitly documented; original source timestamps remain in every PDF and a manifest.
-- [ ] Create a dedicated patient account/profile locally, import files through validation, storage and the real extraction/indexing worker, retaining prescription order dates and unconfirmed historical medication status.
+- [x] Create a dedicated patient account/profile locally, import files through validation, storage and the real extraction/indexing worker, retaining prescription order dates and unconfirmed historical medication status.
 - [x] Enable patient-only allergy endpoints with ownership/doctor-denial tests so the missing status can be viewed without enabling doctor access routes.
-- [ ] Validate login, counts, source file access, trends, medicine history, allergy unknown status, doctor-sheet generation and unauthorized access. Append credentials/profile IDs to ignored passwords.md with restricted permissions; never print or commit the password.
-- [ ] Review importer, run targeted tests, stage/inspect/push code only. Raw downloads, derived clinical data, passwords and runtime logs stay ignored and local.
+- [x] Validate login, counts, source file access, trends, medicine history, allergy unknown status, doctor-sheet generation and unauthorized access. Append credentials/profile IDs to ignored passwords.md with restricted permissions; never print or commit the password.
+- [x] Review importer, run targeted tests, stage/inspect/push code only. Raw downloads, derived clinical data, passwords and runtime logs stay ignored and local.
 
 Constraints: preserve source values and units; never assign a serum test identity to urine/CSF/body-fluid results; never invent allergy records, diagnoses, ranges or current medicines. The generated doctor sheet is an application summary of released historical data, not a treating doctor's note. New account only; no mutation of existing patient records.
 
@@ -23,3 +23,11 @@ Execution evidence:
 - Added patient-only allergy route registration; access/doctor clinical routers remain disabled. Authorization tests include foreign users, viewers and doctor-account denial.
 - Targeted backend/evaluation verification:41 passed. Frontend:96 passed with bounded worker concurrency; production build passed. An earlier unbounded frontend run hit an existing one-second async-test timeout under concurrent indexing load; bounded rerun passed without changing application behavior or test assertions.
 - Real API login, private PDF access, foreign-profile denial and unknown allergy status verified while loading. Final full-count and doctor-sheet checks pending completion.
+
+Final local import outcome:
+- 393/393 source-derived documents processed successfully, including378 lab groups and14 prescription-history files;786 historical, unconfirmed orders imported with source-document links.
+- All945 mapped lab test/value/qualifier triples checked against original source blood rows for the same timestamp; zero mismatches. Remaining source rows remain in searchable PDFs instead of guessed serum mappings.
+- Live API verification passed: login, one-profile account isolation, all393 processed documents, source-file retrieval, unauthenticated/foreign-profile denial,786 historical medicines,8 trend tests, unknown allergy status, and generated doctor sheet covering393 records.
+- Credentials/profile URL/doctor-sheet URL and test question saved only in ignored passwords.md, mode0600. Local API and frontend are running on127.0.0.1:8000 and127.0.0.1:5173.
+- Code commits3c3432e and9d9f1a7 pushed to feat/viva-demo-evidence. Raw/derived data, account state, verification files and credentials remain local and ignored.
+- Live configured-model check passed: latest-creatinine question answered in one generation attempt with validation passed and all cited sources belonging to the dedicated demo profile.
