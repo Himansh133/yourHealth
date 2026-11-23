@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from app.api.deps import current_user
+from app.api.deps import patient_user
 from app.core.config import settings
 from app.db.models import User, WhatsAppLink, WhatsAppLinkCode, WhatsAppMessage
 from app.db.session import get_db
@@ -43,7 +43,7 @@ def _mask(phone: str) -> str:
 
 
 @router.post("/me/whatsapp/link-code", response_model=LinkCodeOut)
-def create_link_code(user: User = Depends(current_user), db: Session = Depends(get_db)):
+def create_link_code(user: User = Depends(patient_user), db: Session = Depends(get_db)):
     db.execute(delete(WhatsAppLinkCode).where(WhatsAppLinkCode.user_id == user.id,
                                               WhatsAppLinkCode.used_at.is_(None)))
     code = f"{secrets.randbelow(1_000_000):06d}"
@@ -54,7 +54,7 @@ def create_link_code(user: User = Depends(current_user), db: Session = Depends(g
 
 
 @router.get("/me/whatsapp", response_model=LinkStatus)
-def link_status(user: User = Depends(current_user), db: Session = Depends(get_db)):
+def link_status(user: User = Depends(patient_user), db: Session = Depends(get_db)):
     link = db.scalar(select(WhatsAppLink).where(WhatsAppLink.user_id == user.id))
     if link is None:
         return LinkStatus(linked=False, phone=None, linked_at=None)
@@ -62,7 +62,7 @@ def link_status(user: User = Depends(current_user), db: Session = Depends(get_db
 
 
 @router.delete("/me/whatsapp", status_code=204)
-def unlink(user: User = Depends(current_user), db: Session = Depends(get_db)):
+def unlink(user: User = Depends(patient_user), db: Session = Depends(get_db)):
     db.execute(delete(WhatsAppLink).where(WhatsAppLink.user_id == user.id))
     db.commit()
 

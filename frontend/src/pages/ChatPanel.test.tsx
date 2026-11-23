@@ -4,7 +4,7 @@ import { mockApi } from "../test/mockApi";
 import { renderAt } from "../test/render";
 import ChatPanel from "./ChatPanel";
 
-const ME = { id: "u1", email: "a@example.com", preferred_language: "en" };
+const ME = { id: "u1", email: "a@example.com", preferred_language: "en", account_type: "patient" };
 
 function answer(over: Record<string, unknown> = {}) {
   return {

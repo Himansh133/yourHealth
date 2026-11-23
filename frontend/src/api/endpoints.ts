@@ -1,4 +1,5 @@
 import { request } from "./client";
+import type { Doctor, DoctorRegistration, VerificationStatus } from "./types";
 import type { ChatAnswer, Doc, DrugSearchResult, Frequency, IngredientInfo, Insight, LabResult, Lang, Medicine, Profile, Sex, Share, ShareCreated, ShareExpiry, Sheet, Trend, User, WhatsAppLinkCode, WhatsAppStatus } from "./types";
 
 export const auth = {
@@ -6,6 +7,20 @@ export const auth = {
   register: (email: string, password: string) => request<User>("POST", "/auth/register", { email, password }),
   login: (email: string, password: string) => request<User>("POST", "/auth/login", { email, password }),
   logout: () => request<void>("POST", "/auth/logout"),
+  requestPasswordReset: (email: string) => request<{ message: string }>("POST", "/auth/password-reset/request", { email }),
+  confirmPasswordReset: (token: string, password: string) =>
+    request<void>("POST", "/auth/password-reset/confirm", { token, password }),
+};
+
+export const doctors = {
+  register: (body: DoctorRegistration) => request<User>("POST", "/doctor/register", body),
+  me: () => request<Doctor>("GET", "/doctor/me"),
+};
+
+export const admin = {
+  doctors: (status: VerificationStatus) => request<Doctor[]>("GET", `/admin/doctors?status=${status}`),
+  review: (id: string, decision: "verify" | "reject") =>
+    request<Doctor>("POST", `/admin/doctors/${id}/${decision}`),
 };
 
 export type ProfileInput = { display_name: string; birth_year?: number | null; sex?: Sex | null; relation_label?: string | null };

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../auth";
+import { accountHome, useAuth } from "../auth";
 import { Button } from "./ui";
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -9,11 +9,13 @@ export default function Layout({ children }: { children: ReactNode }) {
     <div className="min-h-screen">
       <header className="border-b border-slate-200 bg-white print:hidden">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <Link to="/" className="text-lg font-semibold text-teal-800">
+          <Link to={user ? accountHome(user.account_type) : "/"} className="text-lg font-semibold text-teal-800">
             YourHealth
           </Link>
           <div className="flex items-center gap-3 text-sm text-slate-600">
-            <Link to="/settings/whatsapp" className="text-teal-700 hover:underline">WhatsApp</Link>
+            {user?.account_type === "patient" && <Link to="/settings/whatsapp" className="text-teal-700 hover:underline">WhatsApp</Link>}
+            {user?.account_type === "doctor" && <span>Doctor portal</span>}
+            {user?.account_type === "admin" && <span>Administration</span>}
             <span className="hidden sm:inline">{user?.email}</span>
             <Button variant="secondary" className="!px-3 !py-1 text-sm" onClick={() => void logout()}>
               Sign out

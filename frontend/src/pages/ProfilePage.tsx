@@ -8,6 +8,8 @@ import ChatPanel from "./ChatPanel";
 import DoctorSheetPanel from "./DoctorSheetPanel";
 import MedicinesPanel from "./MedicinesPanel";
 import TrendsPanel from "./TrendsPanel";
+import AccessPanel from "./AccessPanel";
+import AllergiesPanel from "./AllergiesPanel";
 
 const PENDING: DocumentStatus[] = ["queued", "extracting", "parsing", "indexing"];
 
@@ -26,7 +28,7 @@ const ERROR_HELP: Record<string, string> = {
   processing_error: "Something went wrong while reading it. Try uploading again.",
 };
 
-export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: "reports" | "trends" | "medicines" | "ask" | "sheet"; pollMs?: number }) {
+export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: "reports" | "trends" | "medicines" | "ask" | "sheet" | "allergies" | "access"; pollMs?: number }) {
   const { pid = "" } = useParams();
   const [profile, setProfile] = useState<Profile | null | undefined>(undefined);
   const [error, setError] = useState("");
@@ -61,7 +63,11 @@ export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: 
           <span className="sm:hidden">Sheet</span>
           <span className="hidden sm:inline">Doctor sheet</span>
         </NavLink>
+        <NavLink to={`/profiles/${pid}/allergies`} className={tabClass}>Allergies</NavLink>
+        <NavLink to={`/profiles/${pid}/access`} className={tabClass}>Doctor access</NavLink>
       </nav>
+      {tab === "allergies" && <AllergiesPanel profileId={pid} canEdit={profile.role !== "viewer"} />}
+      {tab === "access" && <AccessPanel profile={profile} />}
       {tab === "reports" && <ReportsPanel profile={profile} pollMs={pollMs} />}
       {tab === "trends" && <TrendsPanel profileId={pid} />}
       {tab === "medicines" && <MedicinesPanel profileId={pid} canEdit={profile.role !== "viewer"} />}

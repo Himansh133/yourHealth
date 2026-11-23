@@ -6,7 +6,7 @@ import { renderAt } from "../test/render";
 import { SHEET } from "../test/sheetFixture";
 import DoctorSheetPanel from "./DoctorSheetPanel";
 
-const ME = { id: "u1", email: "a@example.com", preferred_language: "en" };
+const ME = { id: "u1", email: "a@example.com", preferred_language: "en", account_type: "patient" };
 const routes = { "/profiles/:pid/sheet": <DoctorSheetPanel profileId="p1" canShare /> };
 
 const SHARE = {

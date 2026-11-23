@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { AuthProvider, RequireAuth } from "./auth";
+import { accountHome, AuthProvider, RequireAuth, useAuth } from "./auth";
+import type { AccountType } from "./api/types";
 import Layout from "./components/Layout";
 import FamilyPage from "./pages/FamilyPage";
 import LoginPage from "./pages/LoginPage";
@@ -8,13 +9,22 @@ import ProfilePage from "./pages/ProfilePage";
 import PublicSharePage from "./pages/PublicSharePage";
 import ReviewPage from "./pages/ReviewPage";
 import WhatsAppPage from "./pages/WhatsAppPage";
+import DoctorRegisterPage from "./pages/DoctorRegisterPage";
+import DoctorHomePage from "./pages/DoctorHomePage";
+import AdminDoctorsPage from "./pages/AdminDoctorsPage";
 
-function Private({ children }: { children: ReactNode }) {
+function Private({ children, accountType = "patient" }: { children: ReactNode; accountType?: AccountType }) {
   return (
-    <RequireAuth>
+    <RequireAuth accountType={accountType}>
       <Layout>{children}</Layout>
     </RequireAuth>
   );
+}
+
+function Home() {
+  const { user } = useAuth();
+  if (user && user.account_type !== "patient") return <Navigate to={accountHome(user.account_type)} replace />;
+  return <Private><FamilyPage /></Private>;
 }
 
 export default function App() {
@@ -23,7 +33,12 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<Private><FamilyPage /></Private>} />
+          <Route path="/" element={<Home />} />
+          <Route path="/doctor/register" element={<DoctorRegisterPage />} />
+          <Route path="/doctor" element={<Private accountType="doctor"><DoctorHomePage /></Private>} />
+          <Route path="/profiles/:pid/allergies" element={<Private><ProfilePage tab="allergies" /></Private>} />
+          <Route path="/profiles/:pid/access" element={<Private><ProfilePage tab="access" /></Private>} />
+          <Route path="/admin/doctors" element={<Private accountType="admin"><AdminDoctorsPage /></Private>} />
           <Route path="/profiles/:pid" element={<Private><ProfilePage /></Private>} />
           <Route path="/profiles/:pid/trends" element={<Private><ProfilePage tab="trends" /></Private>} />
           <Route path="/profiles/:pid/medicines" element={<Private><ProfilePage tab="medicines" /></Private>} />

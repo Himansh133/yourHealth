@@ -4,7 +4,7 @@ import { mockApi } from "../test/mockApi";
 import { renderAt } from "../test/render";
 import ReviewPage from "./ReviewPage";
 
-const ME = { id: "u1", email: "a@example.com", preferred_language: "en" };
+const ME = { id: "u1", email: "a@example.com", preferred_language: "en", account_type: "patient" };
 const DOC = {
   id: "d1", profile_id: "p1", source_channel: "web", original_filename: "june.pdf", mime_type: "application/pdf",
   size_bytes: 1000, doc_type: "lab_report", lab_name: "Thyrocare", report_date: "2026-06-14", status: "needs_review",

@@ -4,7 +4,7 @@ import { mockApi } from "../test/mockApi";
 import { renderAt } from "../test/render";
 import MedicinesPanel from "./MedicinesPanel";
 
-const ME = { id: "u1", email: "a@example.com", preferred_language: "en" };
+const ME = { id: "u1", email: "a@example.com", preferred_language: "en", account_type: "patient" };
 const METFORMIN = { id: "i1", name: "metformin", drug_class: "biguanide", used_for: "Metformin is indicated as an adjunct to diet and exercise to improve glycemic control in adults with type 2 diabetes mellitus." };
 const HBA1C = { loinc_code: "4548-4", name: "HbA1c", name_hi: null, unit: "%", category: "diabetes" };
 const B12 = { loinc_code: "2132-9", name: "Vitamin B12", name_hi: null, unit: "pg/mL", category: "vitamin" };

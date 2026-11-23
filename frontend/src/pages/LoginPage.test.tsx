@@ -5,7 +5,7 @@ import { mockApi } from "../test/mockApi";
 import { renderAt } from "../test/render";
 import LoginPage from "./LoginPage";
 
-const ME = { id: "u1", email: "a@example.com", preferred_language: "en" };
+const ME = { id: "u1", email: "a@example.com", preferred_language: "en", account_type: "patient" };
 const routes = {
   "/login": <LoginPage />,
   "/": (

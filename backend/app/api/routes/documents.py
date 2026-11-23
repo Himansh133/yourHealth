@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.api.deps import current_user
+from app.api.deps import patient_user
 from app.core.permissions import require_profile_access
 from app.db.models import Document, DocumentPage, LabResult, User
 from app.db.session import get_db
@@ -48,7 +48,7 @@ def upload_document(
     pid: uuid.UUID,
     file: UploadFile,
     response: Response,
-    user: User = Depends(current_user),
+    user: User = Depends(patient_user),
     db: Session = Depends(get_db),
     storage: Storage = Depends(get_storage),
     queue: DocumentQueue = Depends(get_queue),
@@ -65,7 +65,7 @@ def upload_document(
 
 
 @router.get("/profiles/{pid}/documents", response_model=list[DocumentOut])
-def list_documents(pid: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def list_documents(pid: uuid.UUID, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     require_profile_access(db, user.id, pid, "view")
     return db.scalars(
         select(Document).where(Document.profile_id == pid).order_by(Document.created_at.desc())
@@ -73,7 +73,7 @@ def list_documents(pid: uuid.UUID, user: User = Depends(current_user), db: Sessi
 
 
 @router.get("/documents/{did}", response_model=DocumentOut)
-def get_document(did: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def get_document(did: uuid.UUID, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     return _load(db, user, did, "view")
 
 
@@ -83,7 +83,7 @@ class DocumentPatch(BaseModel):
 
 @router.patch("/documents/{did}", response_model=DocumentOut)
 def update_document(
-    did: uuid.UUID, body: DocumentPatch, user: User = Depends(current_user), db: Session = Depends(get_db)
+    did: uuid.UUID, body: DocumentPatch, user: User = Depends(patient_user), db: Session = Depends(get_db)
 ):
     """Set the report date when the report didn't print one (or it was read wrong)."""
     if body.report_date > date.today():
@@ -99,7 +99,7 @@ def update_document(
 @router.get("/documents/{did}/file")
 def download_document(
     did: uuid.UUID,
-    user: User = Depends(current_user),
+    user: User = Depends(patient_user),
     db: Session = Depends(get_db),
     storage: Storage = Depends(get_storage),
 ):
@@ -121,7 +121,7 @@ class PageOut(BaseModel):
 
 
 @router.get("/documents/{did}/pages/{n}", response_model=PageOut)
-def get_page(did: uuid.UUID, n: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def get_page(did: uuid.UUID, n: int, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     """Page text and word boxes, so the review screen can highlight where a value was read."""
     _load(db, user, did, "view")
     page = db.scalar(select(DocumentPage).where(DocumentPage.document_id == did, DocumentPage.page_no == n))
@@ -134,7 +134,7 @@ def get_page(did: uuid.UUID, n: int, user: User = Depends(current_user), db: Ses
 @router.delete("/documents/{did}", status_code=204)
 def delete_document(
     did: uuid.UUID,
-    user: User = Depends(current_user),
+    user: User = Depends(patient_user),
     db: Session = Depends(get_db),
     storage: Storage = Depends(get_storage),
 ):

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import current_user
+from app.api.deps import patient_user
 from app.core.permissions import require_profile_access
 from app.db.models import Document, LabResult, LabTestRecord, User
 from app.db.session import get_db
@@ -71,7 +71,7 @@ def list_lab_results(
     from_: date | None = Query(default=None, alias="from"),
     to: date | None = None,
     document_id: uuid.UUID | None = None,
-    user: User = Depends(current_user),
+    user: User = Depends(patient_user),
     db: Session = Depends(get_db),
 ):
     require_profile_access(db, user.id, pid, "view")
@@ -111,7 +111,7 @@ class LabResultPatch(BaseModel):
 
 @router.patch("/lab-results/{rid}", response_model=LabResultOut)
 def correct_lab_result(
-    rid: uuid.UUID, body: LabResultPatch, user: User = Depends(current_user), db: Session = Depends(get_db)
+    rid: uuid.UUID, body: LabResultPatch, user: User = Depends(patient_user), db: Session = Depends(get_db)
 ):
     """User checked this row against the original (plan 3.2). An empty body confirms it as correct."""
     row = db.get(LabResult, rid)
@@ -169,7 +169,7 @@ class Trend(BaseModel):
 
 
 @router.get("/profiles/{pid}/trends", response_model=list[Trend])
-def trends(pid: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def trends(pid: uuid.UUID, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     """Plan 3.4: pure SQL, no LLM. Only values we could put in the test's canonical unit are plotted."""
     require_profile_access(db, user.id, pid, "view")
     rows = db.execute(

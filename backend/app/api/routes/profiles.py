@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import current_user
+from app.api.deps import patient_user
 from app.core.permissions import require_profile_access
 from app.db.models import Document, Profile, ProfileMember, User
 from app.db.session import get_db
@@ -32,6 +32,7 @@ class ProfilePatch(BaseModel):
 
 
 class ProfileOut(BaseModel):
+    public_code: str
     id: uuid.UUID
     display_name: str
     birth_year: int | None
@@ -43,6 +44,7 @@ class ProfileOut(BaseModel):
 def _out(profile: Profile, member: ProfileMember) -> ProfileOut:
     return ProfileOut(
         id=profile.id,
+        public_code=profile.public_code,
         display_name=profile.display_name,
         birth_year=profile.birth_year,
         sex=profile.sex,
@@ -52,7 +54,7 @@ def _out(profile: Profile, member: ProfileMember) -> ProfileOut:
 
 
 @router.get("/profiles", response_model=list[ProfileOut])
-def list_profiles(user: User = Depends(current_user), db: Session = Depends(get_db)):
+def list_profiles(user: User = Depends(patient_user), db: Session = Depends(get_db)):
     rows = db.execute(
         select(Profile, ProfileMember)
         .join(ProfileMember, ProfileMember.profile_id == Profile.id)
@@ -63,7 +65,7 @@ def list_profiles(user: User = Depends(current_user), db: Session = Depends(get_
 
 
 @router.post("/profiles", status_code=201, response_model=ProfileOut)
-def create_profile(body: ProfileIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def create_profile(body: ProfileIn, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     profile = Profile(display_name=body.display_name, birth_year=body.birth_year, sex=body.sex)
     db.add(profile)
     db.flush()
@@ -75,7 +77,7 @@ def create_profile(body: ProfileIn, user: User = Depends(current_user), db: Sess
 
 @router.patch("/profiles/{pid}", response_model=ProfileOut)
 def update_profile(
-    pid: uuid.UUID, body: ProfilePatch, user: User = Depends(current_user), db: Session = Depends(get_db)
+    pid: uuid.UUID, body: ProfilePatch, user: User = Depends(patient_user), db: Session = Depends(get_db)
 ):
     member = require_profile_access(db, user.id, pid, "edit")
     profile = db.get(Profile, pid)
@@ -91,7 +93,7 @@ def update_profile(
 @router.delete("/profiles/{pid}", status_code=204)
 def delete_profile(
     pid: uuid.UUID,
-    user: User = Depends(current_user),
+    user: User = Depends(patient_user),
     db: Session = Depends(get_db),
     storage: Storage = Depends(get_storage),
 ):

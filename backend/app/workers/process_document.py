@@ -11,6 +11,7 @@ from app.db.models import Document, DocumentPage, DrugBrand, DrugBrandIngredient
 from app.db.session import SessionLocal
 from app.services.chat.doc_search import index_document
 from app.services.chat.embeddings import get_embedder
+from app.services.extraction.allergies import propose_allergies
 from app.services.extraction.classify import classify_document, find_lab_name, find_report_date
 from app.services.extraction.ocr import group_rows, rapid_ocr
 from app.services.extraction.text_layer import PageText, extract_text_layer, needs_ocr
@@ -73,6 +74,7 @@ def run(db: Session, storage: Storage, document_id: uuid.UUID, ocr: OcrEngine | 
         )
         doc.status = "parsing"
         _store_lab_results(db, doc, pages, get_lab_dictionary())
+        propose_allergies(db, doc, pages)
         index_document(db, doc, [(p.page_no, p.text) for p in pages], embedder=get_embedder())
         db.commit()
     except Exception as e:

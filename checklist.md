@@ -139,6 +139,7 @@ Related problems: 5.6, 7.1–7.7 (sheet data, PDF export, sharing, deployment UR
 - [~] PDF export: print or "Save as PDF" from the browser, no server-made PDF (7.1)
 - [ ] Short LLM-written summary on the sheet (plan 13.1 item 7, optional; 7.6)
 - [x] Frontend: doctor sheet tab and public share page
+1
 
 ## Chunk 10: Evaluation (plan 14)
 

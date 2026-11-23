@@ -4,7 +4,7 @@ import { mockApi } from "../test/mockApi";
 import { renderAt } from "../test/render";
 import TrendsPanel from "./TrendsPanel";
 
-const ME = { id: "u1", email: "a@example.com", preferred_language: "en" };
+const ME = { id: "u1", email: "a@example.com", preferred_language: "en", account_type: "patient" };
 const HBA1C = { loinc_code: "4548-4", name: "HbA1c", name_hi: "पिछले 3 महीने की औसत शुगर", unit: "%", category: "diabetes" };
 
 function point(over: Record<string, unknown>) {

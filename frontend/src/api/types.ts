@@ -1,11 +1,36 @@
 // Mirrors the FastAPI response models in backend/app/api/routes. Keep in sync.
 
-export type User = { id: string; email: string; preferred_language: string };
+export type AccountType = "patient" | "doctor" | "admin";
+export type User = { id: string; email: string; preferred_language: string; account_type: AccountType };
+
+export type VerificationStatus = "unverified" | "verified" | "rejected" | "suspended";
+export type Doctor = {
+  user_id: string;
+  full_name: string;
+  registration_number: string;
+  registration_council: string;
+  specialty: string | null;
+  clinic_name: string | null;
+  verification_status: VerificationStatus;
+  verified_by: string | null;
+  verified_at: string | null;
+};
+
+export type DoctorRegistration = {
+  email: string;
+  password: string;
+  full_name: string;
+  registration_number: string;
+  registration_council: string;
+  specialty?: string;
+  clinic_name?: string;
+};
 
 export type Sex = "male" | "female" | "other" | "unknown";
 export type Role = "owner" | "caregiver" | "viewer";
 
 export type Profile = {
+  public_code: string;
   id: string;
   display_name: string;
   birth_year: number | null;

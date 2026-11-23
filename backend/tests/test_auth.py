@@ -1,3 +1,32 @@
+def test_password_reset_request_is_generic_and_logged(client, caplog):
+    client.post("/api/v1/auth/register", json={"email": "a@example.com", "password": "correct horse battery"})
+    with caplog.at_level("INFO"):
+        response = client.post("/api/v1/auth/password-reset/request", json={"email": "a@example.com"})
+    assert response.status_code == 202
+    assert response.json() == {"message": "If that email exists, a reset link has been sent."}
+    assert "a@example.com" in caplog.text
+    assert "reset_token=" in caplog.text
+
+
+def test_password_reset_request_does_not_reveal_unknown_email(client, caplog):
+    with caplog.at_level("INFO"):
+        response = client.post("/api/v1/auth/password-reset/request", json={"email": "nobody@example.com"})
+    assert response.status_code == 202
+    assert response.json() == {"message": "If that email exists, a reset link has been sent."}
+    assert "reset_token=" not in caplog.text
+
+
+def test_password_reset_token_is_single_use(client, db_session, caplog):
+    client.post("/api/v1/auth/register", json={"email": "a@example.com", "password": "correct horse battery"})
+    with caplog.at_level("INFO"):
+        client.post("/api/v1/auth/password-reset/request", json={"email": "a@example.com"})
+    token = caplog.text.split("reset_token=", 1)[1].split()[0]
+    response = client.post("/api/v1/auth/password-reset/confirm", json={"token": token, "password": "new secure password"})
+    assert response.status_code == 204
+    assert client.post("/api/v1/auth/login", json={"email": "a@example.com", "password": "new secure password"}).status_code == 200
+    assert client.post("/api/v1/auth/password-reset/confirm", json={"token": token, "password": "another password"}).status_code == 400
+
+
 def test_register_returns_user_without_password(client):
     resp = client.post("/api/v1/auth/register", json={"email": "a@example.com", "password": "correct horse battery"})
     assert resp.status_code == 201

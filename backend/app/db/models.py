@@ -24,6 +24,7 @@ from sqlalchemy.dialects.postgresql import CITEXT, JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
+from app.core.patient_codes import new_patient_code
 
 
 EMBEDDING_DIM = 1024  # bge-m3
@@ -35,12 +36,44 @@ def _uuid_pk() -> Mapped[uuid.UUID]:
 
 class User(TimestampMixin, Base):
     __tablename__ = "users"
+    __table_args__ = (CheckConstraint("account_type IN ('patient','doctor','admin')", name="users_account_type_check"),)
 
     id: Mapped[uuid.UUID] = _uuid_pk()
     email: Mapped[str] = mapped_column(CITEXT, unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     preferred_language: Mapped[str] = mapped_column(Text, nullable=False, default="en")
     status: Mapped[str] = mapped_column(Text, nullable=False, default="active")
+    account_type: Mapped[str] = mapped_column(Text, nullable=False, default="patient", server_default="patient")
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    token_hash: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class Doctor(Base):
+    __tablename__ = "doctors"
+    __table_args__ = (CheckConstraint(
+        "verification_status IN ('unverified','verified','rejected','suspended')",
+        name="doctors_verification_status_check",
+    ),)
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    full_name: Mapped[str] = mapped_column(Text, nullable=False)
+    registration_number: Mapped[str] = mapped_column(Text, nullable=False)
+    registration_council: Mapped[str] = mapped_column(Text, nullable=False)
+    specialty: Mapped[str | None] = mapped_column(Text)
+    clinic_name: Mapped[str | None] = mapped_column(Text)
+    verification_status: Mapped[str] = mapped_column(Text, nullable=False, default="unverified", server_default="unverified")
+    verified_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class Profile(TimestampMixin, Base):
@@ -48,6 +81,7 @@ class Profile(TimestampMixin, Base):
     __table_args__ = (CheckConstraint("sex IN ('male','female','other','unknown')", name="profiles_sex_check"),)
 
     id: Mapped[uuid.UUID] = _uuid_pk()
+    public_code: Mapped[str] = mapped_column(Text, unique=True, nullable=False, default=new_patient_code)
     display_name: Mapped[str] = mapped_column(Text, nullable=False)
     birth_year: Mapped[int | None] = mapped_column(Integer)
     sex: Mapped[str | None] = mapped_column(Text)
@@ -362,3 +396,70 @@ class WhatsAppPendingUpload(Base):
     mime_type: Mapped[str | None] = mapped_column(Text)
     filename: Mapped[str | None] = mapped_column(Text)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class AccessRequest(TimestampMixin, Base):
+    __tablename__ = "access_requests"
+    __table_args__ = (CheckConstraint("status IN ('pending','approved','denied','expired','cancelled')"),)
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    doctor_user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("doctors.user_id"), index=True)
+    profile_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("profiles.id", ondelete="CASCADE"), index=True)
+    reason_text: Mapped[str | None] = mapped_column(Text)
+    requested_hours: Mapped[int] = mapped_column(Integer, default=24)
+    status: Mapped[str] = mapped_column(Text, default="pending")
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    decided_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
+
+class AccessGrant(TimestampMixin, Base):
+    __tablename__ = "access_grants"
+    __table_args__ = (CheckConstraint("created_via IN ('request_approved','clinic_code')"),)
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    profile_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("profiles.id", ondelete="CASCADE"), index=True)
+    doctor_user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("doctors.user_id"), index=True)
+    request_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("access_requests.id", ondelete="SET NULL"))
+    created_via: Mapped[str] = mapped_column(Text)
+    scope: Mapped[dict] = mapped_column(JSONB)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+class ClinicCode(Base):
+    __tablename__ = "clinic_codes"
+    code_hash: Mapped[str] = mapped_column(Text, primary_key=True)
+    profile_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("profiles.id", ondelete="CASCADE"), index=True)
+    created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+    scope: Mapped[dict] = mapped_column(JSONB)
+    grant_hours: Mapped[int] = mapped_column(Integer, default=24)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+class Allergy(Base):
+    __tablename__ = "allergies"
+    __table_args__ = (CheckConstraint("severity IN ('mild','moderate','severe','unknown')"), CheckConstraint("source IN ('patient','document')"))
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    profile_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("profiles.id", ondelete="CASCADE"), index=True)
+    substance_text: Mapped[str] = mapped_column(Text)
+    ingredient_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("drug_ingredients.id"))
+    drug_class: Mapped[str | None] = mapped_column(Text)
+    reaction_text: Mapped[str | None] = mapped_column(Text)
+    severity: Mapped[str] = mapped_column(Text, default="unknown")
+    source: Mapped[str] = mapped_column(Text)
+    source_document_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"))
+    page_no: Mapped[int | None] = mapped_column(Integer)
+    confirmed_by_user: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_absence: Mapped[bool] = mapped_column(Boolean, default=False)
+
+class ProfileAllergyStatus(Base):
+    __tablename__ = "profile_allergy_status"
+    __table_args__ = (CheckConstraint("status IN ('unknown','has_allergies','none_known_confirmed')"),)
+    profile_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("profiles.id", ondelete="CASCADE"), primary_key=True)
+    status: Mapped[str] = mapped_column(Text, default="unknown")
+    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+class AllergyClassMap(Base):
+    __tablename__ = "allergy_class_map"
+    ingredient_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("drug_ingredients.id"), primary_key=True)
+    class_name: Mapped[str] = mapped_column(Text, primary_key=True)
+    source_note: Mapped[str] = mapped_column(Text)
+    reviewed_by: Mapped[str | None] = mapped_column(Text)

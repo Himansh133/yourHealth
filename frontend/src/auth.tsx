@@ -1,7 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { auth } from "./api/endpoints";
-import type { User } from "./api/types";
+import type { AccountType, User } from "./api/types";
+
+export function accountHome(type: AccountType) {
+  return type === "doctor" ? "/doctor" : type === "admin" ? "/admin/doctors" : "/";
+}
 
 type AuthState = {
   user: User | null;
@@ -49,10 +53,11 @@ export function useAuth(): AuthState {
   return ctx;
 }
 
-export function RequireAuth({ children }: { children: ReactNode }) {
+export function RequireAuth({ children, accountType }: { children: ReactNode; accountType?: AccountType }) {
   const { user, loading } = useAuth();
   const location = useLocation();
   if (loading) return <p className="p-6 text-slate-500">Loading…</p>;
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (accountType && user.account_type !== accountType) return <Navigate to={accountHome(user.account_type)} replace />;
   return <>{children}</>;
 }

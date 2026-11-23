@@ -6,6 +6,9 @@ node_modules/
 dist/
 *.tsbuildinfo
 .pytest_cache/
+.local-credentials.md
+password.md
+passwords.md
 yourhealth-implementation-plan.md
 backend/models/
 eval/data/

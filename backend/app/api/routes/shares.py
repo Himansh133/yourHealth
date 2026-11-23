@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.api.deps import current_user
+from app.api.deps import patient_user
 from app.api.routes.sheets import DEFAULT_PERIOD
 from app.core.config import settings
 from app.core.permissions import require_profile_access
@@ -78,7 +78,7 @@ class ShareOut(BaseModel):
 
 
 @router.post("/profiles/{pid}/shares", response_model=ShareCreated, status_code=201)
-def create_share(pid: uuid.UUID, body: ShareIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def create_share(pid: uuid.UUID, body: ShareIn, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     require_profile_access(db, user.id, pid, "share")
     token, pin = secrets.token_urlsafe(32), f"{secrets.randbelow(10_000):04d}"
     date_to = body.date_to or date.today()
@@ -103,7 +103,7 @@ def create_share(pid: uuid.UUID, body: ShareIn, user: User = Depends(current_use
 
 
 @router.get("/profiles/{pid}/shares", response_model=list[ShareOut])
-def list_shares(pid: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def list_shares(pid: uuid.UUID, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     require_profile_access(db, user.id, pid, "view")
     opens = dict((rid, (n, last)) for rid, n, last in db.execute(
         select(AuditEvent.resource_id, func.count(), func.max(AuditEvent.at))
@@ -117,7 +117,7 @@ def list_shares(pid: uuid.UUID, user: User = Depends(current_user), db: Session 
 
 
 @router.post("/shares/{sid}/revoke", status_code=204)
-def revoke_share(sid: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def revoke_share(sid: uuid.UUID, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     link = db.get(ShareLink, sid)
     if link is None:
         raise HTTPException(404, "Share not found")

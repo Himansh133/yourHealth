@@ -8,7 +8,7 @@ from rapidfuzz import fuzz
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import current_user
+from app.api.deps import patient_user
 from app.api.routes.labs import TestOut, lab_test_out
 from app.core.permissions import require_profile_access
 from app.db.models import (
@@ -65,7 +65,7 @@ def _brand_ingredients(db: Session, brand_ids: list[uuid.UUID]) -> dict[uuid.UUI
 
 
 @router.get("/drugs/search", response_model=list[SearchResult])
-def search_drugs(q: str, _: User = Depends(current_user), db: Session = Depends(get_db)):
+def search_drugs(q: str, _: User = Depends(patient_user), db: Session = Depends(get_db)):
     """Brand autocomplete (plan 9.1), plus generic names for people who know the molecule."""
     qn = normalize_brand(q)
     if not qn:
@@ -122,7 +122,7 @@ def _effect_out(e: DrugLabEffect, t: LabTestRecord) -> EffectOut:
 
 
 @router.get("/drugs/ingredients/{iid}", response_model=IngredientInfo)
-def ingredient_info(iid: uuid.UUID, _: User = Depends(current_user), db: Session = Depends(get_db)):
+def ingredient_info(iid: uuid.UUID, _: User = Depends(patient_user), db: Session = Depends(get_db)):
     i = db.get(DrugIngredient, iid)
     if i is None:
         raise HTTPException(404, "Ingredient not found")
@@ -221,13 +221,13 @@ def _load_medicine(db: Session, user: User, mid: uuid.UUID, need) -> ProfileMedi
 
 
 @router.get("/profiles/{pid}/medicines", response_model=list[MedicineOut])
-def list_medicines(pid: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def list_medicines(pid: uuid.UUID, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     require_profile_access(db, user.id, pid, "view")
     return medicines_out(db, pid)
 
 
 @router.post("/profiles/{pid}/medicines", status_code=201, response_model=MedicineOut)
-def add_medicine(pid: uuid.UUID, body: MedicineIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def add_medicine(pid: uuid.UUID, body: MedicineIn, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     require_profile_access(db, user.id, pid, "edit")
     if body.brand_id:
         brand, ingredient_ids = _brand_or_404(db, body.brand_id)
@@ -248,7 +248,7 @@ def add_medicine(pid: uuid.UUID, body: MedicineIn, user: User = Depends(current_
 
 
 @router.patch("/medicines/{mid}", response_model=MedicineOut)
-def update_medicine(mid: uuid.UUID, body: MedicinePatch, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def update_medicine(mid: uuid.UUID, body: MedicinePatch, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     med = _load_medicine(db, user, mid, "edit")
     changes = body.model_dump(exclude_unset=True)
     try:
@@ -265,7 +265,7 @@ def update_medicine(mid: uuid.UUID, body: MedicinePatch, user: User = Depends(cu
 
 
 @router.delete("/medicines/{mid}", status_code=204)
-def delete_medicine(mid: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def delete_medicine(mid: uuid.UUID, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     db.delete(_load_medicine(db, user, mid, "edit"))
     db.commit()
 
@@ -298,7 +298,7 @@ class InsightOut(BaseModel):
 
 
 @router.get("/profiles/{pid}/medicine-insights", response_model=list[InsightOut])
-def medicine_insights(pid: uuid.UUID, user: User = Depends(current_user), db: Session = Depends(get_db)):
+def medicine_insights(pid: uuid.UUID, user: User = Depends(patient_user), db: Session = Depends(get_db)):
     require_profile_access(db, user.id, pid, "view")
     result = profile_insights(db, pid)
 

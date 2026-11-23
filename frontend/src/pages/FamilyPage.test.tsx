@@ -6,7 +6,7 @@ import { mockApi } from "../test/mockApi";
 import { renderAt } from "../test/render";
 import FamilyPage from "./FamilyPage";
 
-const ME = { id: "u1", email: "a@example.com", preferred_language: "en" };
+const ME = { id: "u1", email: "a@example.com", preferred_language: "en", account_type: "patient" };
 const PAPA = { id: "p1", display_name: "Papa", birth_year: 1968, sex: "male", role: "owner", relation_label: "father" };
 
 const routes = {

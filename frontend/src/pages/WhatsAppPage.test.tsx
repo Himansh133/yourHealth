@@ -4,7 +4,7 @@ import { mockApi } from "../test/mockApi";
 import { renderAt } from "../test/render";
 import WhatsAppPage from "./WhatsAppPage";
 
-const ME = { id: "u1", email: "a@example.com", preferred_language: "en" };
+const ME = { id: "u1", email: "a@example.com", preferred_language: "en", account_type: "patient" };
 const routes = { "/settings/whatsapp": <WhatsAppPage pollMs={10} /> };
 const NOT_LINKED = { linked: false, phone: null, linked_at: null };
 const LINKED = { linked: true, phone: "+91 ••••••5210", linked_at: "2026-10-29T10:00:00Z" };

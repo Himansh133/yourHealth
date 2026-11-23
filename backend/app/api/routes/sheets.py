@@ -4,7 +4,7 @@ from datetime import date, timedelta
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from app.api.deps import current_user
+from app.api.deps import patient_user
 from app.core.permissions import require_profile_access
 from app.db.models import User
 from app.db.session import get_db
@@ -21,7 +21,7 @@ def preview_sheet(
     from_: date | None = Query(default=None, alias="from"),
     to: date | None = None,
     include_medicines: bool = True,
-    user: User = Depends(current_user),
+    user: User = Depends(patient_user),
     db: Session = Depends(get_db),
 ):
     require_profile_access(db, user.id, pid, "view")

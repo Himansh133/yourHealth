@@ -14,3 +14,21 @@ def current_user(session: str | None = Cookie(default=None), db: Session = Depen
     if user is None or user.status != "active":
         raise HTTPException(401, "Not logged in")
     return user
+
+
+def patient_user(user: User = Depends(current_user)) -> User:
+    if user.account_type != "patient":
+        raise HTTPException(403, "Patient account required")
+    return user
+
+
+def doctor_user(user: User = Depends(current_user)) -> User:
+    if user.account_type != "doctor":
+        raise HTTPException(403, "Doctor account required")
+    return user
+
+
+def admin_user(user: User = Depends(current_user)) -> User:
+    if user.account_type != "admin":
+        raise HTTPException(403, "Admin account required")
+    return user

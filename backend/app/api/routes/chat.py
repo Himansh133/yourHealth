@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
-from app.api.deps import current_user
+from app.api.deps import patient_user
 from app.core.permissions import require_profile_access
 from app.db.models import User
 from app.db.session import get_db
@@ -32,7 +32,7 @@ class ChatIn(BaseModel):
 
 
 @router.post("/profiles/{pid}/chat", response_model=ChatOut, response_model_exclude_none=True)
-def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(current_user), db: Session = Depends(get_db),
+def chat(pid: uuid.UUID, body: ChatIn, user: User = Depends(patient_user), db: Session = Depends(get_db),
          llm: LLM = Depends(chat_llm)):
     require_profile_access(db, user.id, pid, "view")
     return answer_chat(db, pid, body.question, body.lang, llm)
