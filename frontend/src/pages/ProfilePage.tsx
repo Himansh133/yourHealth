@@ -61,6 +61,7 @@ export default function ProfilePage({ tab = "overview", pollMs = 2000 }: { tab?:
         <h1 className="mt-1 text-2xl font-semibold">{profile.display_name}</h1>
       </div>
       {profile.relation_label === "Synthetic demo data" && <p className="rounded-md border border-teal-200 bg-teal-50 p-3 text-sm font-medium text-teal-950">Synthetic demo data · For demonstrations only, not a real patient.</p>}
+      {profile.relation_label === "De-identified demo data" && <p className="rounded-md border border-teal-200 bg-teal-50 p-3 text-sm font-medium text-teal-950">Public de-identified demo data · Reconstructed source records with consistently shifted display dates. Missing source information stays unknown.</p>}
       <nav className="flex gap-4 overflow-x-auto sm:gap-6 border-b border-slate-200 print:hidden" aria-label="Profile sections">
         <NavLink to={`/profiles/${pid}`} end className={tabClass}>Overview</NavLink>
         <NavLink to={`/profiles/${pid}/reports`} className={tabClass}>Reports</NavLink>
@@ -165,7 +166,8 @@ function DocumentRow({ doc }: { doc: Doc }) {
           <p className="text-sm text-red-700">{ERROR_HELP[doc.error_code] ?? "Try uploading again."}</p>
         )}
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
+        {(doc.status === "done" || doc.status === "needs_review") && <a href={documentsApi.fileUrl(doc.id)} target="_blank" rel="noreferrer" className="py-1 text-sm text-teal-700 underline">Open source</a>}
         <span className={`text-sm font-medium ${tone}`}>{STATUS_LABEL[doc.status]}</span>
         {doc.status === "needs_review" && (
           <Link to={`/documents/${doc.id}/review`} className="rounded-md bg-amber-600 px-3 py-1 text-sm font-medium text-white hover:bg-amber-700">

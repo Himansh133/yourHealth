@@ -129,3 +129,11 @@ describe("ProfilePage tabs", () => {
     expect(within(nav).getByRole("link", { name: "Doctor sheet" })).toHaveAttribute("href", "/profiles/p1/sheet");
   });
 });
+
+it("opens the source of a processed non-lab document", async () => {
+  mockApi({ "GET /me": ME, "GET /profiles": [PAPA], "GET /profiles/p1/documents": [doc({ id: "history", doc_type: "other", original_filename: "prescription-history.pdf", lab_name: null })] });
+  renderAt("/profiles/p1", routes);
+  const link = await screen.findByRole("link", { name: "Open source" });
+  expect(link).toHaveAttribute("href", "/api/v1/documents/history/file");
+  expect(link).toHaveAttribute("target", "_blank");
+});

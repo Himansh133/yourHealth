@@ -147,3 +147,29 @@ are in `PROBLEMS_FACED.md` 8.16 and 8.7.
 WhatsApp is not demoed live: it needs a Meta app and a public HTTPS URL (problem 9.1). Show the **WhatsApp** page
 (link code and wa.me button) and describe the flow: send a report photo → choose whose report → "Done" message →
 ask a question in the chat.
+
+## Internet-sourced, de-identified longitudinal demo
+
+A separate local account contains one subject from the openly available [MIMIC-IV Clinical Database Demo 2.2](https://doi.org/10.13026/dp1f-ex47), Johnson et al. (2023), licensed under ODbL 1.0. This is genuine de-identified hospital data. It is not a synthetic case and is not a complete lifetime history.
+
+For source subject `10035631`, the prepared export contains 378 timestamp-grouped lab PDFs (10,263 source rows), 14 prescription-history PDFs (786 historical orders), and one source-history summary. PDFs are reconstructed exports, not original hospital scans. The source's already de-identified dates are consistently shifted again for the local demo; original source timestamps and the exact offset are printed and retained in the manifest. Only exactly matched blood tests are mapped into serum trends. Unsupported tests and specimens remain available as searchable text.
+
+The public source excludes clinician narrative notes and supplies no allergy history. Allergy status remains **unknown**, not “no known allergies.” Prescription orders remain **historical and unconfirmed**: an order does not establish current use or adherence. The Doctor sheet is computed by this app from released facts, not written by the source patient's treating doctor.
+
+Credentials, profile IDs and the local profile URL are in ignored `passwords.md` (mode 600). Raw downloads, all derived reports, import state, hashes, runtime logs and the computed doctor-sheet JSON stay under ignored `eval/data/internet-demo/`; none are pushed to GitHub.
+
+To reproduce with backend dependencies installed, download the five official tables:
+
+```bash
+mkdir -p eval/data/internet-demo/mimic-iv-demo-2.2/hosp
+for table in patients admissions d_labitems labevents prescriptions; do
+  curl --fail --location "https://physionet.org/files/mimic-iv-demo/2.2/hosp/${table}.csv.gz" \
+    --output "eval/data/internet-demo/mimic-iv-demo-2.2/hosp/${table}.csv.gz"
+done
+cd backend
+PYTHONPATH=.. .venv/bin/python -m eval.runners.import_mimic_demo --load
+```
+
+The installed quantized bge-m3 export can be selected for bulk indexing with `EMBEDDING_MODEL=bge-m3-int8/onnx/model_int8.onnx`; it uses the same bge-m3 tokenizer and embedding space. The actual model name is retained with each chunk. Normal application configuration is unchanged.
+
+Preparation without `--load` writes PDFs/manifest only. Once loading starts, source hashes and the display-date offset are frozen; resume uses the saved display date. Completed source files are deduplicated, interrupted processing is retried, and prescription rows use stable source-order IDs. An interrupted run resumes the dedicated account rather than modifying another patient's records.
