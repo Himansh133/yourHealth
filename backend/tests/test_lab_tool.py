@@ -95,3 +95,64 @@ def test_converted_value_is_rounded_and_shows_what_was_printed(db_session, test_
     [fact] = lab_lookup(db_session, pid, "3084-1", "latest")
     assert fact.evidence_text() == ("lab_result | Uric acid 5.6 mg/dL (printed as 333 µmol/L) (ref 3.5-7.2) within range"
                                     " | 2025-06-16 | Arogya Labs p.1")
+
+
+def test_recent_trends_exclude_incompatible_units_and_same_day_duplicates(db_session, test_ids, pid):
+    from app.services.chat.lab_tool import recent_lab_trends
+    add(db_session, pid, test_ids, "4548-4", "8.1", date(2026, 1, 10))
+    june = add(db_session, pid, test_ids, "4548-4", "7.2", date(2026, 6, 14))
+    add(db_session, pid, test_ids, "4548-4", "53", date(2026, 7, 1), canonical=False, raw_unit="mmol/mol")
+    facts = recent_lab_trends(db_session, pid)
+    assert [f.observed_on for f in facts] == [date(2026, 1, 10), date(2026, 6, 14)]
+    assert facts[-1].lab_result_id == june.id
+
+    add(db_session, pid, test_ids, "3016-3", "4.2", date(2026, 8, 1), raw_unit="mIU/L")
+    add(db_session, pid, test_ids, "3016-3", "4.3", date(2026, 8, 1), raw_unit="mIU/L")
+    assert [f.test_name for f in recent_lab_trends(db_session, pid)] == ["HbA1c", "HbA1c"]
+
+
+def test_recent_trends_limit_to_five_tests_ordered_by_most_recent_date(db_session, test_ids, pid):
+    from app.services.chat.lab_tool import recent_lab_trends
+    from app.services.labs.dictionary import get_lab_dictionary
+    codes = sorted(test_ids)[:6]
+    for day, code in enumerate(codes, 1):
+        add(db_session, pid, test_ids, code, "8.1", date(2026, 1, day))
+        add(db_session, pid, test_ids, code, "7.2", date(2026, 6, day))
+    facts = recent_lab_trends(db_session, pid)
+    expected = [get_lab_dictionary().tests[code].canonical_name for code in reversed(codes[1:])]
+    assert len(facts) == 10
+    assert [f.test_name for f in facts[::2]] == expected
+
+
+def test_qualified_values_keep_their_qualifier_in_evidence(db_session, test_ids, pid):
+    row = add(db_session, pid, test_ids, "4548-4", "5", date(2026, 6, 14))
+    row.raw_value, row.qualifier = "<5", "<"
+    db_session.commit()
+    [fact] = lab_lookup(db_session, pid, "4548-4", "latest")
+    assert "HbA1c <5 %" in fact.evidence_text()
+
+
+def test_recent_trends_skip_ambiguous_pairs_instead_of_picking_a_duplicate(db_session, test_ids, pid):
+    from app.services.chat.lab_tool import recent_lab_trends
+    add(db_session, pid, test_ids, "4548-4", "8.1", date(2026, 1, 10))
+    add(db_session, pid, test_ids, "4548-4", "7.2", date(2026, 6, 14))
+    add(db_session, pid, test_ids, "4548-4", "7.4", date(2026, 6, 14))
+    assert recent_lab_trends(db_session, pid) == []
+
+
+def test_recent_trends_do_not_turn_qualified_results_into_exact_changes(db_session, test_ids, pid):
+    from app.services.chat.lab_tool import recent_lab_trends
+    add(db_session, pid, test_ids, "4548-4", "8.1", date(2026, 1, 10))
+    row = add(db_session, pid, test_ids, "4548-4", "5", date(2026, 6, 14))
+    row.raw_value, row.qualifier = "<5", "<"
+    db_session.commit()
+    assert recent_lab_trends(db_session, pid) == []
+
+
+def test_recent_trends_do_not_compare_upload_dates_for_undated_reports(db_session, test_ids, pid):
+    from app.services.chat.lab_tool import recent_lab_trends
+    add(db_session, pid, test_ids, "4548-4", "8.1", date(2026, 1, 10))
+    row = add(db_session, pid, test_ids, "4548-4", "7.2", date(2026, 6, 14))
+    db_session.get(Document, row.document_id).report_date = None
+    db_session.commit()
+    assert recent_lab_trends(db_session, pid) == []

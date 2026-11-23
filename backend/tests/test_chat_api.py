@@ -367,3 +367,92 @@ def test_their_medicine_strength_cited_from_the_label_is_not_a_made_up_number(ma
 
     assert body["fallback"] is False
     assert body["claims"][0]["text"] == "Glycomet 500 contains metformin"
+
+
+def test_general_report_trends_use_recent_pairs_from_only_this_profile(make_user_client, db_session, test_ids, use_llm):
+    a = make_user_client("a@example.com")
+    b = make_user_client("b@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    other = b.post("/api/v1/profiles", json=PAPA).json()["id"]
+    add_hba1c(db_session, pid, test_ids, "9.3", date(2025, 1, 10))
+    jan = add_hba1c(db_session, pid, test_ids, "8.1", date(2026, 1, 10))
+    june = add_hba1c(db_session, pid, test_ids, "7.2", date(2026, 6, 14))
+    add_hba1c(db_session, other, test_ids, "6.4", date(2026, 7, 1))
+    llm = use_llm(FakeLLM([good_answer("E2")]))
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "Tell me the recent trends of my reports"}).json()
+    assert body["route"] == ["trend"]
+    assert [s["lab_result_id"] for s in body["sources"]] == [str(jan.id), str(june.id)]
+    prompt = llm.prompts[0][1]
+    assert "9.3" not in prompt and "6.4" not in prompt
+    assert "two most recent dated results" in prompt
+
+
+def test_general_trends_with_only_one_date_do_not_invent_a_comparison(make_user_client, db_session, test_ids, use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    add_hba1c(db_session, pid, test_ids, "7.2", date(2026, 6, 14))
+    llm = use_llm(FakeLLM([]))
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "recent report trends"}).json()
+    assert body["route"] == ["trend"]
+    assert body["answerable"] is False
+    assert "two dated" in body["summary"]
+    assert llm.prompts == []
+
+
+def test_inspection_contains_only_retrieved_profile_evidence(make_user_client, db_session, test_ids, use_llm):
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    add_hba1c(db_session, pid, test_ids, "7.2", date(2026, 6, 14))
+    use_llm(FakeLLM([good_answer()]))
+    body = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "latest hba1c"}).json()
+    assert body["retrieved_evidence"][0]["id"] == body["sources"][0]["id"]
+    assert "HbA1c 7.2 %" in body["retrieved_evidence"][0]["text"]
+    assert body["validation_status"] == "passed"
+    assert body["generation_attempts"] == 1
+
+
+@pytest.mark.parametrize("category", ["helpful", "too_long", "wrong_evidence", "missed_question"])
+def test_feedback_is_persisted_against_server_created_answer(make_user_client, db_session, use_llm, category):
+    from app.db import models
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    use_llm(FakeLLM([]))
+    answer = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "latest hba1c"}).json()
+    assert "answer_id" in answer
+    response = a.put(f"/api/v1/profiles/{pid}/chat/{answer['answer_id']}/feedback", json={"category": category})
+    assert response.status_code == 200
+    import uuid
+    record = db_session.get(models.ChatRecord, uuid.UUID(answer["answer_id"]))
+    assert record.feedback == category and record.question == "latest hba1c"
+    assert record.answer["answerable"] is False
+    assert response.json()["category"] == category
+
+
+def test_feedback_checks_profile_author_and_current_membership(make_user_client, db_session, use_llm):
+    import uuid
+    from app.db.models import ProfileMember
+    a = make_user_client("a@example.com")
+    b = make_user_client("b@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    other = a.post("/api/v1/profiles", json={"display_name": "Other"}).json()["id"]
+    use_llm(FakeLLM([]))
+    answer = a.post(f"/api/v1/profiles/{pid}/chat", json={"question": "latest hba1c"}).json()
+    aid = answer["answer_id"]
+    path = f"/api/v1/profiles/{pid}/chat/{aid}/feedback"
+    assert b.put(path, json={"category": "helpful"}).status_code == 404
+    db_session.add(ProfileMember(profile_id=uuid.UUID(pid), user_id=uuid.UUID(b.get("/api/v1/me").json()["id"]), role="viewer"))
+    db_session.commit()
+    assert b.put(path, json={"category": "helpful"}).status_code == 404
+    assert a.put(f"/api/v1/profiles/{other}/chat/{aid}/feedback", json={"category": "helpful"}).status_code == 404
+    assert a.put(path, json={"category": "invented"}).status_code == 422
+    assert a.put(path, json={"category": "too_long"}).status_code == 200
+    assert a.put(path, json={"category": "helpful"}).json()["category"] == "helpful"
+    membership = db_session.get(ProfileMember, (uuid.UUID(pid), uuid.UUID(a.get("/api/v1/me").json()["id"])))
+    db_session.delete(membership)
+    db_session.commit()
+    assert a.put(path, json={"category": "helpful"}).status_code == 404
+
+
+def test_feedback_requires_login(client):
+    import uuid
+    assert client.put(f"/api/v1/profiles/{uuid.uuid4()}/chat/{uuid.uuid4()}/feedback", json={"category": "helpful"}).status_code == 401

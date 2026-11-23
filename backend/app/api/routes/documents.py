@@ -14,7 +14,7 @@ from app.services.extraction.validate import MAX_BYTES, UploadRejected
 from app.services.labs.store import refresh_review_status
 from app.services.queue import DocumentQueue, get_queue
 from app.services.storage import Storage, get_storage
-from app.services.uploads import store_upload
+from app.services.uploads import UploadQueueUnavailable, store_upload
 
 router = APIRouter()
 
@@ -57,6 +57,8 @@ def upload_document(
     data = file.file.read(MAX_BYTES + 1)  # one extra byte is enough to detect "too large"
     try:
         doc, created = store_upload(db, storage, queue, pid, user.id, data, file.filename, channel="web")
+    except UploadQueueUnavailable as e:
+        raise HTTPException(503, str(e))
     except UploadRejected as e:
         raise HTTPException(422, {"code": e.code, "message": e.message})
     if not created:

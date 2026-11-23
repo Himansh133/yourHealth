@@ -153,3 +153,36 @@ describe("ChatPanel", () => {
     expect(within(reply).getByText(/shown in english/i)).toBeInTheDocument();
   });
 });
+
+it("keeps long evidence lists compact and lets the reader reveal the rest", async () => {
+  mockApi({ "GET /me": ME, "POST /profiles/p1/chat": answer({
+    fallback: true,
+    claims: Array.from({ length: 7 }, (_, i) => ({ text: `Recorded finding ${i + 1}`, evidence_ids: ["E1"] })),
+  }) });
+  const user = renderAt("/profiles/p1/ask", routes);
+  await user.type(await screen.findByRole("textbox", { name: /ask about papa's reports/i }), "recent trends");
+  await user.click(screen.getByRole("button", { name: "Ask" }));
+  const reply = await screen.findByRole("article", { name: "Answer" });
+  expect(within(reply).getByText("Recorded finding 5")).toBeVisible();
+  expect(within(reply).getByText("Recorded finding 6")).not.toBeVisible();
+  await user.click(within(reply).getByText("Show 2 more findings"));
+  expect(within(reply).getByText("Recorded finding 6")).toBeVisible();
+  const row = within(reply).getByText("Recorded finding 6").closest("li")!;
+  expect(within(row).getByRole("link", { name: /report, page 1/i })).toHaveAttribute("href", "/documents/d1/review");
+});
+
+it("shows actual evidence and check status in expandable answer inspection", async () => {
+  mockApi({ "GET /me": ME, "POST /profiles/p1/chat": answer({
+    retrieved_evidence: [{ id: "E1", text: "lab_result | HbA1c 8.1 % | 2026-01-10" }],
+    validation_status: "passed", generation_attempts: 2,
+  }) });
+  const user = renderAt("/profiles/p1/ask", routes);
+  await user.type(await screen.findByRole("textbox"), "recent trends");
+  await user.click(screen.getByRole("button", { name: "Ask" }));
+  const toggle = await screen.findByText("How this answer was produced");
+  expect(screen.getByText(/HbA1c 8.1 %/)).not.toBeVisible();
+  await user.click(toggle);
+  expect(screen.getByText(/HbA1c 8.1 %/)).toBeVisible();
+  expect(screen.getByText("Passed number, citation and advice checks")).toBeVisible();
+  expect(screen.getByText("2 generation attempts")).toBeVisible();
+});

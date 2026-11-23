@@ -2,6 +2,8 @@ import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { chat, documents } from "../api/endpoints";
 import type { ChatAnswer, ChatSource, Lang } from "../api/types";
+import AnswerFeedback from "./AnswerFeedback";
+import AnswerInspection from "./AnswerInspection";
 import { Button, ErrorAlert, errorMessage } from "../components/ui";
 
 type Turn = { question: string; lang: Lang; answer: ChatAnswer };
@@ -43,6 +45,11 @@ export default function ChatPanel({ profileId, profileName }: { profileId: strin
         coming down?" or "What did the discharge summary say about diet?"
       </p>
 
+      <div className="flex flex-wrap gap-2" aria-label="Suggested questions">
+        {["Tell me the recent trends of my reports", "What was my latest HbA1c?", "What information is missing from my reports?"].map(q => (
+          <Button key={q} type="button" variant="secondary" className="min-h-11 text-left text-sm" disabled={asking} onClick={() => setQuestion(q)}>{q}</Button>
+        ))}
+      </div>
       {turns.map((t, i) => (
         <div key={i} className="flex flex-col gap-2">
           <p className="self-end rounded-lg bg-teal-700 px-4 py-2 text-white">{t.question}</p>
@@ -88,6 +95,16 @@ export default function ChatPanel({ profileId, profileName }: { profileId: strin
 
 function AnswerCard({ answer, profileId, askedLang }: { answer: ChatAnswer; profileId: string; askedLang: Lang }) {
   const byId = new Map(answer.sources.map((s) => [s.id, s]));
+  const findings = answer.claims.map((c, i) => (
+    <li key={i} className="pl-1 text-sm leading-relaxed text-slate-800">
+      <p>{readable(c.text)}</p>
+      <div className="mt-1 flex flex-wrap gap-2">
+        {c.evidence_ids.map((id) => byId.get(id)).filter((s): s is ChatSource => !!s).map((source) => (
+          <SourceChip key={source.id} source={source} profileId={profileId} />
+        ))}
+      </div>
+    </li>
+  ));
   return (
     <article aria-label="Answer" className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4">
       {askedLang === "hi" && answer.lang === "en" && (
@@ -95,19 +112,24 @@ function AnswerCard({ answer, profileId, askedLang }: { answer: ChatAnswer; prof
           Shown in English: the Hindi translation didn't pass the checks (same numbers, no advice).
         </p>
       )}
-      <p className={answer.answerable && !answer.fallback ? "font-medium" : "text-slate-600"}>{answer.summary}</p>
-      {answer.claims.length > 0 && (
-        <ul className="flex flex-col gap-2">
-          {answer.claims.map((c, i) => (
-            <li key={i} className="flex flex-wrap items-baseline gap-2 text-sm">
-              <span>{readable(c.text)}</span>
-              {c.evidence_ids.map((id) => byId.get(id)).filter((s): s is ChatSource => !!s).map((s) => (
-                <SourceChip key={s.id} source={s} profileId={profileId} />
-              ))}
-            </li>
-          ))}
+      <p className={answer.answerable && !answer.fallback ? "font-medium leading-relaxed" : "leading-relaxed text-slate-600"}>{answer.summary}</p>
+      {findings.length > 0 && (
+        <ul aria-label="Report findings" className="list-disc space-y-3 pl-5">
+          {findings.slice(0, 5)}
         </ul>
       )}
+      {findings.length > 5 && (
+        <details>
+          <summary className="cursor-pointer rounded py-2 text-sm font-medium text-teal-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-600">
+            Show {findings.length - 5} more findings
+          </summary>
+          <ul aria-label="More report findings" className="mt-2 list-disc space-y-3 pl-5">
+            {findings.slice(5)}
+          </ul>
+        </details>
+      )}
+      <AnswerInspection answer={answer} profileId={profileId} />
+      {answer.answer_id && <AnswerFeedback key={answer.answer_id} profileId={profileId} answerId={answer.answer_id} />}
       {answer.missing_info.length > 0 && (
         <ul className="list-disc pl-5 text-sm text-slate-600">
           {answer.missing_info.map((m, i) => <li key={i}>{m}</li>)}

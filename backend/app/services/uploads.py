@@ -13,6 +13,10 @@ from app.services.storage import Storage
 _EXT = {"application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png"}
 
 
+class UploadQueueUnavailable(RuntimeError):
+    pass
+
+
 def store_upload(db: Session, storage: Storage, queue: DocumentQueue, profile_id: uuid.UUID, user_id: uuid.UUID,
                  data: bytes, filename: str | None, channel: str) -> tuple[Document, bool]:
     """Returns (document, created). The same file already on this profile returns the existing one.
@@ -21,6 +25,8 @@ def store_upload(db: Session, storage: Storage, queue: DocumentQueue, profile_id
     sha = hashlib.sha256(data).hexdigest()
     existing = db.scalar(select(Document).where(Document.profile_id == profile_id, Document.sha256 == sha))
     if existing:
+        if existing.status == "failed" and existing.error_code == "queue_unavailable":
+            _enqueue(db, queue, existing)
         return existing, False
 
     doc_id = uuid.uuid4()
@@ -29,6 +35,16 @@ def store_upload(db: Session, storage: Storage, queue: DocumentQueue, profile_id
     doc = Document(id=doc_id, profile_id=profile_id, uploaded_by=user_id, source_channel=channel, storage_key=key,
                    original_filename=(filename or "")[:255] or None, mime_type=mime, size_bytes=len(data), sha256=sha)
     db.add(doc)
-    db.commit()
-    queue.enqueue_document(doc.id)  # after commit, so the worker can see the row
+    _enqueue(db, queue, doc)
     return doc, True
+
+
+def _enqueue(db: Session, queue: DocumentQueue, doc: Document) -> None:
+    doc.status, doc.error_code = "queued", None
+    db.commit()  # The worker must be able to see the row before enqueueing.
+    try:
+        queue.enqueue_document(doc.id)
+    except Exception as exc:
+        doc.status, doc.error_code = "failed", "queue_unavailable"
+        db.commit()
+        raise UploadQueueUnavailable("Report saved, but processing could not be queued. Upload this file again to retry.") from exc

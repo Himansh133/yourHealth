@@ -1,4 +1,38 @@
-# Viva demo script (about 12 minutes)
+# Current presentation walkthrough (2026-11-23)
+
+Use **Demo** in the app header to create a separate profile labelled **Synthetic demo data** and upload three fictional reports. This uses the normal upload/worker pipeline; it does not add reports to a real family member. All three sample PDFs are also downloadable from that page.
+
+## Preparation
+
+1. Start PostgreSQL, Redis and S3 using the README, then run `cd backend && .venv/bin/alembic upgrade head`. The new `b42c73f00102` migration adds answer records and feedback. Run the document worker and frontend as usual.
+2. Configure the model for live generated answers. Without a working model the app shows retrieved facts; demonstrate that honestly rather than presenting a recorded answer as live.
+3. Open **Demo → Create demo patient**, wait for all three reports to finish, then open **Overview**. Synthetic results are dated 10 Jan, 12 Mar and 14 Jun 2026.
+4. Rehearse at desktop and phone widths. Keep the sample PDFs available as a download/upload fallback.
+
+## Six-minute journey
+
+1. **Overview (45 s):** show the latest report date, latest readings outside the printed range, and recent changes. Explain that a numeric decrease alone is not proof of improvement.
+2. **Reports / review (45 s):** open a PDF and check an extracted value. Verification labels describe user review, not clinical approval.
+3. **Compare (45 s):** choose January and June. HbA1c is 8.1% → 7.2%; the difference is 0.9 percentage points, not a 0.9% relative reduction. Missing, ambiguous or incompatible readings are not treated as zero.
+4. **Ask (90 s):** use “Tell me the recent trends of my reports”. Show short findings, source links, and **How this answer was produced**: actual route, generation attempts, checks and retrieved excerpts. These automated checks do not establish medical correctness. Ask for vitamin D, which is absent from the sample reports.
+5. **Feedback (30 s):** choose **Helpful**, **Too long**, **Wrong evidence** or **Missed my question**. Feedback is saved against the author's server-created answer; it does not automatically retrain the model.
+6. **Evaluation (45 s):** compare B0, B1 and the pipeline. Read denominators and show the historical/synthetic-data caveats. These are frozen 30 Oct results from revision `9321fce`, not scores for the current build.
+
+## Reproducibility
+
+From the repository root with backend dependencies installed:
+
+```bash
+backend/.venv/bin/python -m eval.runners.presentation_demo
+backend/.venv/bin/python -m eval.runners.export_dashboard
+PYTHONPATH=backend backend/.venv/bin/python -m pytest -q eval/tests/test_presentation_demo.py eval/tests/test_export_dashboard.py
+```
+
+The dashboard bundles only aggregate data, filenames and hashes; no patient answers are shipped to the frontend. A new live evaluation is still needed for the latest answer and retrieval changes. The doctor clinical-access work remains incomplete and is outside this demo.
+
+---
+
+# Historical viva script (30 Oct 2026; frozen implementation and metrics)
 
 Every step below was rehearsed in Chrome on 2026-10-30 against the eval data. Synthetic patients only: no real
 health data is shown.

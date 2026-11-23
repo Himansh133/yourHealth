@@ -1,5 +1,5 @@
 import { request } from "./client";
-import type { Doctor, DoctorRegistration, VerificationStatus } from "./types";
+import type { FeedbackCategory, Doctor, DoctorRegistration, VerificationStatus } from "./types";
 import type { ChatAnswer, Doc, DrugSearchResult, Frequency, IngredientInfo, Insight, LabResult, Lang, Medicine, Profile, Sex, Share, ShareCreated, ShareExpiry, Sheet, Trend, User, WhatsAppLinkCode, WhatsAppStatus } from "./types";
 
 export const auth = {
@@ -48,6 +48,7 @@ export const documents = {
 export type LabResultPatch = Partial<Pick<LabResult, "raw_name" | "raw_value" | "raw_unit" | "raw_range">>;
 
 export const labs = {
+  list: (profileId: string) => request<LabResult[]>("GET", `/profiles/${profileId}/lab-results`),
   forDocument: (profileId: string, documentId: string) =>
     request<LabResult[]>("GET", `/profiles/${profileId}/lab-results?document_id=${encodeURIComponent(documentId)}`),
   correct: (id: string, body: LabResultPatch) => request<LabResult>("PATCH", `/lab-results/${id}`, body),
@@ -76,6 +77,8 @@ export const medicines = {
 };
 
 export const chat = {
+  feedback: (profileId: string, answerId: string, category: FeedbackCategory) =>
+    request<{ answer_id: string; category: FeedbackCategory }>("PUT", `/profiles/${profileId}/chat/${answerId}/feedback`, { category }),
   ask: (profileId: string, question: string, lang: Lang) =>
     request<ChatAnswer>("POST", `/profiles/${profileId}/chat`, { question, lang }),
 };

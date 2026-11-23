@@ -120,3 +120,41 @@ def test_a_hindi_question_is_still_answered_in_english_before_translation():
                                      "missing_info": [], "doctor_note": "डॉक्टर से बात करें।"}, ensure_ascii=False)])
     answer_question(llm, "पापा का पिछला HbA1c कितना था?", "Papa", EVIDENCE, "hi", hindi_mode="translate")
     assert "Write in English even if the question is in Hindi" in llm.prompts[0][0]
+
+
+def test_long_summary_is_retried_as_a_short_takeaway():
+    verbose = json.loads(GOOD)
+    verbose["summary"] = " ".join(["The report contains a recorded HbA1c finding."] * 15)
+    llm = FakeLLM([json.dumps(verbose), GOOD])
+    out = answer_question(llm, "recent trends?", "Papa", EVIDENCE, "en")
+    assert out.summary == json.loads(GOOD)["summary"]
+    assert "summary must be at most 40 words" in llm.prompts[1][1]
+
+
+def test_long_claim_is_retried_without_dropping_its_citation():
+    verbose = json.loads(GOOD)
+    verbose["claims"][0]["text"] = " ".join(["HbA1c was above the report range."] * 15)
+    llm = FakeLLM([json.dumps(verbose), GOOD])
+    out = answer_question(llm, "recent trends?", "Papa", EVIDENCE, "en")
+    assert out.claims[0].text == json.loads(GOOD)["claims"][0]["text"]
+    assert out.claims[0].evidence_ids == ["E1"]
+    assert "claim 1 must be at most 60 words" in llm.prompts[1][1]
+
+
+def test_inspection_reports_actual_attempts_and_validation():
+    out = answer_question(FakeLLM([MADE_UP, GOOD]), "q", "Papa", EVIDENCE, "en")
+    assert out.validation_status == "passed"
+    assert out.generation_attempts == 2
+    fallback = answer_question(FakeLLM([MADE_UP, MADE_UP]), "q", "Papa", EVIDENCE, "en")
+    assert fallback.validation_status == "fallback"
+    assert fallback.generation_attempts == 2
+    unchecked = answer_question(FakeLLM([GOOD]), "q", "Papa", EVIDENCE, "en", validate=False)
+    assert unchecked.validation_status == "disabled"
+    empty = answer_question(FakeLLM([]), "q", "Papa", [], "en")
+    assert empty.validation_status == "not_run" and empty.generation_attempts == 0
+
+
+def test_translation_keeps_execution_metadata():
+    out = answer_question(FakeLLM([GOOD, HINDI]), "q", "Papa", EVIDENCE, "hi", hindi_mode="translate")
+    assert out.lang == "hi"
+    assert out.validation_status == "passed" and out.generation_attempts == 1

@@ -9,7 +9,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Literal
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.db.models import Document, LabResult, LabTestRecord
@@ -32,6 +32,7 @@ class LabFact:
     flag: str
     observed_on: date
     lab_name: str | None
+    qualifier: str | None = None
     printed: str | None = None  # "333 µmol/L" when the report used another unit and we converted
 
     def evidence_text(self) -> str:
@@ -57,7 +58,7 @@ def _num(d: Decimal) -> str:
 
 
 def lab_lookup(db: Session, profile_id: uuid.UUID, loinc_code: str, mode: Literal["latest", "trend", "range"],
-               date_from: date | None = None, date_to: date | None = None) -> list[LabFact]:
+               date_from: date | None = None, date_to: date | None = None, canonical_only: bool = False, dated_only: bool = False) -> list[LabFact]:
     """Rows oldest first ('latest' gives just the last one)."""
     q = (
         select(LabResult, LabTestRecord, Document.lab_name)
@@ -66,6 +67,10 @@ def lab_lookup(db: Session, profile_id: uuid.UUID, loinc_code: str, mode: Litera
         .where(LabResult.profile_id == profile_id, LabTestRecord.loinc_code == loinc_code)
         .order_by(LabResult.observed_on, LabResult.created_at)
     )
+    if canonical_only:
+        q = q.where(LabResult.value_canonical.is_not(None))
+    if dated_only:
+        q = q.where(Document.report_date.is_not(None))
     if date_from:
         q = q.where(LabResult.observed_on >= date_from)
     if date_to:
@@ -84,6 +89,32 @@ def _fact(r: LabResult, t: LabTestRecord, lab_name: str | None) -> LabFact:
     else:  # converted: round away the conversion's false precision, and say what the report printed
         value, unit, printed = _num(round3(r.value_canonical)), t.canonical_unit, f"{r.raw_value} {r.raw_unit}"
         low, high = (None if x is None else round3(x) for x in (low, high))
+    if r.value_canonical is not None and r.qualifier:
+        value = r.qualifier + value
     return LabFact(lab_result_id=r.id, document_id=r.document_id, page_no=r.page_no, test_name=t.canonical_name,
                    value=value, unit=unit, range_low=low, range_high=high, flag=r.flag, observed_on=r.observed_on,
-                   lab_name=lab_name, printed=printed)
+                   lab_name=lab_name, printed=printed, qualifier=r.qualifier)
+
+
+def recent_lab_trends(db: Session, profile_id: uuid.UUID) -> list[LabFact]:
+    """The two latest distinct dates for up to five recently measured, comparable tests."""
+    codes = db.scalars(
+        select(LabTestRecord.loinc_code)
+        .join(LabResult, LabResult.lab_test_id == LabTestRecord.id)
+        .join(Document, Document.id == LabResult.document_id)
+        .where(LabResult.profile_id == profile_id, LabResult.value_canonical.is_not(None), Document.report_date.is_not(None))
+        .group_by(LabTestRecord.loinc_code)
+        .having(func.count(func.distinct(LabResult.observed_on)) >= 2)
+        .order_by(func.max(LabResult.observed_on).desc(), LabTestRecord.loinc_code)
+        .limit(5)
+    ).all()
+    facts = []
+    for code in codes:
+        by_date: dict[date, list[LabFact]] = {}
+        for fact in lab_lookup(db, profile_id, code, "trend", canonical_only=True, dated_only=True):
+            by_date.setdefault(fact.observed_on, []).append(fact)
+        pair = [by_date[on] for on in sorted(by_date)[-2:]]
+        if any(len(rows) != 1 or rows[0].qualifier for rows in pair):
+            continue
+        facts.extend(rows[0] for rows in pair)
+    return facts

@@ -3,6 +3,8 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { accountHome, AuthProvider, RequireAuth, useAuth } from "./auth";
 import type { AccountType } from "./api/types";
 import Layout from "./components/Layout";
+import DemoPage from "./pages/DemoPage";
+import EvaluationPage from "./pages/EvaluationPage";
 import FamilyPage from "./pages/FamilyPage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -34,12 +36,16 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<Home />} />
+          <Route path="/demo" element={<Private><DemoPage /></Private>} />
+          <Route path="/evaluation" element={<Private><EvaluationPage /></Private>} />
           <Route path="/doctor/register" element={<DoctorRegisterPage />} />
           <Route path="/doctor" element={<Private accountType="doctor"><DoctorHomePage /></Private>} />
           <Route path="/profiles/:pid/allergies" element={<Private><ProfilePage tab="allergies" /></Private>} />
           <Route path="/profiles/:pid/access" element={<Private><ProfilePage tab="access" /></Private>} />
           <Route path="/admin/doctors" element={<Private accountType="admin"><AdminDoctorsPage /></Private>} />
           <Route path="/profiles/:pid" element={<Private><ProfilePage /></Private>} />
+          <Route path="/profiles/:pid/reports" element={<Private><ProfilePage tab="reports" /></Private>} />
+          <Route path="/profiles/:pid/compare" element={<Private><ProfilePage tab="compare" /></Private>} />
           <Route path="/profiles/:pid/trends" element={<Private><ProfilePage tab="trends" /></Private>} />
           <Route path="/profiles/:pid/medicines" element={<Private><ProfilePage tab="medicines" /></Private>} />
           <Route path="/profiles/:pid/ask" element={<Private><ProfilePage tab="ask" /></Private>} />

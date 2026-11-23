@@ -8,11 +8,13 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen">
       <header className="border-b border-slate-200 bg-white print:hidden">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <Link to={user ? accountHome(user.account_type) : "/"} className="text-lg font-semibold text-teal-800">
             YourHealth
           </Link>
-          <div className="flex items-center gap-3 text-sm text-slate-600">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+            {user?.account_type === "patient" && <Link to="/demo" className="text-teal-700 hover:underline">Demo</Link>}
+            {user?.account_type === "patient" && <Link to="/evaluation" className="text-teal-700 hover:underline">Evaluation</Link>}
             {user?.account_type === "patient" && <Link to="/settings/whatsapp" className="text-teal-700 hover:underline">WhatsApp</Link>}
             {user?.account_type === "doctor" && <span>Doctor portal</span>}
             {user?.account_type === "admin" && <span>Administration</span>}

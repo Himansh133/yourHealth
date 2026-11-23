@@ -134,3 +134,9 @@ def test_hindi_trend_words_win_over_the_everyday_word_sugar():
 
 def test_hindi_value_question_with_sugar_stays_a_value():
     assert r("पापा की पिछली sugar कितनी थी?").labels == ["value"]
+
+
+def test_general_report_trends_do_not_require_a_named_test():
+    for question in ("Tell me the recent trends of my reports", "recent report trend", "trends in my blood tests"):
+        assert r(question).labels == ["trend"]
+        assert r(question).tests == []

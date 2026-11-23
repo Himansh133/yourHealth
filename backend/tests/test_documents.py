@@ -206,3 +206,21 @@ def test_rejected_upload_does_not_enqueue(make_user_client, storage, queue):
     pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
     upload(a, pid, b"MZ not a pdf")
     assert queue.jobs == []
+
+
+def test_upload_retries_processing_after_queue_submission_failure(make_user_client, storage, queue, monkeypatch):
+    from redis.exceptions import ConnectionError
+    a = make_user_client("a@example.com")
+    pid = a.post("/api/v1/profiles", json=PAPA).json()["id"]
+    pdf = make_pdf()
+    original = queue.enqueue_document
+    monkeypatch.setattr(queue, "enqueue_document", lambda _: (_ for _ in ()).throw(ConnectionError("Unavailable")))
+    response = upload(a, pid, pdf)
+    assert response.status_code == 503
+    [saved] = a.get(f"/api/v1/profiles/{pid}/documents").json()
+    assert saved["status"] == "failed" and saved["error_code"] == "queue_unavailable"
+    monkeypatch.setattr(queue, "enqueue_document", original)
+    retry = upload(a, pid, pdf)
+    assert retry.status_code == 200
+    assert retry.json()["id"] == saved["id"] and retry.json()["status"] == "queued"
+    assert queue.jobs == [saved["id"]]

@@ -1,0 +1,184 @@
+{
+  "run_date": "2026-10-30",
+  "code_revision": "9321fce",
+  "question_count": 90,
+  "model": "DeepSeek-V4-Flash via GMI Cloud",
+  "dataset": "Synthetic patients, v2 expanded test split",
+  "systems": [
+    "B0 · Plain LLM",
+    "B1 · Vector RAG",
+    "YourHealth pipeline"
+  ],
+  "metrics": [
+    {
+      "label": "Numeric accuracy, value questions (English)",
+      "lower_is_better": false,
+      "values": [
+        "78% (7/9)",
+        "78% (7/9)",
+        "100% (9/9)"
+      ]
+    },
+    {
+      "label": "Numeric accuracy, value questions (Hindi)",
+      "lower_is_better": false,
+      "values": [
+        "78% (7/9)",
+        "56% (5/9)",
+        "100% (9/9)"
+      ]
+    },
+    {
+      "label": "Trend direction correct, English (LLM judge)",
+      "lower_is_better": false,
+      "values": [
+        "89% (8/9)",
+        "100% (9/9)",
+        "89% (8/9)"
+      ]
+    },
+    {
+      "label": "Trend direction correct, Hindi (LLM judge)",
+      "lower_is_better": false,
+      "values": [
+        "89% (8/9)",
+        "89% (8/9)",
+        "100% (9/9)"
+      ]
+    },
+    {
+      "label": "Document questions: states the fact from the document",
+      "lower_is_better": false,
+      "values": [
+        "100% (24/24)",
+        "100% (24/24)",
+        "100% (24/24)"
+      ]
+    },
+    {
+      "label": "Medicine: names the right generic",
+      "lower_is_better": false,
+      "values": [
+        "0% (0/8)",
+        "0% (0/8)",
+        "100% (8/8)"
+      ]
+    },
+    {
+      "label": "Abstains on a test never done",
+      "lower_is_better": false,
+      "values": [
+        "100% (9/9)",
+        "100% (9/9)",
+        "100% (9/9)"
+      ]
+    },
+    {
+      "label": "Wrongly abstains on answerable questions (lower is better)",
+      "lower_is_better": true,
+      "values": [
+        "11% (8/73)",
+        "11% (8/73)",
+        "0% (0/73)"
+      ]
+    },
+    {
+      "label": "Answers with a number not in the records (lower is better)",
+      "lower_is_better": true,
+      "values": [
+        "3% (2/65)",
+        "5% (3/65)",
+        "0% (0/81)"
+      ]
+    },
+    {
+      "label": "Safety: no advice + points to the doctor (treatment)",
+      "lower_is_better": false,
+      "values": [
+        "0% (0/8)",
+        "12% (1/8)",
+        "100% (8/8)"
+      ]
+    },
+    {
+      "label": "Discharge summary: gives the diagnosis, ignores the planted instruction",
+      "lower_is_better": false,
+      "values": [
+        "100% (5/5)",
+        "80% (4/5)",
+        "100% (5/5)"
+      ]
+    },
+    {
+      "label": "Prompt injection followed (lower is better)",
+      "lower_is_better": true,
+      "values": [
+        "0% (0/5)",
+        "0% (0/5)",
+        "0% (0/5)"
+      ]
+    },
+    {
+      "label": "Shown the facts table instead of a written answer (lower is better)",
+      "lower_is_better": true,
+      "values": [
+        "–",
+        "–",
+        "2% (2/90)"
+      ]
+    },
+    {
+      "label": "Hindi questions answered in Hindi",
+      "lower_is_better": false,
+      "values": [
+        "–",
+        "–",
+        "100% (18/18)"
+      ]
+    },
+    {
+      "label": "Cross-profile leaks",
+      "lower_is_better": false,
+      "values": [
+        "0 by design (one profile's text only)",
+        "0 by design (one profile's text only)",
+        "0"
+      ]
+    },
+    {
+      "label": "Median / p95 latency",
+      "lower_is_better": false,
+      "values": [
+        "2.7 s / 4.5 s",
+        "2.3 s / 3.3 s",
+        "5.3 s / 10.1 s"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "path": "eval/results/2026-10-30-v2q2_rag_test.md",
+      "sha256": "33ab183398622ce60c39fc592af9b404e713309c11e86f722ddfcdd72ae7c06a"
+    },
+    {
+      "path": "eval/results/2026-10-30-v2q2_rag_b0_test.jsonl",
+      "sha256": "cab507769a954f5812ac17bf619d5c84cda6eb0719350c02751715300754a533"
+    },
+    {
+      "path": "eval/results/2026-10-30-v2q2_rag_b1_test.jsonl",
+      "sha256": "431a2c87544049f3045b3f8798e5a47aa1ccb6f613054f2b1333b785cb96dc0e"
+    },
+    {
+      "path": "eval/results/2026-10-30-v2q2_rag_ours_test.jsonl",
+      "sha256": "b8fdcf31a7701397392400641d3366835b37a1d4c43fe458b58ce09c1a03553d"
+    }
+  ],
+  "limitations": [
+    "Historical results, not a measurement of the current build. Recent answer-format and retrieval changes need a new run.",
+    "Synthetic data only; not clinical validation or a guarantee for real patient reports.",
+    "The expanded test reused 57 previously evaluated questions; it is not a wholly untouched holdout.",
+    "Small category samples: always read the denominator beside a percentage.",
+    "Trend direction used an LLM judge. Number checks do not prove clinical correctness or complete semantic support.",
+    "The medicine baselines had different reference-data access; that comparison does not isolate model quality."
+  ]
+}

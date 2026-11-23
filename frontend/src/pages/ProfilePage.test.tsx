@@ -16,7 +16,7 @@ function doc(over: Record<string, unknown>) {
 }
 
 const routes = {
-  "/profiles/:pid": <ProfilePage pollMs={20} />,
+  "/profiles/:pid": <ProfilePage tab="reports" pollMs={20} />,
   "/documents/:did/review": <p>Review page</p>,
   "/profiles/:pid/medicines": <p>Medicines tab</p>,
 };
@@ -123,7 +123,7 @@ describe("ProfilePage tabs", () => {
 
     const nav = await screen.findByRole("navigation", { name: "Profile sections" });
     const names = within(nav).getAllByRole("link").map((a) => a.getAttribute("aria-label") ?? a.textContent);
-    expect(names).toEqual(["Reports", "Trends", "Medicines", "Ask", "Doctor sheet", "Allergies", "Doctor access"]);
+    expect(names).toEqual(["Overview", "Reports", "Compare", "Trends", "Medicines", "Ask", "Doctor sheet", "Allergies", "Doctor access"]);
     expect(within(nav).getByRole("link", { name: "Allergies" })).toHaveAttribute("href", "/profiles/p1/allergies");
     expect(within(nav).getByRole("link", { name: "Doctor access" })).toHaveAttribute("href", "/profiles/p1/access");
     expect(within(nav).getByRole("link", { name: "Doctor sheet" })).toHaveAttribute("href", "/profiles/p1/sheet");

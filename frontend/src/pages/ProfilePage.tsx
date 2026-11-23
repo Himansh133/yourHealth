@@ -4,6 +4,8 @@ import { documents as documentsApi, profiles as profilesApi } from "../api/endpo
 import type { Doc, DocumentStatus, Profile } from "../api/types";
 import { ErrorAlert, errorMessage } from "../components/ui";
 import { formatDate } from "../format";
+import ReportComparisonPanel from "./ReportComparisonPanel";
+import OverviewPanel from "./OverviewPanel";
 import ChatPanel from "./ChatPanel";
 import DoctorSheetPanel from "./DoctorSheetPanel";
 import MedicinesPanel from "./MedicinesPanel";
@@ -25,23 +27,28 @@ const STATUS_LABEL: Record<DocumentStatus, string> = {
 
 const ERROR_HELP: Record<string, string> = {
   ocr_unavailable: "Photo reading is not available right now. Try a PDF, or upload again later.",
+  queue_unavailable: "The report was saved, but processing could not start. Upload the same file again to retry.",
   processing_error: "Something went wrong while reading it. Try uploading again.",
 };
 
-export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: "reports" | "trends" | "medicines" | "ask" | "sheet" | "allergies" | "access"; pollMs?: number }) {
+export default function ProfilePage({ tab = "overview", pollMs = 2000 }: { tab?: "compare" | "overview" | "reports" | "trends" | "medicines" | "ask" | "sheet" | "allergies" | "access"; pollMs?: number }) {
   const { pid = "" } = useParams();
   const [profile, setProfile] = useState<Profile | null | undefined>(undefined);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let active = true;
+    setProfile(undefined);
+    setError("");
     profilesApi
       .list()
-      .then((all) => setProfile(all.find((p) => p.id === pid) ?? null))
-      .catch((e) => setError(errorMessage(e)));
+      .then((all) => { if (active) setProfile(all.find((p) => p.id === pid) ?? null); })
+      .catch((e) => { if (active) setError(errorMessage(e)); });
+    return () => { active = false; };
   }, [pid]);
 
   if (error) return <ErrorAlert>{error}</ErrorAlert>;
-  if (profile === undefined) return <p className="text-slate-500">Loading…</p>;
+  if (profile === undefined || (profile !== null && profile.id !== pid)) return <p className="text-slate-500">Loading…</p>;
   if (profile === null) return <p>Profile not found. <Link to="/" className="text-teal-700 underline">Back to family</Link></p>;
 
   const tabClass = ({ isActive }: { isActive: boolean }) =>
@@ -53,12 +60,15 @@ export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: 
         <Link to="/" className="text-sm text-teal-700 hover:underline">← Family</Link>
         <h1 className="mt-1 text-2xl font-semibold">{profile.display_name}</h1>
       </div>
+      {profile.relation_label === "Synthetic demo data" && <p className="rounded-md border border-teal-200 bg-teal-50 p-3 text-sm font-medium text-teal-950">Synthetic demo data · For demonstrations only, not a real patient.</p>}
       <nav className="flex gap-4 overflow-x-auto sm:gap-6 border-b border-slate-200 print:hidden" aria-label="Profile sections">
-        <NavLink to={`/profiles/${pid}`} end className={tabClass}>Reports</NavLink>
+        <NavLink to={`/profiles/${pid}`} end className={tabClass}>Overview</NavLink>
+        <NavLink to={`/profiles/${pid}/reports`} className={tabClass}>Reports</NavLink>
+        <NavLink to={`/profiles/${pid}/compare`} className={tabClass}>Compare</NavLink>
         <NavLink to={`/profiles/${pid}/trends`} className={tabClass}>Trends</NavLink>
         <NavLink to={`/profiles/${pid}/medicines`} className={tabClass}>Medicines</NavLink>
         <NavLink to={`/profiles/${pid}/ask`} className={tabClass}>Ask</NavLink>
-        {/* "Sheet" on phones so all five tabs fit at 360 px; the accessible name stays the same */}
+        {/* Keep the full accessible name when the visible label is shortened on phones. */}
         <NavLink to={`/profiles/${pid}/sheet`} className={tabClass} aria-label="Doctor sheet">
           <span className="sm:hidden">Sheet</span>
           <span className="hidden sm:inline">Doctor sheet</span>
@@ -66,6 +76,8 @@ export default function ProfilePage({ tab = "reports", pollMs = 2000 }: { tab?: 
         <NavLink to={`/profiles/${pid}/allergies`} className={tabClass}>Allergies</NavLink>
         <NavLink to={`/profiles/${pid}/access`} className={tabClass}>Doctor access</NavLink>
       </nav>
+      {tab === "compare" && <ReportComparisonPanel key={pid} profileId={pid} />}
+      {tab === "overview" && <OverviewPanel key={pid} profileId={pid} profileName={profile.display_name} />}
       {tab === "allergies" && <AllergiesPanel profileId={pid} canEdit={profile.role !== "viewer"} />}
       {tab === "access" && <AccessPanel profile={profile} />}
       {tab === "reports" && <ReportsPanel profile={profile} pollMs={pollMs} />}

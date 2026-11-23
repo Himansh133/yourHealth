@@ -3,14 +3,14 @@ Used by the web chat endpoint and by WhatsApp questions."""
 import uuid
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.db.models import Profile
 from app.services.chat.answer import ChatAnswer, answer_question
 from app.services.chat.doc_search import search_chunks
 from app.services.chat.embeddings import get_embedder, get_reranker
-from app.services.chat.lab_tool import LabFact, lab_lookup
+from app.services.chat.lab_tool import LabFact, lab_lookup, recent_lab_trends
 from app.services.chat.llm import LLM
 from app.services.chat.medicine_tool import MedicineFact, medicine_facts, medicine_vocabulary
 from app.services.chat.router import classify, find_tests, route
@@ -53,8 +53,10 @@ class Source(BaseModel):
 
 
 class ChatOut(ChatAnswer):
+    answer_id: uuid.UUID | None = None
     route: list[str]
     sources: list[Source]
+    retrieved_evidence: list[Evidence] = Field(default_factory=list)
 
 
 def _lab_source(f: LabFact) -> dict:
@@ -83,12 +85,15 @@ def answer_chat(db: Session, pid: uuid.UUID, question: str, lang: str, llm: LLM,
         labels = c.labels
         tests = find_tests(c.test, get_lab_dictionary()) if c.test else tests
     label = labels[0]
-    if (label in ("value", "trend") and not tests) or (label == "medicine" and not r.medicines):
+    if (label == "value" and not tests) or (label == "medicine" and not r.medicines):
         label, labels = "document", ["document"]  # nothing specific to look up: their documents may mention it
     asked_ingredients = {i for m in r.medicines for i in vocab[m]}
     loinc_codes = {t.loinc_code for t in tests}
 
     found: list[tuple[str, dict]] = []  # (evidence text, source fields)
+    overview = label == "trend" and not tests
+    if overview:
+        found += [(f.evidence_text(), _lab_source(f)) for f in recent_lab_trends(db, pid)]
     if label in ("value", "trend", "treatment", "medicine_lab"):
         mode = "latest" if label in ("value", "treatment") else "trend"
         for t in tests:
@@ -111,7 +116,12 @@ def answer_chat(db: Session, pid: uuid.UUID, question: str, lang: str, llm: LLM,
     sources = [Source(id=e.id, **fields) for e, (_, fields) in zip(evidence, found)]
 
     fixed_lang = lang if lang in OUT_OF_SCOPE else "en"
-    if label == "out_of_scope":
+    if overview and not evidence:
+        summary = ("रुझान की तुलना के लिए एक ही जाँच के कम से कम दो अलग-अलग तारीखों के परिणाम चाहिए।"
+                   if fixed_lang == "hi" else
+                   "I need at least two dated, comparable results for the same test to show a trend.")
+        answer = ChatAnswer(answerable=False, summary=summary, claims=[], missing_info=[], doctor_note="", lang=fixed_lang)
+    elif label == "out_of_scope":
         answer = ChatAnswer(answerable=False, summary=OUT_OF_SCOPE[fixed_lang], claims=[], missing_info=[],
                             doctor_note="", lang=fixed_lang)
     elif label == "treatment":
@@ -119,8 +129,13 @@ def answer_chat(db: Session, pid: uuid.UUID, question: str, lang: str, llm: LLM,
                             doctor_note=SAFETY_NOTE[fixed_lang], lang=fixed_lang,
                             claims=[Claim(text=e.text, evidence_ids=[e.id]) for e in evidence])
     else:
+        note = EVIDENCE_NOTES.get(label)
+        if overview:
+            note = ("These are the two most recent dated results with comparable units for up to five recently measured tests, "
+                    "oldest first per test. Results without a normalized numeric value are excluded. "
+                    "This is a recent comparison, not the full history or all report findings; make this scope clear.")
         glossary = {t.canonical_name: t.display_name_hi for t in tests if t.display_name_hi}
         medicine_names = sorted({mi.name for mi in medicine_ingredients(db, pid)})
-        answer = answer_question(llm, question, name, evidence, lang, note=EVIDENCE_NOTES.get(label), glossary=glossary,
+        answer = answer_question(llm, question, name, evidence, lang, note=note, glossary=glossary,
                                  validate="validator" not in ablate, names=medicine_names)
-    return ChatOut(**answer.model_dump(), route=labels, sources=sources)
+    return ChatOut(**answer.model_dump(), route=labels, sources=sources, retrieved_evidence=evidence)

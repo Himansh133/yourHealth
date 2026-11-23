@@ -167,7 +167,13 @@ export type ChatSource =
   | { id: string; kind: "medicine"; medicine_id: string }
   | { id: string; kind: "drug_label"; url?: string };
 
+export type FeedbackCategory = "helpful" | "too_long" | "wrong_evidence" | "missed_question";
+
 export type ChatAnswer = {
+  answer_id?: string;
+  retrieved_evidence?: { id: string; text: string }[];
+  validation_status?: "passed" | "fallback" | "not_run" | "disabled";
+  generation_attempts?: number;
   answerable: boolean;
   summary: string;
   claims: { text: string; evidence_ids: string[] }[];

@@ -463,3 +463,19 @@ class AllergyClassMap(Base):
     class_name: Mapped[str] = mapped_column(Text, primary_key=True)
     source_note: Mapped[str] = mapped_column(Text)
     reviewed_by: Mapped[str | None] = mapped_column(Text)
+
+
+class ChatRecord(TimestampMixin, Base):
+    """Web answers retained for author-submitted feedback; deleted with their profile."""
+    __tablename__ = "chat_records"
+    __table_args__ = (CheckConstraint(
+        "feedback IS NULL OR feedback IN ('helpful','too_long','wrong_evidence','missed_question')",
+        name="chat_records_feedback_check",
+    ),)
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    profile_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    answer: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    feedback: Mapped[str | None] = mapped_column(Text)
