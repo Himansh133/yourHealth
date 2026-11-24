@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { mockApi } from "../test/mockApi";
@@ -111,4 +112,35 @@ describe("ReviewPage", () => {
     renderAt("/documents/nope/review", routes);
     expect(await screen.findByRole("alert")).toHaveTextContent(/not found/i);
   });
+});
+
+it("shows source CSV text without pretending it is a scan or a checked report", async () => {
+  mockApi({ "GET /me": ME, "GET /documents/d1": { ...DOC, mime_type: "text/csv", original_filename: "source.csv", status: "done" },
+    "GET /profiles/p1/lab-results": [], "GET /documents/d1/pages/1": { text: "subject_id,value\n1,2.10\n" } });
+  renderAt("/documents/d1/review", routes);
+  expect(await screen.findByText(/subject_id,value/)).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Download source CSV" })).toHaveAttribute("href", "/api/v1/documents/d1/file");
+  expect(screen.queryByRole("img", { name: /original report/i })).not.toBeInTheDocument();
+  expect(screen.queryByText(/All values checked/)).not.toBeInTheDocument();
+});
+
+it("clears the previous CSV source when navigating to a failed source and then recovers", async () => {
+  mockApi({
+    "GET /me": ME,
+    "GET /documents/d1": { ...DOC, lab_name: null, mime_type: "text/csv", original_filename: "first.csv" },
+    "GET /documents/d2": { ...DOC, id: "d2", lab_name: null, mime_type: "text/csv", original_filename: "second.csv" },
+    "GET /documents/d3": { ...DOC, id: "d3", lab_name: null, mime_type: "text/csv", original_filename: "third.csv" },
+    "GET /profiles/p1/lab-results": [],
+    "GET /documents/d1/pages/1": { text: "first source records" },
+    "GET /documents/d2/pages/1": { status: 404, body: { detail: "Source unavailable" } },
+    "GET /documents/d3/pages/1": { text: "third source records" },
+  });
+  const user = renderAt("/documents/d1/review", { "/documents/:did/review": <><Link to="/documents/d2/review">Second source</Link><Link to="/documents/d3/review">Third source</Link><ReviewPage /></> });
+  expect(await screen.findByText("first source records")).toBeInTheDocument();
+  await user.click(screen.getByText("Second source"));
+  expect(await screen.findByText("Source unavailable")).toBeInTheDocument();
+  expect(screen.queryByText("first source records")).not.toBeInTheDocument();
+  await user.click(screen.getByText("Third source"));
+  expect(await screen.findByText("third source records")).toBeInTheDocument();
+  expect(screen.queryByText("Source unavailable")).not.toBeInTheDocument();
 });

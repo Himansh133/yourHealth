@@ -150,3 +150,14 @@ def test_dense_search_never_crosses_profiles(db_session, pid, make_user_client):
     other = make_user_client("b@example.com").post("/api/v1/profiles", json=PAPA).json()["id"]
     add_doc_with_models(db_session, other, DISCHARGE, StubEmbedder())
     assert search_chunks(db_session, pid, "food", embedder=StubEmbedder()) == []
+
+
+def test_admissions_are_not_crowded_out_by_repeated_source_boilerplate(db_session, pid):
+    admissions = add_doc(db_session, pid, [(1, 'subject_id,admission_type\n1,ELECTIVE\n1,DIRECT EMER.')],
+                         doc_type='other', name='admissions-source.csv')
+    admissions.mime_type = 'text/csv'
+    for i in range(31):
+        add_doc(db_session, pid, [(1, 'Original source event: Creatinine 2.1 mg/dL. ' * 30)],
+                doc_type='lab_report', name=f'lab-{i}.csv')
+    hits = search_chunks(db_session, pid, 'What admission types are recorded in the original admissions source?')
+    assert hits and hits[0].document_id == admissions.id

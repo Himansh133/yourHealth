@@ -30,6 +30,7 @@ i me my we our you your he him his she her it its they them their this that thes
 with about by as or and but if then than so not no any some all can could would should will shall may might must
 say said says tell told mention mentioned write wrote written report reports document documents doctor summary
 please there here also just
+original source sources recorded records
 kya kab kaise kaun kitna kitni ko ka ki ke mein me se par aur ya hai hain tha thi the bola boli bole kaha kahi
 likha baare bare wala wali hua hui ho
 """.split())
@@ -44,10 +45,13 @@ class ChunkHit:
     doc_type: str
     title: str | None
     report_date: date | None
+    mime_type: str | None = None
 
     def evidence_text(self) -> str:
         pages = f"p.{self.page_start}" if self.page_start == self.page_end else f"p.{self.page_start}-{self.page_end}"
-        about = [DOC_TYPE_TEXT.get(self.doc_type, "Document"), self.title,
+        if self.mime_type == "text/csv":
+            pages = ""
+        about = ["CSV source" if self.mime_type == "text/csv" else DOC_TYPE_TEXT.get(self.doc_type, "Document"), self.title,
                  self.report_date.isoformat() if self.report_date else None, pages]
         return f"document | {', '.join(p for p in about if p)} | {self.text}"
 
@@ -81,9 +85,9 @@ def search_chunks(db: Session, profile_id: uuid.UUID, question: str, limit: int 
     if not order:
         return []
 
-    rows = {c.id: (c, doc_type, title, report_date) for c, doc_type, title, report_date in db.execute(
+    rows = {c.id: (c, doc_type, title, report_date, mime_type) for c, doc_type, title, report_date, mime_type in db.execute(
         select(Chunk, Document.doc_type, func.coalesce(Document.lab_name, Document.original_filename),
-               Document.report_date)
+               Document.report_date, Document.mime_type)
         .join(Document, Document.id == Chunk.document_id)
         .where(Chunk.profile_id == profile_id, Chunk.id.in_(order))
     ).all()}
@@ -119,5 +123,5 @@ def _dense_ids(db: Session, profile_id: uuid.UUID, vector: list[float]) -> list[
     ))
 
 
-def _hit(c: Chunk, doc_type: str, title: str | None, report_date: date | None) -> ChunkHit:
-    return ChunkHit(c.document_id, c.page_start, c.page_end, c.text, doc_type, title, report_date)
+def _hit(c: Chunk, doc_type: str, title: str | None, report_date: date | None, mime_type: str | None = None) -> ChunkHit:
+    return ChunkHit(c.document_id, c.page_start, c.page_end, c.text, doc_type, title, report_date, mime_type)

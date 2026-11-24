@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { documents, shares as sharesApi, sheets } from "../api/endpoints";
 import type { Share, ShareCreated, ShareExpiry, Sheet } from "../api/types";
 import SheetView from "../components/SheetView";
@@ -16,28 +17,38 @@ const STATE_TEXT: Record<Share["state"], string> = {
 };
 
 export default function DoctorSheetPanel({ profileId, canShare }: { profileId: string; canShare: boolean }) {
+  const [params] = useSearchParams();
+  const today = new Date().toISOString().slice(0, 10);
   const [months, setMonths] = useState(6);
+  const [from, setFrom] = useState(params.get("from") ?? monthsAgo(6));
+  const [through, setThrough] = useState(params.get("to") ?? today);
   const [includeMedicines, setIncludeMedicines] = useState(true);
   const [sheet, setSheet] = useState<Sheet | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let active = true;
+    setSheet(null);
+    if (!from || !through || from > through) { setError("Choose a valid date range."); return; }
     setError("");
-    sheets.preview(profileId, { from: monthsAgo(months), include_medicines: includeMedicines })
-      .then(setSheet)
-      .catch((e) => setError(errorMessage(e)));
-  }, [profileId, months, includeMedicines]);
+    sheets.preview(profileId, { from, ...(through !== today ? { to: through } : {}), include_medicines: includeMedicines })
+      .then(value => { if (active) setSheet(value); })
+      .catch((e) => { if (active) setError(errorMessage(e)); });
+    return () => { active = false; };
+  }, [profileId, from, through, today, includeMedicines]);
 
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end gap-4 print:hidden">
         <div className="flex flex-col gap-1">
           <label htmlFor="sheet-period" className="text-sm font-medium text-slate-700">Period</label>
-          <select id="sheet-period" value={months} onChange={(e) => setMonths(Number(e.target.value))}
+          <select id="sheet-period" value={months} onChange={(e) => { const n = Number(e.target.value); setMonths(n); setFrom(monthsAgo(n, new Date(`${through}T12:00:00`))); }}
             className="rounded-md border border-slate-300 px-3 py-2">
             {PERIODS.map((m) => <option key={m} value={m}>Last {m} months</option>)}
           </select>
         </div>
+        <label className="flex flex-col gap-1 text-sm font-medium">From date<input type="date" value={from} onChange={e => setFrom(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" /></label>
+        <label className="flex flex-col gap-1 text-sm font-medium">Through date<input type="date" value={through} onChange={e => setThrough(e.target.value)} className="rounded-md border border-slate-300 px-3 py-2" /></label>
         <label className="flex items-center gap-2 pb-2 text-sm">
           <input type="checkbox" checked={includeMedicines} onChange={(e) => setIncludeMedicines(e.target.checked)} />
           Include medicines
@@ -47,7 +58,8 @@ export default function DoctorSheetPanel({ profileId, canShare }: { profileId: s
       <ErrorAlert>{error}</ErrorAlert>
       {sheet === null && !error && <p className="text-slate-500">Loading…</p>}
       {sheet && <SheetView sheet={sheet} documentHref={documents.fileUrl} />}
-      {canShare && <SharePanel profileId={profileId} query={{ from: monthsAgo(months), include_medicines: includeMedicines }} />}
+      {canShare && through === today && <SharePanel profileId={profileId} query={{ from, include_medicines: includeMedicines }} />}
+      {canShare && through !== today && <p className="text-sm text-slate-600">Custom end-date sheets can be printed. Share links currently support ranges ending today.</p>}
     </section>
   );
 }

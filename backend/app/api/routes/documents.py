@@ -111,7 +111,7 @@ def download_document(
     except KeyError:
         raise HTTPException(404, "The original file is missing") from None
     # No filename in the header: user-supplied names would need escaping, and the browser doesn't need it.
-    return Response(data, media_type=doc.mime_type, headers={"Content-Disposition": "inline"})
+    return Response(data, media_type=doc.mime_type, headers={"Content-Disposition": "attachment" if doc.mime_type == "text/csv" else "inline", "X-Content-Type-Options": "nosniff"})
 
 
 class PageOut(BaseModel):

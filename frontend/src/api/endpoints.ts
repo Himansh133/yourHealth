@@ -34,6 +34,7 @@ export const profiles = {
 
 export const documents = {
   list: (profileId: string) => request<Doc[]>("GET", `/profiles/${profileId}/documents`),
+  page: (id: string, n: number) => request<{ text: string }>("GET", `/documents/${id}/pages/${n}`),
   get: (id: string) => request<Doc>("GET", `/documents/${id}`),
   upload: (profileId: string, file: File) => {
     const form = new FormData();
@@ -83,11 +84,11 @@ export const chat = {
     request<ChatAnswer>("POST", `/profiles/${profileId}/chat`, { question, lang }),
 };
 
-export type SheetQuery = { from: string; include_medicines: boolean };
+export type SheetQuery = { from: string; to?: string; include_medicines: boolean };
 
 export const sheets = {
   preview: (profileId: string, q: SheetQuery) =>
-    request<Sheet>("GET", `/profiles/${profileId}/sheet?from=${q.from}&include_medicines=${q.include_medicines}`),
+    request<Sheet>("GET", `/profiles/${profileId}/sheet?from=${q.from}&include_medicines=${q.include_medicines}${q.to ? `&to=${q.to}` : ""}`),
 };
 
 export const shares = {

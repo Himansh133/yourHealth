@@ -62,6 +62,7 @@ export default function ProfilePage({ tab = "overview", pollMs = 2000 }: { tab?:
       </div>
       {profile.relation_label === "Synthetic demo data" && <p className="rounded-md border border-teal-200 bg-teal-50 p-3 text-sm font-medium text-teal-950">Synthetic demo data · For demonstrations only, not a real patient.</p>}
       {profile.relation_label === "De-identified demo data" && <p className="rounded-md border border-teal-200 bg-teal-50 p-3 text-sm font-medium text-teal-950">Public de-identified demo data · Reconstructed source records with consistently shifted display dates. Missing source information stays unknown.</p>}
+      {profile.relation_label === "Original source data" && <p className="rounded-md border border-teal-200 bg-teal-50 p-3 text-sm text-teal-950">Original patient-filtered CSV records · Source values, units and provider-deidentified dates are unchanged. No generated report PDFs or unrelated handwriting samples are included.</p>}
       <nav className="flex gap-4 overflow-x-auto sm:gap-6 border-b border-slate-200 print:hidden" aria-label="Profile sections">
         <NavLink to={`/profiles/${pid}`} end className={tabClass}>Overview</NavLink>
         <NavLink to={`/profiles/${pid}/reports`} className={tabClass}>Reports</NavLink>

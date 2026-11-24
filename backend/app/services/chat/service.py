@@ -108,7 +108,7 @@ def answer_chat(db: Session, pid: uuid.UUID, question: str, lang: str, llm: LLM,
         facts = medicine_facts(db, pid, linked | asked_ingredients)
         found += [(f.text, _medicine_source(f)) for f in facts if f.kind == "medicine"]
     if label == "document":
-        found += [(h.evidence_text(), {"kind": "document", "document_id": h.document_id, "page_no": h.page_start})
+        found += [(h.evidence_text(), {"kind": "document", "document_id": h.document_id, "page_no": None if h.mime_type == "text/csv" else h.page_start})
                   for h in search_chunks(db, pid, question, embedder=get_embedder(),
                                 reranker=None if "reranker" in ablate else get_reranker())]
 

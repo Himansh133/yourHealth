@@ -62,14 +62,14 @@ export default function ReviewPage() {
         </p>
       </div>
 
-      {doc.status === "done" && (
+      {doc.status === "done" && doc.mime_type !== "text/csv" && (
         <p className="rounded-md border border-teal-200 bg-teal-50 px-3 py-2 text-teal-900">All values checked. They now appear in trends.</p>
       )}
       {!doc.report_date && doc.doc_type === "lab_report" && <ReportDateForm doc={doc} onSaved={setDoc} />}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section aria-label="Original report" className="min-h-[24rem] overflow-hidden rounded-lg border border-slate-200 bg-white">
-          {doc.mime_type === "application/pdf" ? (
+          {doc.mime_type === "text/csv" ? <CsvSource documentId={doc.id} /> : doc.mime_type === "application/pdf" ? (
             <iframe title="Original report" src={fileUrl} className="h-[70vh] w-full" />
           ) : (
             <img alt="Original report" src={fileUrl} className="w-full" />
@@ -208,4 +208,24 @@ function ReportDateForm({ doc, onSaved }: { doc: Doc; onSaved: (d: Doc) => void 
       <ErrorAlert>{error}</ErrorAlert>
     </form>
   );
+}
+
+
+function CsvSource({ documentId }: { documentId: string }) {
+  const [text, setText] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    setText(null);
+    setError("");
+    documentsApi.page(documentId, 1).then(p => { if (active) setText(p.text); })
+      .catch(e => { if (active) setError(errorMessage(e)); });
+    return () => { active = false; };
+  }, [documentId]);
+  return <div className="space-y-3 p-4">
+    <p className="text-sm leading-relaxed text-slate-700">Original CSV records. Values, units and provider-deidentified dates are preserved. These records are not hospital scans or clinically verified findings.</p>
+    <a className="inline-block py-2 text-sm font-medium text-teal-800 underline" href={documentsApi.fileUrl(documentId)} download>Download source CSV</a>
+    <ErrorAlert>{error}</ErrorAlert>
+    {text === null && !error ? <p role="status">Loading source records…</p> : <pre className="max-h-[70vh] overflow-auto whitespace-pre text-xs leading-relaxed text-slate-700">{text}</pre>}
+  </div>;
 }

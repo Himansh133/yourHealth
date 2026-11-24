@@ -73,3 +73,12 @@ describe("DoctorSheetPanel", () => {
     expect(calls.some((c) => c.method === "POST" && c.path === "/shares/s1/revoke")).toBe(true);
   });
 });
+
+it("can request the unchanged provider source date range", async () => {
+  const calls = mockApi({ "GET /me": ME, "GET /profiles/p1/sheet": SHEET, "GET /profiles/p1/shares": [] });
+  renderAt("/profiles/p1/sheet?from=2150-01-01&to=2159-08-03", routes);
+  expect(await screen.findByLabelText("Through date")).toHaveValue("2159-08-03");
+  expect(screen.getByLabelText("From date")).toHaveValue("2150-01-01");
+  expect(calls.some(c => c.url.includes("to=2159-08-03"))).toBe(true);
+  expect(screen.queryByRole("button", { name: "Create share link" })).not.toBeInTheDocument();
+});
