@@ -2,7 +2,7 @@ from fastapi import APIRouter, FastAPI
 
 from app.api.routes import admin, allergies, auth, chat, doctor, documents, labs, medicines, profiles, shares, sheets, whatsapp
 
-app = FastAPI(title="YourHealth")
+app = FastAPI(title="HealthSync")
 api = APIRouter(prefix="/api/v1")
 
 

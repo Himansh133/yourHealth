@@ -34,7 +34,7 @@ export default function DoctorRegisterPage() {
     <main className="mx-auto flex max-w-xl flex-col gap-5 px-4 py-10">
       <Link to="/login" className="text-sm text-teal-700 underline">← Sign in</Link>
       <div>
-        <p className="text-sm font-semibold uppercase tracking-wide text-teal-800">YourHealth · For clinicians</p>
+        <p className="text-sm font-semibold uppercase tracking-wide text-teal-800">HealthSync · For clinicians</p>
         <h1 className="mt-2 text-2xl font-semibold">Doctor registration</h1>
         <p className="mt-2 text-slate-600">An admin will check your registration before approving your account.
           Patient records always require the patient’s permission.</p>

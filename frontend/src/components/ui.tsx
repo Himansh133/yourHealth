@@ -13,7 +13,7 @@ export function Button({
   }[variant];
   return (
     <button
-      className={`${styles} focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 ${className}`}
+      className={`${styles} hs-ui-button hs-ui-button-${variant} focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 ${className}`}
       {...props}
     />
   );
@@ -26,14 +26,14 @@ export function TextField({
 }: InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
   const id = useId();
   return (
-    <div className="flex flex-col gap-1">
+    <div className="hs-field flex flex-col gap-1">
       <label htmlFor={id} className="text-sm font-medium text-slate-700">
         {label}
       </label>
       <input
         id={id}
         aria-describedby={hint ? `${id}-hint` : undefined}
-        className="rounded-md border border-slate-300 px-3 py-2 focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
+        className="hs-ui-input rounded-md border border-slate-300 px-3 py-2 focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
         {...props}
       />
       {hint && (

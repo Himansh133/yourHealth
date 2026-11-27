@@ -29,7 +29,7 @@ def build_dashboard(root: Path = ROOT) -> dict:
     return {
         "run_date": "2026-10-30", "code_revision": "9321fce", "question_count": 90,
         "model": "DeepSeek-V4-Flash via GMI Cloud", "dataset": "Synthetic patients, v2 expanded test split",
-        "systems": ["B0 · Plain LLM", "B1 · Vector RAG", "YourHealth pipeline"],
+        "systems": ["B0 · Plain LLM", "B1 · Vector RAG", "HealthSync pipeline"],
         "metrics": metrics, "sources": sources,
         "limitations": [
             "Historical results, not a measurement of the current build. Recent answer-format and retrieval changes need a new run.",

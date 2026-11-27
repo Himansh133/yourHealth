@@ -16,6 +16,22 @@ const routes = {
 };
 
 describe("auth", () => {
+  it("lets a password manager fill sign-in and lets the user inspect the password", async () => {
+    mockApi({ "GET /me": { status: 401, body: { detail: "Not logged in" } } });
+    const user = renderAt("/login", routes);
+    const password = await screen.findByLabelText(/^password$/i);
+    expect(password).toHaveAttribute("autocomplete", "current-password");
+    await user.type(password, "a readable passphrase");
+    await user.click(screen.getByRole("button", { name: "Show password" }));
+    expect(password).toHaveAttribute("type", "text");
+    expect(password).toHaveValue("a readable passphrase");
+    await user.click(screen.getByRole("button", { name: "Hide password" }));
+    expect(password).toHaveAttribute("type", "password");
+    await user.click(screen.getByRole("button", { name: "Create an account" }));
+    expect(screen.getByLabelText(/^password$/i)).toHaveAttribute("autocomplete", "new-password");
+    expect(screen.getByLabelText(/^password$/i)).toHaveAttribute("type", "password");
+  });
+
   it("sends a logged-out visitor to the login page", async () => {
     mockApi({ "GET /me": { status: 401, body: { detail: "Not logged in" } } });
     renderAt("/", routes);
@@ -36,7 +52,7 @@ describe("auth", () => {
     const user = renderAt("/login", routes);
 
     await user.type(await screen.findByLabelText(/email/i), "a@example.com");
-    await user.type(screen.getByLabelText(/password/i), "correct horse battery");
+    await user.type(screen.getByLabelText(/^password$/i), "correct horse battery");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
     expect(await screen.findByText("Family home")).toBeInTheDocument();
@@ -50,7 +66,7 @@ describe("auth", () => {
     const user = renderAt("/login", routes);
 
     await user.type(await screen.findByLabelText(/email/i), "a@example.com");
-    await user.type(screen.getByLabelText(/password/i), "nope nope nope");
+    await user.type(screen.getByLabelText(/^password$/i), "nope nope nope");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Wrong email or password");
@@ -67,7 +83,7 @@ describe("auth", () => {
     await user.click(await screen.findByRole("button", { name: /create an account/i }));
     expect(screen.getByRole("heading", { name: /create account/i })).toBeInTheDocument();
     await user.type(screen.getByLabelText(/email/i), "a@example.com");
-    await user.type(screen.getByLabelText(/password/i), "correct horse battery");
+    await user.type(screen.getByLabelText(/^password$/i), "correct horse battery");
     await user.click(screen.getByRole("button", { name: /create account/i }));
 
     expect(await screen.findByText("Family home")).toBeInTheDocument();

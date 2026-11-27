@@ -103,7 +103,7 @@ export default function SheetView({ sheet, documentHref }: { sheet: Sheet; docum
       </Section>
 
       <p className="text-xs text-slate-500">
-        Values are copied from the reports by YourHealth. Check them against the original reports listed above.
+        Values are copied from the reports by HealthSync. Check them against the original reports listed above.
       </p>
     </article>
   );

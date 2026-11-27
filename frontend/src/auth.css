@@ -1,0 +1,61 @@
+/* Keep account styling separate from the original signed-in UI. */
+.hs-auth { font-family: "Manrope", Arial, sans-serif; color: var(--hs-ink); background: var(--hs-paper); font-size: 14px; line-height: 1.65; min-height: 100vh; }
+.hs-auth * { box-sizing: border-box; }
+.hs-auth :is(h1,h2,h3,p) { margin-top: 0; }
+.hs-auth :is(button,a,input) { -webkit-tap-highlight-color: transparent; }
+.hs-auth :is(a,button):focus-visible { outline: 3px solid #78956e; outline-offset: 4px; }
+.hs-auth .hs-ui-button-primary { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 44px; background: var(--hs-green); color: white; border: 1px solid var(--hs-green); border-radius: 8px; padding: 10px 19px; font-size: 13px; font-weight: 600; transition: background .2s, box-shadow .2s; }
+.hs-auth .hs-ui-button-primary:hover { background: var(--hs-green-hover); }
+.hs-auth .hs-ui-button-primary:disabled { background: #e1e7dd; border-color: #e1e7dd; color: #526846; cursor: not-allowed; }
+.hs-auth .hs-ui-button-secondary { display: inline-flex; justify-content: center; align-items: center; gap: 9px; min-height: 44px; padding: 9px 16px; border: 1px solid #d6e0cf; border-radius: 8px; background: white; color: #3c5949; font-size: 13px; font-weight: 550; transition: background .2s, border-color .2s; }
+.hs-auth .hs-ui-button-secondary:hover { background: #f0f5ea; border-color: #b8cbaa; }
+.hs-auth .hs-ui-button-link { min-height: 36px; color: #385f49; font-size: 13px; font-weight: 650; }
+.hs-auth .hs-field { gap: 7px; }
+.hs-auth .hs-field > label { color: #334e40; font-size: 13px; font-weight: 600; }
+.hs-auth :is(.hs-ui-input,select,textarea) { min-height: 47px; border: 1px solid #d7e0d2; border-radius: 8px; background: #fcfdfb; color: #243e32; font-size: 14px; padding: 11px 13px; transition: border-color .2s, box-shadow .2s; }
+.hs-auth :is(.hs-ui-input,select,textarea):focus { outline: none; border-color: #75956a; box-shadow: 0 0 0 3px #e8efdf; }
+.hs-auth input::placeholder { color: #526846; }
+.hs-auth .hs-field > p { color: #526846; font-size: 12px; line-height: 1.7; }
+
+/* A single, focused authentication form. */
+.hs-auth-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; max-width: 1440px; padding: 26px 56px; margin-inline: auto; }
+.hs-auth-back { display: inline-flex; align-items: center; gap: 9px; font-size: 12px; color: #526846; min-height: 44px; }
+.hs-auth-back svg { width: 17px; }
+.hs-auth-form-content { width: 100%; max-width: 385px; }
+.hs-auth-form-content h1 { font-size: 38px; font-weight: 500; letter-spacing: -1.6px; margin-bottom: 11px; line-height: 1.25; }
+.hs-auth-intro { font-size: 13px; line-height: 1.85; color: #526846; margin-bottom: 27px; }
+.hs-auth-form { display: flex; flex-direction: column; gap: 19px; }
+.hs-auth .hs-ui-input { min-height: 51px; background: #f8faf4; padding: 13px 15px; }
+.hs-password-field { position: relative; }
+.hs-password-field input { padding-right: 55px !important; }
+.hs-password-toggle { display: grid; place-items: center; position: absolute; right: 5px; top: 29px; height: 44px; width: 44px; color: #526846; border: 0; border-radius: 6px; background: transparent; }
+.hs-password-toggle:hover { color: #365b44; background: #eaf0e3; }
+.hs-password-toggle svg { width: 18px; height: 18px; }
+.hs-auth-forgot { display: flex; justify-content: flex-end; margin-top: -13px; margin-bottom: -6px; }
+.hs-auth-forgot .hs-ui-button { font-size: 12px; font-weight: 550; }
+.hs-auth .hs-auth-submit { min-height: 51px; display: flex; justify-content: center; position: relative; margin-top: 5px; }
+.hs-auth-submit svg { position: absolute; right: 17px; width: 18px; }
+.hs-auth-switch { margin-top: 22px !important; margin-bottom: 24px; text-align: center; font-size: 12px; color: #526846; }
+.hs-auth-switch .hs-ui-button-link { font-size: 12px; }
+.hs-auth-notice { border: 1px solid #d7e5cd; border-radius: 8px; background: #f0f6e9; padding: 12px; font-size: 13px; color: #385b2c; }
+.hs-auth-layout { display: flex; justify-content: center; padding: 43px 24px 64px; }
+.hs-auth-form-area { width: 100%; max-width: 460px; padding: 35px; background: white; border: 1px solid #dce5d4; border-radius: 12px; box-shadow: 0 5px 22px #24493204; }
+.hs-auth-clinician { text-align: center; margin-top: 24px; margin-bottom: 0; padding-top: 20px; border-top: 1px solid #e1e8da; color: #526846; font-size: 12px; }
+.hs-auth-clinician a { display: inline-flex; align-items: center; min-height: 36px; margin-left: 4px; color: #385f49; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.hs-ask-action { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 49px; padding: 12px 18px; color: #fff; border: 1px solid #385f49; border-radius: 9px; background: #385f49; font-size: 13px; font-weight: 550; box-shadow: 0 5px 15px #34502b0a; }
+.hs-ask-action:hover { background: #294d36; }
+.hs-ask-action:focus-visible { outline: 3px solid #78956e; outline-offset: 4px; }
+.hs-ask-action > svg { width: 18px; }
+.hs-ask-action > svg:last-child { width: 16px; margin-left: 6px; }
+@media (max-width: 620px) {
+  .hs-auth-header { padding: 19px 22px; }
+  .hs-auth-header .healthsync-brand { font-size: 22px; gap: 7px; }
+  .hs-auth-header .healthsync-brand svg { width: 30px; height: 30px; }
+  .hs-auth-back { font-size: 12px; gap: 6px; }
+  .hs-auth-layout { padding: 25px 18px 42px; }
+  .hs-auth-form-area { padding: 28px 23px; }
+  .hs-auth-form-content h1 { font-size: 32px; }
+  .hs-auth .hs-ui-input { font-size: 16px; }
+  .hs-ask-action { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) { .hs-auth * { animation: none !important; transition: none !important; } }

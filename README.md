@@ -1,6 +1,8 @@
-# YourHealth
+# HealthSync
 
 Family health report tracker: lab report trends, medicine-to-lab links, Hindi explanations, and doctor share sheets.
+
+Public introduction: `/` (signed-out visitors) or `/about`. Existing signed-in accounts keep their normal home screen. Internal database and object-store identifiers retain their original names for compatibility with existing local data.
 
 ## Run locally
 

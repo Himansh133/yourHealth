@@ -55,7 +55,7 @@ export default function WhatsAppPage({ pollMs = 3000 }: { pollMs?: number }) {
         <Link to="/" className="text-sm text-teal-700 hover:underline">← Family</Link>
         <h1 className="mt-1 text-2xl font-semibold">Connect WhatsApp</h1>
         <p className="mt-1 text-slate-600">
-          Forward lab reports and prescriptions to the YourHealth bot, and ask questions like "papa ka sugar kaisa hai?".
+          Forward lab reports and prescriptions to the HealthSync bot, and ask questions like "papa ka sugar kaisa hai?".
           Replies are short and link back here; full reports never go into the chat.
         </p>
       </div>

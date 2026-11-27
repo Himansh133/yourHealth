@@ -1,7 +1,8 @@
 import { useEffect, useState, type ChangeEvent } from "react";
-import { Link, NavLink, useParams } from "react-router-dom";
+import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
 import { documents as documentsApi, profiles as profilesApi } from "../api/endpoints";
 import type { Doc, DocumentStatus, Profile } from "../api/types";
+import HealthIcon from "../components/HealthIcon";
 import { ErrorAlert, errorMessage } from "../components/ui";
 import { formatDate } from "../format";
 import ReportComparisonPanel from "./ReportComparisonPanel";
@@ -33,6 +34,7 @@ const ERROR_HELP: Record<string, string> = {
 
 export default function ProfilePage({ tab = "overview", pollMs = 2000 }: { tab?: "compare" | "overview" | "reports" | "trends" | "medicines" | "ask" | "sheet" | "allergies" | "access"; pollMs?: number }) {
   const { pid = "" } = useParams();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null | undefined>(undefined);
   const [error, setError] = useState("");
 
@@ -56,9 +58,9 @@ export default function ProfilePage({ tab = "overview", pollMs = 2000 }: { tab?:
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="print:hidden">
-        <Link to="/" className="text-sm text-teal-700 hover:underline">← Family</Link>
-        <h1 className="mt-1 text-2xl font-semibold">{profile.display_name}</h1>
+      <div className="flex flex-wrap items-end justify-between gap-4 print:hidden">
+        <div><Link to="/" className="text-sm text-teal-700 hover:underline">← Family</Link><h1 className="mt-1 text-2xl font-semibold">{profile.display_name}</h1></div>
+        <button type="button" className="hs-ask-action" onClick={() => navigate(`/profiles/${pid}/ask`)}><HealthIcon name="spark" />Ask HealthSync<HealthIcon name="arrow" /></button>
       </div>
       {profile.relation_label === "Synthetic demo data" && <p className="rounded-md border border-teal-200 bg-teal-50 p-3 text-sm font-medium text-teal-950">Synthetic demo data · For demonstrations only, not a real patient.</p>}
       {profile.relation_label === "De-identified demo data" && <p className="rounded-md border border-teal-200 bg-teal-50 p-3 text-sm font-medium text-teal-950">Public de-identified demo data · Reconstructed source records with consistently shifted display dates. Missing source information stays unknown.</p>}
@@ -69,7 +71,6 @@ export default function ProfilePage({ tab = "overview", pollMs = 2000 }: { tab?:
         <NavLink to={`/profiles/${pid}/compare`} className={tabClass}>Compare</NavLink>
         <NavLink to={`/profiles/${pid}/trends`} className={tabClass}>Trends</NavLink>
         <NavLink to={`/profiles/${pid}/medicines`} className={tabClass}>Medicines</NavLink>
-        <NavLink to={`/profiles/${pid}/ask`} className={tabClass}>Ask</NavLink>
         {/* Keep the full accessible name when the visible label is shortened on phones. */}
         <NavLink to={`/profiles/${pid}/sheet`} className={tabClass} aria-label="Doctor sheet">
           <span className="sm:hidden">Sheet</span>

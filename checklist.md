@@ -1,4 +1,4 @@
-# YourHealth: build checklist
+# HealthSync: build checklist
 
 Every step of the project in build order, chunk by chunk, with what each chunk delivers. Ticked items exist in
 the code and are tested; plan sections are in brackets. Problem numbers (e.g. 7.1) refer to [the problems list](PROBLEMS_FACED.md).

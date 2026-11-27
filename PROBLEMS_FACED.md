@@ -1,4 +1,4 @@
-# Problems faced while building YourHealth
+# Problems faced while building HealthSync
 
 Every problem we hit, what it broke, and what we did about it (or propose to do). Grouped by area, roughly in the
 order we met them. **Status** is one of: *Fixed*, *Worked around*, or *Open*.

@@ -46,9 +46,9 @@ HINDI_NAMES = {"papa": ["पापा", "पिताजी", "pitaji"], "mummy"
                "dadi": ["दादी"], "dada": ["दादा"], "nana": ["नाना"], "nani": ["नानी"], "bhaiya": ["भैया"],
                "didi": ["दीदी"], "chacha": ["चाचा"], "mama": ["मामा"], "bua": ["बुआ"], "mausi": ["मौसी"]}
 
-NOT_LINKED = ("Hi! To use YourHealth here, link your account first: open YourHealth → Connect WhatsApp, "
+NOT_LINKED = ("Hi! To use HealthSync here, link your account first: open HealthSync → Connect WhatsApp, "
               "then send me LINK and the 6-digit code.")
-BAD_CODE = "That code didn't work or has expired. Make a new one in YourHealth → Connect WhatsApp."
+BAD_CODE = "That code didn't work or has expired. Make a new one in HealthSync → Connect WhatsApp."
 HELP = "I can read PDFs and photos of lab reports and prescriptions, and answer typed questions about them."
 TOO_MANY_TRIES = "Too many tries with wrong codes. Please wait an hour, then make a new code in the app."
 SEND_AGAIN = "That upload has expired or isn't yours. Please send it again."
@@ -102,7 +102,7 @@ def _link(db: Session, wa: WhatsApp, phone: str, code: str) -> None:
     db.add(WhatsAppLink(user_id=row.user_id, phone_e164=phone, linked_at=now))
     db.commit()
     email = db.get(User, row.user_id).email
-    wa.send_text(phone, f"Connected to your YourHealth account ({email[0]}•••@{email.split('@')[1]}). Send me a report "
+    wa.send_text(phone, f"Connected to your HealthSync account ({email[0]}•••@{email.split('@')[1]}). Send me a report "
                         "PDF or photo, or ask a question like \"papa ka sugar kaisa hai?\".")
 
 
@@ -114,7 +114,7 @@ def _profiles(db: Session, user_id: uuid.UUID, need: str) -> list[Profile]:
 
 def _choose(wa: WhatsApp, phone: str, prompt: str, prefix: str, profiles: list[Profile], extra: str = "") -> None:
     if not profiles:
-        return wa.send_text(phone, "Add a family profile in the YourHealth app first.")
+        return wa.send_text(phone, "Add a family profile in the HealthSync app first.")
     options = [(f"{prefix}:{extra}{p.id}", title) for p, title in zip(profiles, _titles(profiles))]
     if len(options) <= MAX_BUTTONS:
         wa.send_buttons(phone, prompt, options)

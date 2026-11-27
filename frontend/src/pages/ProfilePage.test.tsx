@@ -117,13 +117,22 @@ describe("ProfilePage reports", () => {
 });
 
 describe("ProfilePage tabs", () => {
+  it("opens profile-scoped questions from a dedicated action outside the report navigation", async () => {
+    mockApi({ "GET /me": ME, "GET /profiles": [PAPA], "GET /profiles/p1/documents": [] });
+    const user = renderAt("/profiles/p1", { ...routes, "/profiles/:pid/ask": <p>Profile question space</p> });
+    const nav = await screen.findByRole("navigation", { name: "Profile sections" });
+    expect(within(nav).queryByRole("link", { name: /^ask/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Ask HealthSync" }));
+    expect(await screen.findByText("Profile question space")).toBeInTheDocument();
+  });
+
   it("names every section, with the short sheet label still read as Doctor sheet", async () => {
     mockApi({ "GET /me": ME, "GET /profiles": [PAPA], "GET /profiles/p1/documents": [] });
     renderAt("/profiles/p1", routes);
 
     const nav = await screen.findByRole("navigation", { name: "Profile sections" });
     const names = within(nav).getAllByRole("link").map((a) => a.getAttribute("aria-label") ?? a.textContent);
-    expect(names).toEqual(["Overview", "Reports", "Compare", "Trends", "Medicines", "Ask", "Doctor sheet", "Allergies", "Doctor access"]);
+    expect(names).toEqual(["Overview", "Reports", "Compare", "Trends", "Medicines", "Doctor sheet", "Allergies", "Doctor access"]);
     expect(within(nav).getByRole("link", { name: "Allergies" })).toHaveAttribute("href", "/profiles/p1/allergies");
     expect(within(nav).getByRole("link", { name: "Doctor access" })).toHaveAttribute("href", "/profiles/p1/access");
     expect(within(nav).getByRole("link", { name: "Doctor sheet" })).toHaveAttribute("href", "/profiles/p1/sheet");

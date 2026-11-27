@@ -7,7 +7,7 @@
   "systems": [
     "B0 · Plain LLM",
     "B1 · Vector RAG",
-    "YourHealth pipeline"
+    "HealthSync pipeline"
   ],
   "metrics": [
     {

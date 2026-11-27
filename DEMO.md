@@ -68,7 +68,7 @@ the facts table: that is itself a talking point (step 3), but say so up front.
 ## 1. The problem, in one sentence (30 s)
 
 "Families get lab reports on WhatsApp as PDFs and photos; nobody can see whether Papa's sugar is going down, which of
-his medicines affect which value, or explain it to Dadi in Hindi. YourHealth turns those reports into trends, links
+his medicines affect which value, or explain it to Dadi in Hindi. HealthSync turns those reports into trends, links
 them to the medicines from official drug labels, explains them in Hindi, and every number is traceable to the report."
 
 ## 2. Upload a phone photo (2 min) — new account, so the panel sees it from zero

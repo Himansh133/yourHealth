@@ -29,7 +29,7 @@ export default function AllergiesPanel({ profileId, canEdit }: { profileId: stri
     {data?.entries.map((entry) => <article key={entry.id} className="rounded-lg border border-slate-200 bg-white p-4">
       <h3 className="font-semibold">{entry.substance_text}</h3><p>{entry.reaction_text || 'Reaction not recorded'} · Severity: {entry.severity}</p>
       <p className="mt-1 text-sm text-slate-600">{entry.source === 'document' ? 'Found in report' : 'Patient entry'} · {entry.confirmed_by_user ? 'Confirmed by patient' : 'Not confirmed by patient'}</p>
-      {entry.source_document_id && <a className="text-sm text-teal-700 underline" href={`/api/v1/documents/${entry.source_document_id}/file#page=${entry.page_no ?? 1}`} target="_blank" rel="noreferrer">Open source report</a>}
+      {entry.source_document_id && <a className="text-sm text-teal-700 underline" href={`/api/v1/documents/${entry.source_document_id}/file`} target="_blank" rel="noreferrer">Open source report</a>}
       {canEdit && <div className="mt-3 flex flex-wrap gap-3">{!entry.confirmed_by_user && <Button disabled={busy} onClick={() => void act(() => allergies.update(profileId, entry.id, { confirmed_by_user: true }))}>Confirm entry</Button>}
         <Button variant="secondary" disabled={busy} onClick={() => { setEditing(entry.id); setName(entry.substance_text); setReaction(entry.reaction_text ?? ''); setSeverity(entry.severity); }}>Edit</Button>
         <Button variant="secondary" disabled={busy} onClick={() => void act(() => allergies.remove(profileId, entry.id))}>Remove</Button></div>}

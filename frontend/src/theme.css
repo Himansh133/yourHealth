@@ -1,0 +1,11 @@
+@font-face {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/manrope-latin.woff2") format("woff2");
+}
+.healthsync-brand { display: inline-flex; align-items: center; gap: 10px; color: #284d40; font-family: "Manrope", Arial, sans-serif; font-size: 24px; font-weight: 750; letter-spacing: -1.2px; white-space: nowrap; }
+.healthsync-brand-dot { color: #7d9d70; }
+
+:root { --hs-ink: #183330; --hs-muted: #5b6e65; --hs-green: #385f49; --hs-green-hover: #254a36; --hs-line: #dce5da; --hs-paper: #fcfdfb; --hs-mint: #edf3e9; }

@@ -29,7 +29,7 @@ export default function PublicSharePage() {
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-8">
-      <p className="text-sm font-semibold text-teal-800">YourHealth · shared health summary</p>
+      <p className="text-sm font-semibold text-teal-800">HealthSync · shared health summary</p>
       {sheet ? (
         <SheetView sheet={sheet} documentHref={(id) => publicShare.documentUrl(token, id)} />
       ) : (
